@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TCG Tracker — Scan Logs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "surface-container-lowest": "#0c0e10",
+                    "surface-dim": "#121416",
+                    background: "#121416",
+                    surface: "#121416",
+                    "surface-container-low": "#1a1c1e",
+                    "surface-container": "#1e2022",
+                    "surface-container-high": "#282a2c",
+                    "surface-container-highest": "#333537",
+                    "surface-bright": "#37393b",
+                    "surface-variant": "#333537",
+                    primary: "#00daf3",
+                    "primary-container": "#004e57",
+                    "on-primary": "#00363d",
+                    "on-primary-fixed": "#001f24",
+                    "on-surface": "#e2e2e5",
+                    "on-surface-variant": "#c3c7ca",
+                    "on-background": "#e2e2e5",
+                    outline: "#8d9194",
+                    "outline-variant": "#43474a",
+                    secondary: "#ffb4a2",
+                    tertiary: "#3de189",
+                    error: "#ffb4ab"
+                },
+                fontFamily: {
+                    headline: ["Space Grotesk"],
+                    body: ["Inter"],
+                    label: ["Inter"],
+                    display: ["Space Grotesk"]
+                }
+            }
+        }
+    };
+</script>
+<style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .nav-item:hover { background-color: #282a2c; }
+    .nav-item.active { border-left: 3px solid #00daf3; background-color: #1e2022; }
+    .log-row:hover { background-color: #282a2c; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="w-[72px] min-h-screen bg-surface-container-low flex flex-col items-center py-6 gap-2 flex-shrink-0">
+    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-8">
+        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">query_stats</span>
+    </div>
+    <a href="tcg-tracker-dashboard.html" class="nav-item w-12 h-12 rounded-lg flex items-center justify-center transition-all" title="Dashboard">
+        <span class="material-symbols-outlined text-on-surface-variant">dashboard</span>
+    </a>
+    <a href="tcg-tracker-stores.html" class="nav-item w-12 h-12 rounded-lg flex items-center justify-center transition-all" title="Stores">
+        <span class="material-symbols-outlined text-on-surface-variant">storefront</span>
+    </a>
+    <a href="#" class="nav-item active w-12 h-12 rounded-lg flex items-center justify-center transition-all" title="Scan Logs">
+        <span class="material-symbols-outlined text-primary">receipt_long</span>
+    </a>
+    <div class="flex-grow"></div>
+    <a href="tcg-tracker-settings.html" class="nav-item w-12 h-12 rounded-lg flex items-center justify-center transition-all" title="Settings">
+        <span class="material-symbols-outlined text-on-surface-variant">settings</span>
+    </a>
+</aside>
+
+<!-- Main Content -->
+<div class="flex-1 flex flex-col min-h-screen overflow-auto">
+    <!-- Top Header -->
+    <header class="flex items-center justify-between px-8 py-5 bg-surface-container-low/60 backdrop-blur-md sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+            <h1 class="font-headline font-black text-xl tracking-tight text-on-surface uppercase">TCG Tracker</h1>
+            <span class="text-[10px] font-label font-bold text-primary uppercase tracking-[0.15em] bg-primary/10 px-2 py-0.5 rounded-full">Scan Logs</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+                <input type="text" placeholder="Filter logs..." class="w-72 bg-surface-container-high border-none rounded-lg py-2.5 pl-10 pr-4 text-sm text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary/40 transition-all font-body"/>
+            </div>
+            <button class="relative w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-bright transition-all">
+                <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+            </button>
+            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+                <span class="font-headline font-bold text-sm text-on-primary-fixed">JD</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 px-8 py-6">
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <h2 class="font-headline text-2xl font-bold text-on-surface">Scan Logs</h2>
+                <p class="text-sm text-on-surface-variant mt-1">History of all automated store scans</p>
+            </div>
+            <div class="flex gap-2">
+                <button class="bg-surface-container-high text-on-surface-variant text-xs font-label font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg hover:bg-surface-bright transition-all">All</button>
+                <button class="bg-primary/10 text-primary text-xs font-label font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg">Success</button>
+                <button class="bg-surface-container-high text-on-surface-variant text-xs font-label font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg hover:bg-surface-bright transition-all">Errors</button>
+            </div>
+        </div>
+
+        <!-- Scan Log Entries -->
+        <div class="space-y-3">
+            <!-- Log Entry 1 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-tertiary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary text-lg">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">TCGPlayer — Full Scan</p>
+                        <p class="text-[11px] text-on-surface-variant font-label">1,247 cards scanned · 3 new listings detected</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:42 AM</p>
+                    <p class="text-[10px] text-tertiary font-label font-bold uppercase">Completed in 14s</p>
+                </div>
+            </div>
+
+            <!-- Log Entry 2 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-lg animate-spin" style="animation-duration: 2s;">sync</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">CardMarket — Incremental Sync</p>
+                        <p class="text-[11px] text-on-surface-variant font-label">Processing... 456 / 893 cards</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:45 AM</p>
+                    <p class="text-[10px] text-primary font-label font-bold uppercase">In Progress</p>
+                </div>
+            </div>
+
+            <!-- Log Entry 3 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-tertiary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary text-lg">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">eBay — Full Scan</p>
+                        <p class="text-[11px] text-on-surface-variant font-label">421 cards scanned · 1 price drop alert</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:38 AM</p>
+                    <p class="text-[10px] text-tertiary font-label font-bold uppercase">Completed in 8s</p>
+                </div>
+            </div>
+
+            <!-- Log Entry 4 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-error/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-error text-lg">error</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">Star City Games — Full Scan</p>
+                        <p class="text-[11px] text-error font-label">Connection timeout — Retry scheduled</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:30 AM</p>
+                    <p class="text-[10px] text-error font-label font-bold uppercase">Failed</p>
+                </div>
+            </div>
+
+            <!-- Log Entry 5 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-tertiary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary text-lg">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">Card Kingdom — Full Scan</p>
+                        <p class="text-[11px] text-on-surface-variant font-label">186 cards scanned · 0 changes</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:25 AM</p>
+                    <p class="text-[10px] text-tertiary font-label font-bold uppercase">Completed in 6s</p>
+                </div>
+            </div>
+
+            <!-- Log Entry 6 -->
+            <div class="log-row bg-surface-container-low rounded-xl px-6 py-4 flex items-center justify-between transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-tertiary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary text-lg">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="font-headline font-bold text-sm text-on-surface">TCGPlayer — Price Watch</p>
+                        <p class="text-[11px] text-on-surface-variant font-label">52 watchlist items checked · 2 price alerts triggered</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-on-surface-variant font-label">Today, 08:15 AM</p>
+                    <p class="text-[10px] text-tertiary font-label font-bold uppercase">Completed in 3s</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

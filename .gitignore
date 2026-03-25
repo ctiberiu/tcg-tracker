@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+.vercel/
+*.log
+
+# Migration helper (not part of app)
+tcg-tracker/scraper/run-migrations.js

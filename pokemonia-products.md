@@ -1,0 +1,1550 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Intra in cont" [ref=e5] [cursor=pointer]:
+        - /url: https://www.pokemonia.ro/inregistrare
+        - generic [ref=e6]: 
+        - text: Intra in cont
+      - generic [ref=e8] [cursor=pointer]:
+        - img "Ro" [ref=e9]
+        - text: RO
+      - text: 
+    - list [ref=e10]:
+      - listitem [ref=e11]:
+        - link "Home" [ref=e12] [cursor=pointer]:
+          - /url: https://www.pokemonia.ro/
+      - listitem [ref=e13]:
+        - link "POKEMON TCG" [ref=e14] [cursor=pointer]:
+          - /url: "#"
+        - generic [ref=e15] [cursor=pointer]: 
+      - listitem [ref=e16]:
+        - link "One Piece TCG" [ref=e17] [cursor=pointer]:
+          - /url: "#"
+        - generic [ref=e18] [cursor=pointer]: 
+      - listitem [ref=e19]:
+        - link "Alte jocuri TCG" [ref=e20] [cursor=pointer]:
+          - /url: "#"
+        - generic [ref=e21] [cursor=pointer]: 
+      - listitem [ref=e22]:
+        - link "Box Break - Rip'n'Ship" [ref=e23] [cursor=pointer]:
+          - /url: https://www.pokemonia.ro/live-rip-n-ship-pe-youtube
+      - listitem [ref=e24]:
+        - link "Accesorii" [ref=e25] [cursor=pointer]:
+          - /url: "#"
+        - generic [ref=e26] [cursor=pointer]: 
+      - listitem [ref=e27]:
+        - link "Blog" [ref=e28] [cursor=pointer]:
+          - /url: https://www.pokemonia.ro/blog
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31] [cursor=pointer]: 
+        - text: POKEMON TCG
+      - list [ref=e32]:
+        - listitem [ref=e33]:
+          - generic [ref=e34]:
+            - paragraph [ref=e35]:
+              - link "Pokemon in Engleza/English" [ref=e36] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1
+            - link "Pokemon Special Collection Box" [ref=e37] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-special-collection-box
+              - text: 
+              - generic [ref=e38]: Pokemon Special Collection Box
+            - 'link "Pokemon TCG: Perfect Order" [ref=e39] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-perfect-order
+              - text: 
+              - generic [ref=e40]: "Pokemon TCG: Perfect Order"
+            - 'link "Pokemon TCG: Ascended Heroes" [ref=e41] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-ascended-heroes
+              - text: 
+              - generic [ref=e42]: "Pokemon TCG: Ascended Heroes"
+            - 'link "Pokemon TCG: Phantasmal Flames" [ref=e43] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-phantasmal-flames
+              - text: 
+              - generic [ref=e44]: "Pokemon TCG: Phantasmal Flames"
+            - 'link "Pokemon TCG: Mega Evolution" [ref=e45] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-mega-evolution
+              - text: 
+              - generic [ref=e46]: "Pokemon TCG: Mega Evolution"
+            - 'link "Pokemon TCG: Black Bolt & White Flare" [ref=e47] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-black-bolt-white-flare
+              - text: 
+              - generic [ref=e48]: "Pokemon TCG: Black Bolt & White Flare"
+            - 'link "Pokemon TCG: Destined Rivals" [ref=e49] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-destined-rivals
+              - text: 
+              - generic [ref=e50]: "Pokemon TCG: Destined Rivals"
+            - 'link "Pokemon TCG: Journey Together" [ref=e51] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-journey-together
+              - text: 
+              - generic [ref=e52]: "Pokemon TCG: Journey Together"
+            - 'link "Pokemon TCG: Prismatic Evolutions" [ref=e53] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-prismatic-evolutions
+              - text: 
+              - generic [ref=e54]: "Pokemon TCG: Prismatic Evolutions"
+            - 'link "Pokemon TCG: Surging Sparks" [ref=e55] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-surging-sparks
+              - text: 
+              - generic [ref=e56]: "Pokemon TCG: Surging Sparks"
+            - 'link "Pokemon TCG: Stellar Crown" [ref=e57] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-stellar-crown
+              - text: 
+              - generic [ref=e58]: "Pokemon TCG: Stellar Crown"
+            - 'link "Pokemon TCG: Shrouded Fable" [ref=e59] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-shrouded-fable
+              - text: 
+              - generic [ref=e60]: "Pokemon TCG: Shrouded Fable"
+            - 'link "Pokemon TCG: Twilight Masquerade" [ref=e61] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-twilight-masquerade
+              - text: 
+              - generic [ref=e62]: "Pokemon TCG: Twilight Masquerade"
+            - 'link "Pokemon TCG: Temporal Forces" [ref=e63] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-temporal-forces
+              - text: 
+              - generic [ref=e64]: "Pokemon TCG: Temporal Forces"
+            - 'link "Pokemon TCG: Paldean Fates" [ref=e65] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paldean-fates
+              - text: 
+              - generic [ref=e66]: "Pokemon TCG: Paldean Fates"
+            - 'link "Pokemon TCG: Paradox Rift" [ref=e67] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paradox-rift
+              - text: 
+              - generic [ref=e68]: "Pokemon TCG: Paradox Rift"
+            - 'link "Pokemon TCG: Scarlet & Violet 151" [ref=e69] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-scarlet-violet-151
+              - text: 
+              - generic [ref=e70]: "Pokemon TCG: Scarlet & Violet 151"
+            - 'link "Pokemon TCG: Obsidian Flames" [ref=e71] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-obsidian-flames
+              - text: 
+              - generic [ref=e72]: "Pokemon TCG: Obsidian Flames"
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75] [cursor=pointer]: 
+        - text: One Piece TCG
+      - list [ref=e76]:
+        - listitem [ref=e77]:
+          - paragraph [ref=e79]:
+            - link "One Piece in Engleza" [ref=e80] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/one-piece-in-engleza
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - generic [ref=e83] [cursor=pointer]: 
+        - text: Alte jocuri TCG
+      - list [ref=e84]:
+        - listitem [ref=e85]:
+          - paragraph [ref=e87]:
+            - link "League of Legends Riftbound" [ref=e88] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/league-of-legends-riftbound
+        - listitem [ref=e89]:
+          - paragraph [ref=e91]:
+            - link "Naruto" [ref=e92] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/naruto
+    - generic [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95] [cursor=pointer]: 
+        - text: Accesorii
+      - list [ref=e96]:
+        - listitem [ref=e97]:
+          - paragraph [ref=e99]:
+            - link "Binder de la VaultX" [ref=e100] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/binder-de-la-vaultx
+  - generic [ref=e101]:
+    - generic [ref=e102]: Filtre
+    - generic [ref=e103]:
+      - generic [ref=e105]:
+        - paragraph [ref=e107]: Pokemon TCG Engleza
+        - list [ref=e108]:
+          - listitem [ref=e109]:
+            - 'link "Pokemon TCG: Stellar Crown" [ref=e110] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-stellar-crown
+          - listitem [ref=e111]:
+            - 'link "Pokemon TCG: Surging Sparks" [ref=e112] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-surging-sparks
+          - listitem [ref=e113]:
+            - 'link "Pokemon TCG: Shrouded Fable" [ref=e114] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-shrouded-fable
+          - listitem [ref=e115]:
+            - 'link "Pokemon TCG: Twilight Masquerade" [ref=e116] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-twilight-masquerade
+          - listitem [ref=e117]:
+            - 'link "Pokemon TCG: Temporal Forces" [ref=e118] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-temporal-forces
+          - listitem [ref=e119]:
+            - 'link "Pokemon TCG: Paldean Fates" [ref=e120] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paldean-fates
+          - listitem [ref=e121]:
+            - 'link "Pokemon TCG: Paradox Rift" [ref=e122] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paradox-rift
+          - listitem [ref=e123]:
+            - 'link "Pokemon TCG: Scarlet & Violet 151" [ref=e124] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-scarlet-violet-151
+          - listitem [ref=e125]:
+            - 'link "Pokemon TCG: Obsidian Flames" [ref=e126] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-obsidian-flames
+          - listitem [ref=e127]:
+            - 'link "Pokemon TCG: Crown Zenith" [ref=e128] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-crown-zenith
+          - listitem [ref=e129]:
+            - 'link "Pokemon TCG: Silver Tempest" [ref=e130] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-silver-tempest
+          - listitem [ref=e131]:
+            - 'link "Pokemon TCG: Lost Origin" [ref=e132] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-lost-origin
+          - listitem [ref=e133]:
+            - 'link "Pokemon TCG: Astral Radiance" [ref=e134] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-astral-radiance
+          - listitem [ref=e135]:
+            - link "Pokemon Special Collection Box" [ref=e136] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-special-collection-box
+          - listitem [ref=e137]:
+            - 'link "Pokemon TCG: Ascended Heroes" [ref=e138] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-ascended-heroes
+          - listitem [ref=e139]:
+            - 'link "Pokemon TCG: Black Bolt & White Flare" [ref=e140] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-black-bolt-white-flare
+          - listitem [ref=e141]:
+            - 'link "Pokemon TCG: Destined Rivals" [ref=e142] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-destined-rivals
+          - listitem [ref=e143]:
+            - 'link "Pokemon TCG: Journey Together" [ref=e144] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-journey-together
+          - listitem [ref=e145]:
+            - 'link "Pokemon TCG: Mega Evolution" [ref=e146] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-mega-evolution
+          - listitem [ref=e147]:
+            - 'link "Pokemon TCG: Perfect Order" [ref=e148] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-perfect-order
+          - listitem [ref=e149]:
+            - 'link "Pokemon TCG: Phantasmal Flames" [ref=e150] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-phantasmal-flames
+          - listitem [ref=e151]:
+            - 'link "Pokemon TCG: Prismatic Evolutions" [ref=e152] [cursor=pointer]':
+              - /url: https://www.pokemonia.ro/pokemon-tcg-prismatic-evolutions
+      - generic [ref=e154]:
+        - paragraph [ref=e156]: Producatori
+        - list [ref=e157]:
+          - listitem [ref=e158]:
+            - generic [ref=e159]:
+              - checkbox "Pokemon Trading Card Game (204) Pokemon Trading Card Game (204)" [ref=e161]
+              - link "Pokemon Trading Card Game" [ref=e162] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-trading-card-game
+              - text: (204)
+      - generic [ref=e164]:
+        - paragraph [ref=e166]: Pret
+        - list [ref=e167]:
+          - listitem [ref=e168]:
+            - generic [ref=e169]:
+              - checkbox "Sub 50 RON (11) Sub 50 RON (11)" [ref=e171]
+              - link "Sub 50 RON" [ref=e172] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p0-50?_crawl=0
+              - text: (11)
+          - listitem [ref=e173]:
+            - generic [ref=e174]:
+              - checkbox "50 RON - 100 RON (35) 50 RON - 100 RON (35)" [ref=e176]
+              - link "50 RON - 100 RON" [ref=e177] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p50-100?_crawl=0
+              - text: (35)
+          - listitem [ref=e178]:
+            - generic [ref=e179]:
+              - checkbox "100 RON - 150 RON (27) 100 RON - 150 RON (27)" [ref=e181]
+              - link "100 RON - 150 RON" [ref=e182] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p100-150?_crawl=0
+              - text: (27)
+          - listitem [ref=e183]:
+            - generic [ref=e184]:
+              - checkbox "150 RON - 200 RON (31) 150 RON - 200 RON (31)" [ref=e186]
+              - link "150 RON - 200 RON" [ref=e187] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p150-200?_crawl=0
+              - text: (31)
+          - listitem [ref=e188]:
+            - generic [ref=e189]:
+              - checkbox "200 RON - 250 RON (17) 200 RON - 250 RON (17)" [ref=e191]
+              - link "200 RON - 250 RON" [ref=e192] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p200-250?_crawl=0
+              - text: (17)
+          - listitem [ref=e193]:
+            - generic [ref=e194]:
+              - checkbox "250 RON - 300 RON (12) 250 RON - 300 RON (12)" [ref=e196]
+              - link "250 RON - 300 RON" [ref=e197] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p250-300?_crawl=0
+              - text: (12)
+          - listitem [ref=e198]:
+            - generic [ref=e199]:
+              - checkbox "300 RON - 400 RON (34) 300 RON - 400 RON (34)" [ref=e201]
+              - link "300 RON - 400 RON" [ref=e202] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p300-400?_crawl=0
+              - text: (34)
+          - listitem [ref=e203]:
+            - generic [ref=e204]:
+              - checkbox "400 RON - 500 RON (4) 400 RON - 500 RON (4)" [ref=e206]
+              - link "400 RON - 500 RON" [ref=e207] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p400-500?_crawl=0
+              - text: (4)
+          - listitem [ref=e208]:
+            - generic [ref=e209]:
+              - checkbox "500 RON - 750 RON (12) 500 RON - 750 RON (12)" [ref=e211]
+              - link "500 RON - 750 RON" [ref=e212] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p500-750?_crawl=0
+              - text: (12)
+          - listitem [ref=e213]:
+            - generic [ref=e214]:
+              - checkbox "750 RON - 1000 RON (16) 750 RON - 1000 RON (16)" [ref=e216]
+              - link "750 RON - 1000 RON" [ref=e217] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p750-1000?_crawl=0
+              - text: (16)
+          - listitem [ref=e218]:
+            - generic [ref=e219]:
+              - checkbox "Peste 1000 RON (5) Peste 1000 RON (5)" [ref=e221]
+              - link "Peste 1000 RON" [ref=e222] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/p1000-0?_crawl=0
+              - text: (5)
+      - generic [ref=e224]:
+        - paragraph [ref=e226]: Rating
+        - list [ref=e227]:
+          - listitem [ref=e228]:
+            - generic [ref=e229]:
+              - checkbox "Peste (194)" [ref=e231]
+              - link "Peste" [ref=e232] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/r4-5?_crawl=0
+                - text: Peste
+                - generic [ref=e233]:
+                  - generic [ref=e234]: 
+                  - generic [ref=e235]: 
+                  - generic [ref=e236]: 
+                  - generic [ref=e237]: 
+                  - generic [ref=e238]: 
+              - text: (194)
+          - listitem [ref=e239]:
+            - generic [ref=e240]:
+              - checkbox "Peste (194)" [ref=e242]
+              - link "Peste" [ref=e243] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/r3-5?_crawl=0
+                - text: Peste
+                - generic [ref=e244]:
+                  - generic [ref=e245]: 
+                  - generic [ref=e246]: 
+                  - generic [ref=e247]: 
+                  - generic [ref=e248]: 
+                  - generic [ref=e249]: 
+              - text: (194)
+          - listitem [ref=e250]:
+            - generic [ref=e251]:
+              - checkbox "Peste (194)" [ref=e253]
+              - link "Peste" [ref=e254] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/r2-5?_crawl=0
+                - text: Peste
+                - generic [ref=e255]:
+                  - generic [ref=e256]: 
+                  - generic [ref=e257]: 
+                  - generic [ref=e258]: 
+                  - generic [ref=e259]: 
+                  - generic [ref=e260]: 
+              - text: (194)
+          - listitem [ref=e261]:
+            - generic [ref=e262]:
+              - checkbox "Peste (194)" [ref=e264]
+              - link "Peste" [ref=e265] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/r1-5?_crawl=0
+                - text: Peste
+                - generic [ref=e266]:
+                  - generic [ref=e267]: 
+                  - generic [ref=e268]: 
+                  - generic [ref=e269]: 
+                  - generic [ref=e270]: 
+                  - generic [ref=e271]: 
+              - text: (194)
+          - listitem [ref=e272]:
+            - generic [ref=e273]:
+              - checkbox "Peste (196)" [ref=e275]
+              - link "Peste" [ref=e276] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/r0-5?_crawl=0
+                - text: Peste
+                - generic [ref=e277]:
+                  - generic [ref=e278]: 
+                  - generic [ref=e279]: 
+                  - generic [ref=e280]: 
+                  - generic [ref=e281]: 
+                  - generic [ref=e282]: 
+              - text: (196)
+      - generic [ref=e284]:
+        - paragraph [ref=e286]: Status stoc
+        - list [ref=e287]:
+          - listitem [ref=e288]:
+            - generic [ref=e289]:
+              - checkbox "In stoc (1) In stoc (1)" [ref=e291]
+              - link "In stoc" [ref=e292] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/s-instock?_crawl=0
+              - text: (1)
+          - listitem [ref=e293]:
+            - generic [ref=e294]:
+              - checkbox "Nu este in stoc (201) Nu este in stoc (201)" [ref=e296]
+              - link "Nu este in stoc" [ref=e297] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/s-notinstock?_crawl=0
+              - text: (201)
+          - listitem [ref=e298]:
+            - generic [ref=e299]:
+              - checkbox "Precomanda (2) Precomanda (2)" [ref=e301]
+              - link "Precomanda" [ref=e302] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/s-preorder?_crawl=0
+              - text: (2)
+      - combobox "Cele mai cumparate" [ref=e304]:
+        - option "Cele mai cumparate" [selected]
+        - option "Cele mai noi"
+        - option "Discount"
+        - option "Rating"
+        - option "Pret (Crescator)"
+        - option "Pret (Descrescator)"
+        - option "Recomandate"
+  - generic [ref=e305]:
+    - banner [ref=e306]:
+      - generic [ref=e309]:
+        - link "POKEMONIA" [ref=e311] [cursor=pointer]:
+          - /url: https://www.pokemonia.ro
+          - img "POKEMONIA" [ref=e312]
+        - generic [ref=e314]:
+          - textbox "Search" [ref=e315]:
+            - /placeholder: Cauta in site...
+          - button [ref=e316] [cursor=pointer]:
+            - generic [ref=e317]: 
+        - list [ref=e319]:
+          - text:  
+          - listitem [ref=e320]:
+            - link "Intra in cont" [ref=e321] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/inregistrare
+              - generic [ref=e322]: 
+              - text: Intra in cont
+          - text: 
+          - listitem [ref=e323]:
+            - link "Cos de cumparaturi" [ref=e324] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/cos-de-cumparaturi
+              - generic [ref=e325]: 
+              - text: 0,00 RON
+          - listitem [ref=e326]:
+            - generic [ref=e327] [cursor=pointer]:
+              - img "Ro" [ref=e328]
+              - text: RO
+      - generic [ref=e329]:
+        - navigation [ref=e330]:
+          - list [ref=e332]:
+            - listitem [ref=e333]:
+              - link "Home" [ref=e334] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+            - listitem [ref=e335]:
+              - link "POKEMON TCG " [ref=e336] [cursor=pointer]:
+                - /url: "#"
+                - text: POKEMON TCG
+                - generic [ref=e337]: 
+            - listitem [ref=e338]:
+              - link "One Piece TCG " [ref=e339] [cursor=pointer]:
+                - /url: "#"
+                - text: One Piece TCG
+                - generic [ref=e340]: 
+            - listitem [ref=e341]:
+              - link "Alte jocuri TCG " [ref=e342] [cursor=pointer]:
+                - /url: "#"
+                - text: Alte jocuri TCG
+                - generic [ref=e343]: 
+            - listitem [ref=e344]:
+              - link "Box Break - Rip'n'Ship" [ref=e345] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/live-rip-n-ship-pe-youtube
+            - listitem [ref=e346]:
+              - link "Accesorii " [ref=e347] [cursor=pointer]:
+                - /url: "#"
+                - text: Accesorii
+                - generic [ref=e348]: 
+            - listitem [ref=e349]:
+              - link "Blog" [ref=e350] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/blog
+          - text:     
+        - text: 
+    - list [ref=e354]:
+      - listitem [ref=e355]:
+        - link "Home /" [ref=e356] [cursor=pointer]:
+          - /url: https://www.pokemonia.ro/
+      - listitem [ref=e357]: Pokemon TCG Engleza
+    - generic [ref=e359]:
+      - heading "Pokemon TCG Engleza" [level=1] [ref=e361]
+      - generic [ref=e362]:
+        - generic:
+          - paragraph [ref=e366] [cursor=pointer]: Pokemon TCG Engleza 
+          - paragraph [ref=e370] [cursor=pointer]: Producatori 
+          - paragraph [ref=e374] [cursor=pointer]: Pret 
+          - generic [ref=e376]:
+            - paragraph [ref=e378] [cursor=pointer]: Rating 
+            - text:                         
+          - paragraph [ref=e382] [cursor=pointer]: Status stoc 
+          - combobox [ref=e384]:
+            - option "Cele mai cumparate" [selected]
+            - option "Cele mai noi"
+            - option "Discount"
+            - option "Rating"
+            - option "Pret (Crescator)"
+            - option "Pret (Descrescator)"
+            - option "Recomandate"
+      - generic [ref=e385]:
+        - text: 
+        - generic [ref=e386]:
+          - generic [ref=e387]:
+            - generic [ref=e389]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Mega Charizard X si Mega Charizard Y Tin Spring 2026 Q1 Bundle" [ref=e391] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-charizard-x-si-mega-charizard-y-tin-spring-2026-q1-bundle.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Mega Charizard X si Mega Charizard Y Tin Spring 2026 Q1 Bundle" [ref=e392]
+              - generic [ref=e393]:
+                - generic [ref=e394]:
+                  - link "Pokemon Trading Card Game" [ref=e395] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Charizard X si Mega Charizard Y Tin Spring 2026 Q1 Bundle" [level=2] [ref=e396]:
+                    - link "Set cartonase Pokemon TCG Mega Charizard X si Mega Charizard Y Tin Spring 2026 Q1 Bundle" [ref=e397] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-charizard-x-si-mega-charizard-y-tin-spring-2026-q1-bundle.html
+                  - generic [ref=e398]: 300,00 RON / buc
+                  - generic [ref=e400]:
+                    - generic [ref=e401]: 
+                    - generic [ref=e402]: 
+                    - generic [ref=e403]: 
+                    - generic [ref=e404]: 
+                    - generic [ref=e405]: 
+                    - generic [ref=e406]:
+                      - generic [ref=e407]: 
+                      - generic [ref=e408]: 
+                      - generic [ref=e409]: 
+                      - generic [ref=e410]: 
+                      - generic [ref=e411]: 
+                - generic [ref=e412]:
+                  - generic [ref=e414]:
+                    - generic [ref=e415]: 
+                    - text: In stoc
+                  - text: 
+                  - generic [ref=e416]:
+                    - text:  +
+                    - link "Adauga in cos" [ref=e417] [cursor=pointer]:
+                      - /url: "#"
+                      - text:  Adauga in cos
+                    - link "" [ref=e418] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_663"
+                      - generic [ref=e419]: 
+            - generic [ref=e421]:
+              - generic [ref=e422]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Mega Evolution Perfect Order Checklane" [ref=e423] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-checklane-bundle.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Mega Evolution Perfect Order Checklane" [ref=e424]
+                - generic:
+                  - generic: nou
+              - generic [ref=e425]:
+                - generic [ref=e426]:
+                  - link "Pokemon Trading Card Game" [ref=e427] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Checklane Bundle" [level=2] [ref=e428]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Checklane Bundle" [ref=e429] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-checklane-bundle.html
+                  - generic [ref=e430]: 69,99 RON / buc
+                  - generic [ref=e432]:
+                    - generic [ref=e433]: 
+                    - generic [ref=e434]: 
+                    - generic [ref=e435]: 
+                    - generic [ref=e436]: 
+                    - generic [ref=e437]: 
+                    - generic [ref=e438]:
+                      - generic [ref=e439]: 
+                      - generic [ref=e440]: 
+                      - generic [ref=e441]: 
+                      - generic [ref=e442]: 
+                      - generic [ref=e443]: 
+                - generic [ref=e444]:
+                  - generic [ref=e446]:
+                    - generic [ref=e447]: 
+                    - text: Precomanda
+                  - text: 
+                  - generic [ref=e448]:
+                    - text:  +
+                    - link "Precomanda" [ref=e449] [cursor=pointer]:
+                      - /url: "#"
+                      - text:  Precomanda
+                    - link "" [ref=e450] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_633"
+                      - generic [ref=e451]: 
+            - generic [ref=e453]:
+              - generic [ref=e454]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Perfect Order Premium Checklane" [ref=e455] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-premium-checklane-bundle.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Perfect Order Premium Checklane" [ref=e456]
+                - generic:
+                  - generic: nou
+              - generic [ref=e457]:
+                - generic [ref=e458]:
+                  - link "Pokemon Trading Card Game" [ref=e459] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Premium Checklane Bundle" [level=2] [ref=e460]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Premium Checklane Bundle" [ref=e461] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-premium-checklane-bundle.html
+                  - generic [ref=e462]: 79,99 RON / buc
+                  - generic [ref=e464]:
+                    - generic [ref=e465]: 
+                    - generic [ref=e466]: 
+                    - generic [ref=e467]: 
+                    - generic [ref=e468]: 
+                    - generic [ref=e469]: 
+                    - generic [ref=e470]:
+                      - generic [ref=e471]: 
+                      - generic [ref=e472]: 
+                      - generic [ref=e473]: 
+                      - generic [ref=e474]: 
+                      - generic [ref=e475]: 
+                - generic [ref=e476]:
+                  - generic [ref=e478]:
+                    - generic [ref=e479]: 
+                    - text: Precomanda
+                  - text: 
+                  - generic [ref=e480]:
+                    - text:  +
+                    - link "Precomanda" [ref=e481] [cursor=pointer]:
+                      - /url: "#"
+                      - text:  Precomanda
+                    - link "" [ref=e482] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_634"
+                      - generic [ref=e483]: 
+            - generic [ref=e485]:
+              - link "Pokemon TCG Engleza - Carti Pokemon TCG Shrouded Fable Mini Tin" [ref=e487] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-scarlet-violet-shrouded-fable-mini-tin.html
+                - img "Pokemon TCG Engleza - Carti Pokemon TCG Shrouded Fable Mini Tin" [ref=e488]
+              - generic [ref=e489]:
+                - generic [ref=e490]:
+                  - link "Pokemon Trading Card Game" [ref=e491] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Shrouded Fable Mini Tin" [level=2] [ref=e492]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Shrouded Fable Mini Tin" [ref=e493] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-scarlet-violet-shrouded-fable-mini-tin.html
+                  - generic [ref=e494]: 50,00 RON /
+                  - generic [ref=e496]:
+                    - generic [ref=e497]: 
+                    - generic [ref=e498]: 
+                    - generic [ref=e499]: 
+                    - generic [ref=e500]: 
+                    - generic [ref=e501]: 
+                    - generic [ref=e502]:
+                      - generic [ref=e503]: 
+                      - generic [ref=e504]: 
+                      - generic [ref=e505]: 
+                      - generic [ref=e506]: 
+                      - generic [ref=e507]: 
+                - generic [ref=e508]:
+                  - generic [ref=e510]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e511]:
+                    - link "Indisponibil" [ref=e512] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-scarlet-violet-shrouded-fable-mini-tin.html
+                      - text:  Indisponibil
+                    - link "" [ref=e513] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_254"
+                      - generic [ref=e514]: 
+            - generic [ref=e516]:
+              - generic [ref=e517]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Ascended Heroes Deluxe Pin Collection" [ref=e518] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-deluxe-pin-collection.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Ascended Heroes Deluxe Pin Collection" [ref=e519]
+                - generic:
+                  - generic: nou
+              - generic [ref=e520]:
+                - generic [ref=e521]:
+                  - link "Pokemon Trading Card Game" [ref=e522] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Deluxe Pin Collection" [level=2] [ref=e523]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Deluxe Pin Collection" [ref=e524] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-deluxe-pin-collection.html
+                  - generic [ref=e525]: 179,99 RON / buc
+                  - generic [ref=e527]:
+                    - generic [ref=e528]: 
+                    - generic [ref=e529]: 
+                    - generic [ref=e530]: 
+                    - generic [ref=e531]: 
+                    - generic [ref=e532]: 
+                    - generic [ref=e533]:
+                      - generic [ref=e534]: 
+                      - generic [ref=e535]: 
+                      - generic [ref=e536]: 
+                      - generic [ref=e537]: 
+                      - generic [ref=e538]: 
+                - generic [ref=e539]:
+                  - generic [ref=e541]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e542]:
+                    - link "Indisponibil" [ref=e543] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-deluxe-pin-collection.html
+                      - text:  Indisponibil
+                    - link "" [ref=e544] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_628"
+                      - generic [ref=e545]: 
+            - generic [ref=e547]:
+              - generic [ref=e548]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Perfect Order Booster Bundle" [ref=e549] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-bundle.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Perfect Order Booster Bundle" [ref=e550]
+                - generic:
+                  - generic: nou
+              - generic [ref=e551]:
+                - generic [ref=e552]:
+                  - link "Pokemon Trading Card Game" [ref=e553] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Booster Bundle" [level=2] [ref=e554]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Booster Bundle" [ref=e555] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-bundle.html
+                  - generic [ref=e556]: 175,00 RON / buc
+                  - generic [ref=e558]:
+                    - generic [ref=e559]: 
+                    - generic [ref=e560]: 
+                    - generic [ref=e561]: 
+                    - generic [ref=e562]: 
+                    - generic [ref=e563]: 
+                    - generic [ref=e564]:
+                      - generic [ref=e565]: 
+                      - generic [ref=e566]: 
+                      - generic [ref=e567]: 
+                      - generic [ref=e568]: 
+                      - generic [ref=e569]: 
+                - generic [ref=e570]:
+                  - generic [ref=e572]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e573]:
+                    - link "Indisponibil" [ref=e574] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-bundle.html
+                      - text:  Indisponibil
+                    - link "" [ref=e575] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_637"
+                      - generic [ref=e576]: 
+            - generic [ref=e578]:
+              - generic [ref=e579]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Perfect Order Elite Trainer Box" [ref=e580] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-elite-trainer-box.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Perfect Order Elite Trainer Box" [ref=e581]
+                - generic:
+                  - generic: nou
+              - generic [ref=e582]:
+                - generic [ref=e583]:
+                  - link "Pokemon Trading Card Game" [ref=e584] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Elite Trainer Box Bundle" [level=2] [ref=e585]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Elite Trainer Box Bundle" [ref=e586] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-elite-trainer-box.html
+                  - generic [ref=e587]: 379,99 RON / buc
+                  - generic [ref=e589]:
+                    - generic [ref=e590]: 
+                    - generic [ref=e591]: 
+                    - generic [ref=e592]: 
+                    - generic [ref=e593]: 
+                    - generic [ref=e594]: 
+                    - generic [ref=e595]:
+                      - generic [ref=e596]: 
+                      - generic [ref=e597]: 
+                      - generic [ref=e598]: 
+                      - generic [ref=e599]: 
+                      - generic [ref=e600]: 
+                - generic [ref=e601]:
+                  - generic [ref=e603]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e604]:
+                    - link "Indisponibil" [ref=e605] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-elite-trainer-box.html
+                      - text:  Indisponibil
+                    - link "" [ref=e606] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_640"
+                      - generic [ref=e607]: 
+            - generic [ref=e609]:
+              - generic [ref=e610]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Perfect Order Sleeved Booster Pack" [ref=e611] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-sleeved-booster-pack-display-x-24.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Perfect Order Sleeved Booster Pack" [ref=e612]
+                - generic:
+                  - generic: nou
+              - generic [ref=e613]:
+                - generic [ref=e614]:
+                  - link "Pokemon Trading Card Game" [ref=e615] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Sleeved Booster Pack Display x 24" [level=2] [ref=e616]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Sleeved Booster Pack Display x 24" [ref=e617] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-sleeved-booster-pack-display-x-24.html
+                  - generic [ref=e618]: 750,00 RON / buc
+                  - generic [ref=e620]:
+                    - generic [ref=e621]: 
+                    - generic [ref=e622]: 
+                    - generic [ref=e623]: 
+                    - generic [ref=e624]: 
+                    - generic [ref=e625]: 
+                    - generic [ref=e626]:
+                      - generic [ref=e627]: 
+                      - generic [ref=e628]: 
+                      - generic [ref=e629]: 
+                      - generic [ref=e630]: 
+                      - generic [ref=e631]: 
+                - generic [ref=e632]:
+                  - generic [ref=e634]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e635]:
+                    - link "Indisponibil" [ref=e636] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-sleeved-booster-pack-display-x-24.html
+                      - text:  Indisponibil
+                    - link "" [ref=e637] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_635"
+                      - generic [ref=e638]: 
+            - generic [ref=e640]:
+              - generic [ref=e641]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Mega Evolution Perfect Order Booster Box" [ref=e642] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-box.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Mega Evolution Perfect Order Booster Box" [ref=e643]
+                - generic:
+                  - generic: nou
+              - generic [ref=e644]:
+                - generic [ref=e645]:
+                  - link "Pokemon Trading Card Game" [ref=e646] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Perfect Order Booster Box" [level=2] [ref=e647]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Perfect Order Booster Box" [ref=e648] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-box.html
+                  - generic [ref=e649]: 932,00 RON / buc
+                  - generic [ref=e651]:
+                    - generic [ref=e652]: 
+                    - generic [ref=e653]: 
+                    - generic [ref=e654]: 
+                    - generic [ref=e655]: 
+                    - generic [ref=e656]: 
+                    - generic [ref=e657]:
+                      - generic [ref=e658]: 
+                      - generic [ref=e659]: 
+                      - generic [ref=e660]: 
+                      - generic [ref=e661]: 
+                      - generic [ref=e662]: 
+                - generic [ref=e663]:
+                  - generic [ref=e665]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e666]:
+                    - link "Indisponibil" [ref=e667] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-perfect-order-booster-box.html
+                      - text:  Indisponibil
+                    - link "" [ref=e668] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_638"
+                      - generic [ref=e669]: 
+            - generic [ref=e671]:
+              - generic [ref=e672]:
+                - link "Pokemon TCG Engleza - Pokemon TCG First Partner Booster Collection Series 1" [ref=e673] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-first-partner-booster-collection-series-1.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG First Partner Booster Collection Series 1" [ref=e674]
+                - generic:
+                  - generic: nou
+              - generic [ref=e675]:
+                - generic [ref=e676]:
+                  - link "Pokemon Trading Card Game" [ref=e677] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG First Partner Booster Collection Series 1" [level=2] [ref=e678]:
+                    - link "Set cartonase Pokemon TCG First Partner Booster Collection Series 1" [ref=e679] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-first-partner-booster-collection-series-1.html
+                  - generic [ref=e680]: 104,99 RON / buc
+                  - generic [ref=e682]:
+                    - generic [ref=e683]: 
+                    - generic [ref=e684]: 
+                    - generic [ref=e685]: 
+                    - generic [ref=e686]: 
+                    - generic [ref=e687]: 
+                    - generic [ref=e688]:
+                      - generic [ref=e689]: 
+                      - generic [ref=e690]: 
+                      - generic [ref=e691]: 
+                      - generic [ref=e692]: 
+                      - generic [ref=e693]: 
+                - generic [ref=e694]:
+                  - generic [ref=e696]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e697]:
+                    - link "Indisponibil" [ref=e698] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-first-partner-booster-collection-series-1.html
+                      - text:  Indisponibil
+                    - link "" [ref=e699] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_629"
+                      - generic [ref=e700]: 
+            - generic [ref=e702]:
+              - generic [ref=e703]:
+                - link "Pokemon TCG Engleza - Carti Pokemon Trading Card Game Mega Evolution Ascended Heroes Premium Poster Collection Mega Lucario" [ref=e704] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-lucario.html
+                  - img "Pokemon TCG Engleza - Carti Pokemon Trading Card Game Mega Evolution Ascended Heroes Premium Poster Collection Mega Lucario" [ref=e705]
+                - generic:
+                  - generic: nou
+              - generic [ref=e706]:
+                - generic [ref=e707]:
+                  - link "Pokemon Trading Card Game" [ref=e708] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Premium Poster Collection Mega Lucario" [level=2] [ref=e709]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Premium Poster Collection Mega Lucario" [ref=e710] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-lucario.html
+                  - generic [ref=e711]: 324,99 RON / buc
+                  - generic [ref=e713]:
+                    - generic [ref=e714]: 
+                    - generic [ref=e715]: 
+                    - generic [ref=e716]: 
+                    - generic [ref=e717]: 
+                    - generic [ref=e718]: 
+                    - generic [ref=e719]:
+                      - generic [ref=e720]: 
+                      - generic [ref=e721]: 
+                      - generic [ref=e722]: 
+                      - generic [ref=e723]: 
+                      - generic [ref=e724]: 
+                - generic [ref=e725]:
+                  - generic [ref=e727]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e728]:
+                    - link "Indisponibil" [ref=e729] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-lucario.html
+                      - text:  Indisponibil
+                    - link "" [ref=e730] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_610"
+                      - generic [ref=e731]: 
+            - generic [ref=e733]:
+              - generic [ref=e734]:
+                - link "Pokemon TCG Engleza - Carti Pokemon Trading Card Game Mega Evolution Ascended Heroes Premium Poster Collection Mega Gardevoir" [ref=e735] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-gardevoir.html
+                  - img "Pokemon TCG Engleza - Carti Pokemon Trading Card Game Mega Evolution Ascended Heroes Premium Poster Collection Mega Gardevoir" [ref=e736]
+                - generic:
+                  - generic: nou
+              - generic [ref=e737]:
+                - generic [ref=e738]:
+                  - link "Pokemon Trading Card Game" [ref=e739] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Premium Poster Collection Mega Gardevoir" [level=2] [ref=e740]:
+                    - link "Set cartonase Pokemon TCG Mega Evolution Ascended Heroes Premium Poster Collection Mega Gardevoir" [ref=e741] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-gardevoir.html
+                  - generic [ref=e742]: 324,99 RON / buc
+                  - generic [ref=e744]:
+                    - generic [ref=e745]: 
+                    - generic [ref=e746]: 
+                    - generic [ref=e747]: 
+                    - generic [ref=e748]: 
+                    - generic [ref=e749]: 
+                    - generic [ref=e750]:
+                      - generic [ref=e751]: 
+                      - generic [ref=e752]: 
+                      - generic [ref=e753]: 
+                      - generic [ref=e754]: 
+                      - generic [ref=e755]: 
+                - generic [ref=e756]:
+                  - generic [ref=e758]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e759]:
+                    - link "Indisponibil" [ref=e760] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-mega-gardevoir.html
+                      - text:  Indisponibil
+                    - link "" [ref=e761] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_611"
+                      - generic [ref=e762]: 
+            - generic [ref=e764]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift sleeved booster pack" [ref=e766] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/paradox-rift.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift sleeved booster pack" [ref=e767]
+              - generic [ref=e768]:
+                - generic [ref=e769]:
+                  - link "Pokemon Trading Card Game" [ref=e770] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Sleeved Booster Pack Display" [level=2] [ref=e771]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Sleeved Booster Pack Display" [ref=e772] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/paradox-rift.html
+                  - generic [ref=e773]: 500,00 RON / buc
+                  - generic [ref=e775]:
+                    - generic [ref=e776]: 
+                    - generic [ref=e777]: 
+                    - generic [ref=e778]: 
+                    - generic [ref=e779]: 
+                    - generic [ref=e780]: 
+                    - generic [ref=e781]:
+                      - generic [ref=e782]: 
+                      - generic [ref=e783]: 
+                      - generic [ref=e784]: 
+                      - generic [ref=e785]: 
+                      - generic [ref=e786]: 
+                - generic [ref=e787]:
+                  - generic [ref=e789]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e790]:
+                    - link "Indisponibil" [ref=e791] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/paradox-rift.html
+                      - text:  Indisponibil
+                    - link "" [ref=e792] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_2"
+                      - generic [ref=e793]: 
+            - generic [ref=e795]:
+              - link "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box Iron Valiant pret" [ref=e797] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-iron-valiant.html
+                - img "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box Iron Valiant pret" [ref=e798]
+              - generic [ref=e799]:
+                - generic [ref=e800]:
+                  - link "Pokemon Trading Card Game" [ref=e801] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box (Iron Valiant)" [level=2] [ref=e802]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box (Iron Valiant)" [ref=e803] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-iron-valiant.html
+                  - generic [ref=e804]: 300,00 RON / buc
+                  - generic [ref=e806]:
+                    - generic [ref=e807]: 
+                    - generic [ref=e808]: 
+                    - generic [ref=e809]: 
+                    - generic [ref=e810]: 
+                    - generic [ref=e811]: 
+                    - generic [ref=e812]:
+                      - generic [ref=e813]: 
+                      - generic [ref=e814]: 
+                      - generic [ref=e815]: 
+                      - generic [ref=e816]: 
+                      - generic [ref=e817]: 
+                - generic [ref=e818]:
+                  - generic [ref=e820]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e821]:
+                    - link "Indisponibil" [ref=e822] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-iron-valiant.html
+                      - text:  Indisponibil
+                    - link "" [ref=e823] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_7"
+                      - generic [ref=e824]: 
+            - generic [ref=e826]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box Roaring Moon Romania" [ref=e828] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-roaring-moon.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box Roaring Moon Romania" [ref=e829]
+              - generic [ref=e830]:
+                - generic [ref=e831]:
+                  - link "Pokemon Trading Card Game" [ref=e832] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box (Roaring Moon)" [level=2] [ref=e833]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Elite Trainer Box (Roaring Moon)" [ref=e834] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-roaring-moon.html
+                  - generic [ref=e835]: 300,00 RON / buc
+                  - generic [ref=e837]:
+                    - generic [ref=e838]: 
+                    - generic [ref=e839]: 
+                    - generic [ref=e840]: 
+                    - generic [ref=e841]: 
+                    - generic [ref=e842]: 
+                    - generic [ref=e843]:
+                      - generic [ref=e844]: 
+                      - generic [ref=e845]: 
+                      - generic [ref=e846]: 
+                      - generic [ref=e847]: 
+                      - generic [ref=e848]: 
+                - generic [ref=e849]:
+                  - generic [ref=e851]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e852]:
+                    - link "Indisponibil" [ref=e853] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-paradox-rift-elite-trainer-box-roaring-moon.html
+                      - text:  Indisponibil
+                    - link "" [ref=e854] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_8"
+                      - generic [ref=e855]: 
+            - generic [ref=e857]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Ultra Premium Collection" [ref=e859] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-ultra-premium-collection.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Ultra Premium Collection" [ref=e860]
+              - generic [ref=e861]:
+                - generic [ref=e862]:
+                  - link "Pokemon Trading Card Game" [ref=e863] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet 151 Ultra Premium Collection" [level=2] [ref=e864]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet 151 Ultra Premium Collection" [ref=e865] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-ultra-premium-collection.html
+                  - generic [ref=e866]: 2.000,00 RON / buc
+                  - generic [ref=e868]:
+                    - generic [ref=e869]: 
+                    - generic [ref=e870]: 
+                    - generic [ref=e871]: 
+                    - generic [ref=e872]: 
+                    - generic [ref=e873]: 
+                    - generic [ref=e874]:
+                      - generic [ref=e875]: 
+                      - generic [ref=e876]: 
+                      - generic [ref=e877]: 
+                      - generic [ref=e878]: 
+                      - generic [ref=e879]: 
+                - generic [ref=e880]:
+                  - generic [ref=e882]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e883]:
+                    - link "Indisponibil" [ref=e884] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-ultra-premium-collection.html
+                      - text:  Indisponibil
+                    - link "" [ref=e885] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_9"
+                      - generic [ref=e886]: 
+            - generic [ref=e888]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Elite Trainer Box" [ref=e890] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-elite-trainer-box.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Elite Trainer Box" [ref=e891]
+              - generic [ref=e892]:
+                - generic [ref=e893]:
+                  - link "Pokemon Trading Card Game" [ref=e894] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet 151 Elite Trainer Box" [level=2] [ref=e895]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet 151 Elite Trainer Box" [ref=e896] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-elite-trainer-box.html
+                  - generic [ref=e897]: 400,00 RON / buc
+                  - generic [ref=e899]:
+                    - generic [ref=e900]: 
+                    - generic [ref=e901]: 
+                    - generic [ref=e902]: 
+                    - generic [ref=e903]: 
+                    - generic [ref=e904]: 
+                    - generic [ref=e905]:
+                      - generic [ref=e906]: 
+                      - generic [ref=e907]: 
+                      - generic [ref=e908]: 
+                      - generic [ref=e909]: 
+                      - generic [ref=e910]: 
+                - generic [ref=e911]:
+                  - generic [ref=e913]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e914]:
+                    - link "Indisponibil" [ref=e915] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-elite-trainer-box.html
+                      - text:  Indisponibil
+                    - link "" [ref=e916] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_11"
+                      - generic [ref=e917]: 
+            - generic [ref=e919]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Booster Bundle" [ref=e921] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-booster-bundle.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet 151 Booster Bundle" [ref=e922]
+              - generic [ref=e923]:
+                - generic [ref=e924]:
+                  - link "Pokemon Trading Card Game" [ref=e925] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet 151 Booster Bundle" [level=2] [ref=e926]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet 151 Booster Bundle" [ref=e927] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-booster-bundle.html
+                  - generic [ref=e928]: 250,00 RON / buc
+                  - generic [ref=e930]:
+                    - generic [ref=e931]: 
+                    - generic [ref=e932]: 
+                    - generic [ref=e933]: 
+                    - generic [ref=e934]: 
+                    - generic [ref=e935]: 
+                    - generic [ref=e936]:
+                      - generic [ref=e937]: 
+                      - generic [ref=e938]: 
+                      - generic [ref=e939]: 
+                      - generic [ref=e940]: 
+                      - generic [ref=e941]: 
+                - generic [ref=e942]:
+                  - generic [ref=e944]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e945]:
+                    - link "Indisponibil" [ref=e946] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokemon-tcg-scarlet-violet-151-booster-bundle.html
+                      - text:  Indisponibil
+                    - link "" [ref=e947] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_12"
+                      - generic [ref=e948]: 
+            - generic [ref=e950]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Elite Trainer Box" [ref=e952] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-elite-trainer-box.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Elite Trainer Box" [ref=e953]
+              - generic [ref=e954]:
+                - generic [ref=e955]:
+                  - link "Pokemon Trading Card Game" [ref=e956] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Elite Trainer Box" [level=2] [ref=e957]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Elite Trainer Box" [ref=e958] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-elite-trainer-box.html
+                  - generic [ref=e959]: 350,00 RON / buc
+                  - generic [ref=e961]:
+                    - generic [ref=e962]: 
+                    - generic [ref=e963]: 
+                    - generic [ref=e964]: 
+                    - generic [ref=e965]: 
+                    - generic [ref=e966]: 
+                    - generic [ref=e967]:
+                      - generic [ref=e968]: 
+                      - generic [ref=e969]: 
+                      - generic [ref=e970]: 
+                      - generic [ref=e971]: 
+                      - generic [ref=e972]: 
+                - generic [ref=e973]:
+                  - generic [ref=e975]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e976]:
+                    - link "Indisponibil" [ref=e977] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-elite-trainer-box.html
+                      - text:  Indisponibil
+                    - link "" [ref=e978] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_14"
+                      - generic [ref=e979]: 
+            - generic [ref=e981]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Sleeved Booster Pack" [ref=e983] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-sleeved-booster-pack-bundle.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Sleeved Booster Pack" [ref=e984]
+              - generic [ref=e985]:
+                - generic [ref=e986]:
+                  - link "Pokemon Trading Card Game" [ref=e987] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Sleeved Booster Pack" [level=2] [ref=e988]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Sleeved Booster Pack" [ref=e989] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-sleeved-booster-pack-bundle.html
+                  - generic [ref=e990]: 25,00 RON / buc
+                  - generic [ref=e992]:
+                    - generic [ref=e993]: 
+                    - generic [ref=e994]: 
+                    - generic [ref=e995]: 
+                    - generic [ref=e996]: 
+                    - generic [ref=e997]: 
+                    - generic [ref=e998]:
+                      - generic [ref=e999]: 
+                      - generic [ref=e1000]: 
+                      - generic [ref=e1001]: 
+                      - generic [ref=e1002]: 
+                      - generic [ref=e1003]: 
+                - generic [ref=e1004]:
+                  - generic [ref=e1006]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e1007]:
+                    - link "Indisponibil" [ref=e1008] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-sleeved-booster-pack-bundle.html
+                      - text:  Indisponibil
+                    - link "" [ref=e1009] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_15"
+                      - generic [ref=e1010]: 
+            - generic [ref=e1012]:
+              - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Booster Display Box" [ref=e1014] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-booster-display-box-36-packs.html
+                - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Booster Display Box" [ref=e1015]
+              - generic [ref=e1016]:
+                - generic [ref=e1017]:
+                  - link "Pokemon Trading Card Game" [ref=e1018] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Booster Display Box (36 Packs)" [level=2] [ref=e1019]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Obsidian Flames Booster Display Box (36 Packs)" [ref=e1020] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-booster-display-box-36-packs.html
+                  - generic [ref=e1021]: 900,00 RON / buc
+                  - generic [ref=e1023]:
+                    - generic [ref=e1024]: 
+                    - generic [ref=e1025]: 
+                    - generic [ref=e1026]: 
+                    - generic [ref=e1027]: 
+                    - generic [ref=e1028]: 
+                    - generic [ref=e1029]:
+                      - generic [ref=e1030]: 
+                      - generic [ref=e1031]: 
+                      - generic [ref=e1032]: 
+                      - generic [ref=e1033]: 
+                      - generic [ref=e1034]: 
+                - generic [ref=e1035]:
+                  - generic [ref=e1037]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e1038]:
+                    - link "Indisponibil" [ref=e1039] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-obsidian-flames-booster-display-box-36-packs.html
+                      - text:  Indisponibil
+                    - link "" [ref=e1040] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_16"
+                      - generic [ref=e1041]: 
+            - generic [ref=e1043]:
+              - generic [ref=e1044]:
+                - link "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Booster Display Box":
+                  - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-paradox-rift-booster-display-box-36-packs.html
+                  - img "Pokemon TCG Engleza - Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Booster Display Box"
+              - generic [ref=e1045]:
+                - generic [ref=e1046]:
+                  - link "Pokemon Trading Card Game" [ref=e1047] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Booster Display Box (36 Packs)" [level=2] [ref=e1048]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Paradox Rift Booster Display Box (36 Packs)" [ref=e1049] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-paradox-rift-booster-display-box-36-packs.html
+                  - generic [ref=e1050]: 900,00 RON / buc
+                  - generic [ref=e1052]:
+                    - generic [ref=e1053]: 
+                    - generic [ref=e1054]: 
+                    - generic [ref=e1055]: 
+                    - generic [ref=e1056]: 
+                    - generic [ref=e1057]: 
+                    - generic [ref=e1058]:
+                      - generic [ref=e1059]: 
+                      - generic [ref=e1060]: 
+                      - generic [ref=e1061]: 
+                      - generic [ref=e1062]: 
+                      - generic [ref=e1063]: 
+                - generic [ref=e1064]:
+                  - generic [ref=e1066]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e1067]:
+                    - link "Indisponibil" [ref=e1068] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pokémon-tcg-scarlet-violet-paradox-rift-booster-display-box-36-packs.html
+                      - text:  Indisponibil
+                    - link "" [ref=e1069] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_17"
+                      - generic [ref=e1070]: 
+            - generic [ref=e1072]:
+              - generic [ref=e1073]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paldean Fates pret":
+                  - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-elite-trainer-box.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paldean Fates pret"
+              - generic [ref=e1074]:
+                - generic [ref=e1075]:
+                  - link "Pokemon Trading Card Game" [ref=e1076] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Set cartonase Pokemon TCG Scarlet & Violet Paldean Fates Elite Trainer Box" [level=2] [ref=e1077]:
+                    - link "Set cartonase Pokemon TCG Scarlet & Violet Paldean Fates Elite Trainer Box" [ref=e1078] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-elite-trainer-box.html
+                  - generic [ref=e1079]: 350,00 RON / buc
+                  - generic [ref=e1081]:
+                    - generic [ref=e1082]: 
+                    - generic [ref=e1083]: 
+                    - generic [ref=e1084]: 
+                    - generic [ref=e1085]: 
+                    - generic [ref=e1086]: 
+                    - generic [ref=e1087]:
+                      - generic [ref=e1088]: 
+                      - generic [ref=e1089]: 
+                      - generic [ref=e1090]: 
+                      - generic [ref=e1091]: 
+                      - generic [ref=e1092]: 
+                - generic [ref=e1093]:
+                  - generic [ref=e1095]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e1096]:
+                    - link "Indisponibil" [ref=e1097] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-elite-trainer-box.html
+                      - text:  Indisponibil
+                    - link "" [ref=e1098] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_22"
+                      - generic [ref=e1099]: 
+            - generic [ref=e1101]:
+              - generic [ref=e1102]:
+                - link "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paldean Fates Booster Bundle Pokemonia":
+                  - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-booster-bundle.html
+                  - img "Pokemon TCG Engleza - Pokemon TCG Scarlet & Violet Paldean Fates Booster Bundle Pokemonia"
+              - generic [ref=e1103]:
+                - generic [ref=e1104]:
+                  - link "Pokemon Trading Card Game" [ref=e1105] [cursor=pointer]:
+                    - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+                  - heading "Pokemon TCG Scarlet & Violet Paldean Fates Booster Bundle" [level=2] [ref=e1106]:
+                    - link "Pokemon TCG Scarlet & Violet Paldean Fates Booster Bundle" [ref=e1107] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-booster-bundle.html
+                  - generic [ref=e1108]: 180,00 RON / buc
+                  - generic [ref=e1110]:
+                    - generic [ref=e1111]: 
+                    - generic [ref=e1112]: 
+                    - generic [ref=e1113]: 
+                    - generic [ref=e1114]: 
+                    - generic [ref=e1115]: 
+                    - generic [ref=e1116]:
+                      - generic [ref=e1117]: 
+                      - generic [ref=e1118]: 
+                      - generic [ref=e1119]: 
+                      - generic [ref=e1120]: 
+                      - generic [ref=e1121]: 
+                - generic [ref=e1122]:
+                  - generic [ref=e1124]: Stoc epuizat
+                  - text: 
+                  - generic [ref=e1125]:
+                    - link "Indisponibil" [ref=e1126] [cursor=pointer]:
+                      - /url: https://www.pokemonia.ro/produse-1/pre-comanda-pokemon-tcg-scarlet-violet-paldean-fates-booster-bundle.html
+                      - text:  Indisponibil
+                    - link "" [ref=e1127] [cursor=pointer]:
+                      - /url: "#addToWishlistPopup_23"
+                      - generic [ref=e1128]: 
+          - list [ref=e1130]:
+            - listitem [ref=e1131]:
+              - link "1" [ref=e1132] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1
+            - listitem [ref=e1133]:
+              - link "2" [ref=e1134] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1?p=1
+            - listitem [ref=e1135]:
+              - link "3" [ref=e1136] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1?p=2
+            - listitem [ref=e1137]: ...
+            - listitem [ref=e1138]:
+              - link "9" [ref=e1139] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1?p=8
+            - listitem [ref=e1140]:
+              - link "" [ref=e1141] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse-1?p=1
+                - generic [ref=e1142]: 
+        - generic [ref=e1143]:
+          - heading "Pokemon Trading Card Game Engleză" [level=3] [ref=e1144]:
+            - link "Pokemon Trading Card Game Engleză" [ref=e1145] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+          - generic [ref=e1146]:
+            - paragraph [ref=e1147]:
+              - text: Descoperă o gamă largă de produse
+              - link "Pokemon TCG" [ref=e1148] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/produse/pokemon-trading-card-game
+              - text: în limba engleză pe
+              - link "www.pokemonia.ro" [ref=e1149] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+              - text: ", unde oferim pasionaților și colecționarilor acces la cele mai noi și populare seturi de cărți. Fiecare set de cartonase / carti"
+              - link "Pokemon" [ref=e1150] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+              - text: este original și sigilat, garantând autenticitatea și calitatea fiecărui produs. Aceste cărți
+              - link "Pokemon" [ref=e1151] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+              - text: se pot folosi atât pentru jocul de masă, cât și pentru a le colecționa, fiind ideale pentru toate vârstele și nivelurile de experiență.
+            - paragraph [ref=e1152]:
+              - text: Fiecare set conține cel puțin 1-5 cărți valoroase pe care colecționarii le apreciază și le doresc în propriile colecții. Aceste cărți speciale nu numai că aduc valoare colecțiilor, dar și un sentiment de satisfacție și bucurie atunci când sunt descoperite.
+              - link "Pokemonia" [ref=e1153] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+              - text: se străduiește să aibă cele mai mici prețuri din România, astfel încât tu să te bucuri de produsele tale preferate și de acest hobby fascinant fără a-ți afecta bugetul.
+            - paragraph [ref=e1154]:
+              - text: Indiferent dacă ești un jucător competitiv sau un colecționar pasionat, produsele noastre te vor ajuta să-ți extinzi colecția și să-ți îmbunătățești deck-urile de joc. Oferim seturi variate, de la cele mai recente lansări până la seturi clasice și rare, pentru a satisface toate preferințele. Bucură-te de frumusețea și complexitatea universului
+              - link "Pokemon TCG" [ref=e1155] [cursor=pointer]:
+                - /url: https://www.pokemonia.ro/
+              - text: ", aducând un plus de valoare și entuziasm colecției tale. Alătură-te comunității noastre de colecționari și jucători, și descoperă ofertele noastre avantajoase chiar astăzi!"
+            - text: Cumpără chiar acum carti
+            - link "Pokemon" [ref=e1156] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/
+            - text: "din:"
+            - link "Special Collection Box" [ref=e1157] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-shrouded-fable
+            - text: ","
+            - link "Lost Origin" [ref=e1158] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-lost-origin
+            - text: ","
+            - link "Silver Tempest" [ref=e1159] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-silver-tempest
+            - text: ","
+            - link "Crown Zenith" [ref=e1160] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-crown-zenith
+            - text: ","
+            - link "Scarlet and Violet" [ref=e1161] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-scarlet-violet-booster-display-box-36-packs.html
+            - text: ","
+            - link "Paldea Evolved" [ref=e1162] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/produse-1/set-cartonase-pokemon-tcg-scarlet-violet-paldea-evolved-booster-display-box-36-packs.html
+            - text: ","
+            - link "Obsidian Flames" [ref=e1163] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-obsidian-flames
+            - text: ","
+            - link "Pokemon 151" [ref=e1164] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-scarlet-violet-151
+            - text: ","
+            - link "Paradox Rift" [ref=e1165] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paradox-rift
+            - text: ","
+            - link "Paldean Fates" [ref=e1166] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-paldean-fates
+            - text: ","
+            - link "Temporal Forces" [ref=e1167] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-temporal-forces
+            - text: ","
+            - link "Twilight Masquerade" [ref=e1168] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-twilight-masquerade
+            - text: ","
+            - link "Shrouded Fable" [ref=e1169] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-shrouded-fable
+            - text: ","
+            - link "Stellar Crown" [ref=e1170] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-stellar-crown
+            - text: si
+            - link "Surging Sparks" [ref=e1171] [cursor=pointer]:
+              - /url: https://www.pokemonia.ro/pokemon-tcg-surging-sparks
+            - text: .
+    - generic [ref=e1172]:
+      - generic [ref=e1175]:
+        - generic [ref=e1176]:
+          - paragraph [ref=e1177]:
+            - text: Newsletter
+            - generic [ref=e1178]: Nu rata ofertele si promotiile noastre
+          - generic [ref=e1179]:
+            - textbox "Adresa de email" [ref=e1180]
+            - button "Aboneaza-te" [ref=e1181] [cursor=pointer]
+            - generic [ref=e1183]:
+              - checkbox "Vreau sa primesc newsletter cu promotiile magazinului. Afla mai multe in Politica de Confidentialitate" [ref=e1185]
+              - generic [ref=e1186]:
+                - text: Vreau sa primesc newsletter cu promotiile magazinului. Afla mai multe in
+                - link "Politica de Confidentialitate" [ref=e1187] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/politica-de-confidentialitate
+        - generic [ref=e1188]:
+          - paragraph [ref=e1189]:
+            - text: Social
+            - generic [ref=e1190]: Urmareste-ne in social media
+          - list [ref=e1191]:
+            - listitem [ref=e1192]:
+              - link "Facebook" [ref=e1193] [cursor=pointer]:
+                - /url: https://www.facebook.com/profile.php?id=61553139403503
+                - generic [ref=e1194]: 
+            - listitem [ref=e1195]:
+              - link "Youtube" [ref=e1196] [cursor=pointer]:
+                - /url: https://www.youtube.com/@Pokemonia.ro-Sibiu
+                - generic [ref=e1197]: 
+            - listitem [ref=e1198]:
+              - link "TickTok" [ref=e1199] [cursor=pointer]:
+                - /url: https://www.tiktok.com/@pokemonia.ro?_t=8hIcviMDOvx&_r=1
+                - generic [ref=e1200]: 
+            - listitem [ref=e1201]:
+              - link "Instagram" [ref=e1202] [cursor=pointer]:
+                - /url: https://instagram.com/pokemonia.ro?igshid=NzZlODBkYWE4Ng%3D%3D&utm_source=qr
+                - generic [ref=e1203]: 
+        - generic [ref=e1204]:
+          - paragraph [ref=e1205]:
+            - text: Suport clienti
+            - generic [ref=e1206]: Luni - Vineri intre 9:00 - 17:00 / Raspund la mail intre 10 minute si 8 ore
+          - link "vanzari@pokemonia.ro" [ref=e1207] [cursor=pointer]:
+            - /url: mailto:vanzari@pokemonia.ro
+            - generic [ref=e1208]: 
+            - text: vanzari@pokemonia.ro
+      - contentinfo [ref=e1209]:
+        - generic [ref=e1211]:
+          - generic [ref=e1213]:
+            - paragraph [ref=e1214]: Magazinul meu 
+            - list [ref=e1215]:
+              - listitem [ref=e1216]:
+                - link "Despre noi" [ref=e1217] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/despre-noi
+              - listitem [ref=e1218]:
+                - link "Termeni si Conditii" [ref=e1219] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/termeni-si-conditii
+              - listitem [ref=e1220]:
+                - link "Politica de Confidentialitate" [ref=e1221] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/politica-de-confidentialitate
+              - listitem [ref=e1222]:
+                - link "Politica de livrare" [ref=e1223] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/info-transport
+              - listitem [ref=e1224]:
+                - link "Contact" [ref=e1225] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/contact
+          - generic [ref=e1227]:
+            - paragraph [ref=e1228]: Clienti 
+            - list [ref=e1229]:
+              - listitem [ref=e1230]:
+                - link "Metode de Plata" [ref=e1231] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/metode-de-plata
+              - listitem [ref=e1232]:
+                - link "Politica de Retur" [ref=e1233] [cursor=pointer]:
+                  - /url: https://www.pokemonia.ro/politica-de-retur
+              - listitem [ref=e1234]:
+                - link "ANPC" [ref=e1235] [cursor=pointer]:
+                  - /url: https://anpc.ro/
+          - generic [ref=e1236]:
+            - paragraph [ref=e1237]: Date comerciale 
+            - list [ref=e1238]:
+              - listitem [ref=e1239]:
+                - strong [ref=e1240]: PREDUNĂ ALBERTO CRISTINEL PFA
+              - listitem [ref=e1241]: F32/468/2018
+              - listitem [ref=e1242]: "39709424"
+              - listitem [ref=e1243]: Seica Mare, nr 499
+              - listitem [ref=e1244]: Sibiu, Sibiu
+              - listitem
+          - generic [ref=e1245]:
+            - generic [ref=e1246]:
+              - img "plationline" [ref=e1247]
+              - link "SAL" [ref=e1248] [cursor=pointer]:
+                - /url: https://reclamatiisal.anpc.ro/
+                - img "SAL" [ref=e1249]
+              - link "SOL" [ref=e1250] [cursor=pointer]:
+                - /url: https://europa.eu/youreurope/business/dealing-with-customers/solving-disputes/alternative-dispute-resolution/index_ro.htm
+                - img "SOL" [ref=e1251]
+            - paragraph [ref=e1252]: ©Copyright PREDUNĂ ALBERTO CRISTINEL PFA 2026 Platforma E-commerce by Gomag
+    - link "scroll top" [ref=e1254] [cursor=pointer]:
+      - /url: "#top"
+      - generic [ref=e1255]: 
+  - generic [ref=e1258]:
+    - paragraph [ref=e1259]:
+      - text: Acest website sau tool-urile externe, folosesc cookie-uri necesare pentru buna lui functionare, in scopurile descrise in politica de cookie-uri. Pentru a afla mai multe despre acestea si despre modul in care poti sa revoci acordul pentru cookie-urile folosite, te rugam sa consulti
+      - link "Politica de Cookies" [ref=e1260] [cursor=pointer]:
+        - /url: https://www.pokemonia.ro/politica-de-cookies
+      - text: . Prin inchiderea acestui mesaj de notificare, derularea paginii, accesarea link-urilor sau continuarea navigarii in website in orice fel, iti dai acceptul pentru folosirea de cookie-uri.
+    - link "Citeste mai mult" [ref=e1261] [cursor=pointer]:
+      - /url: "#"
+    - link "Sunt de acord" [ref=e1263] [cursor=pointer]:
+      - /url: "#"
