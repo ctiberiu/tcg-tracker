@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: scraper
+        working-directory: tcg-tracker/scraper
 
     steps:
       - name: Checkout repository
@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: scraper/package-lock.json
+          cache-dependency-path: tcg-tracker/scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
