@@ -57,8 +57,8 @@ async function fetchStores(supabase) {
 async function scrapePokemonia(page, store) {
   await page.waitForSelector('[data-product-id]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
-        function normalizeImageUrl(src, base) {
+  return page.evaluate((storeName, storeId) => {
+    function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
       if (src.startsWith('data:')) return null;
@@ -66,11 +66,6 @@ async function scrapePokemonia(page, store) {
       if (src.startsWith('/')) return base + src;
       if (src.startsWith('http')) return src;
       return base + '/' + src;
-    }
-    function checkInStock(card, inSel, outSel) {
-      if (outSel && card.querySelector(outSel)) return false;
-      if (inSel) return !!card.querySelector(inSel);
-      return true;
     }
     const baseUrl = window.location.origin;
     const items = document.querySelectorAll('[data-product-id]');
@@ -90,6 +85,13 @@ async function scrapePokemonia(page, store) {
 
       const imgSrc = imgEl?.getAttribute('data-lazy-src') ?? imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
+      // Out-of-stock: Gomag uses .stock-status.unavailable or "Stoc epuizat" text
+      const unavailable = el.querySelector('.stock-status.unavailable');
+      const epuizat = Array.from(el.querySelectorAll('span, div')).some(
+        (s) => s.textContent?.trim() === 'Stoc epuizat' || s.textContent?.trim() === 'Indisponibil'
+      );
+      const in_stock = !unavailable && !epuizat;
+
       return {
         title: titleEl?.textContent?.trim() ?? null,
         price,
@@ -97,10 +99,10 @@ async function scrapePokemonia(page, store) {
         image_url: normalizeImageUrl(imgSrc, baseUrl),
         store_name: storeName,
         store_id: storeId,
-        in_stock: checkInStock(el, inStockSel, outOfStockSel),
+        in_stock,
       };
     }).filter((p) => p.title && p.url);
-  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
+  }, store.name, store.id);
 }
 
 /**
@@ -110,8 +112,8 @@ async function scrapePokemonia(page, store) {
 async function scrapeShopify(page, store) {
   await page.waitForSelector('a[href*="/products/"]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
-        function normalizeImageUrl(src, base) {
+  return page.evaluate((storeName, storeId) => {
+    function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
       if (src.startsWith('data:')) return null;
@@ -119,11 +121,6 @@ async function scrapeShopify(page, store) {
       if (src.startsWith('/')) return base + src;
       if (src.startsWith('http')) return src;
       return base + '/' + src;
-    }
-    function checkInStock(card, inSel, outSel) {
-      if (outSel && card.querySelector(outSel)) return false;
-      if (inSel) return !!card.querySelector(inSel);
-      return true;
     }
     const baseUrl = window.location.origin;
     const cards = document.querySelectorAll('[class*="product-card"], [class*="grid-product"], .product-item, [class*="grid-item"], li');
@@ -164,6 +161,9 @@ async function scrapeShopify(page, store) {
         ?? imgEl?.getAttribute('srcset')?.split(' ')[0]
         ?? null;
 
+      // Out-of-stock: Shopify uses .productitem__badge--soldout badge
+      const soldOut = !!card.querySelector('.productitem__badge--soldout, [class*="sold-out"], [class*="soldout"]');
+
       if (title && url) {
         results.push({
           title,
@@ -172,18 +172,18 @@ async function scrapeShopify(page, store) {
           image_url: normalizeImageUrl(imgSrc, baseUrl),
           store_name: storeName,
           store_id: storeId,
-          in_stock: checkInStock(card, inStockSel, outOfStockSel),
+          in_stock: !soldOut,
         });
       }
     }
 
     return results;
-  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
+  }, store.name, store.id);
 }
 
 /**
  * Hobby-Planet.ro — MerchantPro platform
- * Product cards with links containing /cumpara/ and price in RON.
+ * Product cards: div.product containing grid-image link and product__data section.
  */
 async function scrapeHobbyPlanet(page, store) {
   const noResults = await page.$('text=nu a intors niciun rezultat');
@@ -194,8 +194,8 @@ async function scrapeHobbyPlanet(page, store) {
 
   await page.waitForSelector('a[href*="/cumpara/"]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
-        function normalizeImageUrl(src, base) {
+  return page.evaluate((storeName, storeId) => {
+    function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
       if (src.startsWith('data:')) return null;
@@ -203,115 +203,41 @@ async function scrapeHobbyPlanet(page, store) {
       if (src.startsWith('/')) return base + src;
       if (src.startsWith('http')) return src;
       return base + '/' + src;
-    }
-    function checkInStock(card, inSel, outSel) {
-      if (outSel && card.querySelector(outSel)) return false;
-      if (inSel) return !!card.querySelector(inSel);
-      return true;
     }
     const baseUrl = window.location.origin;
-    const links = document.querySelectorAll('a[href*="/cumpara/"]');
+    // Each product is a div.product containing both image and data sections
+    const cards = document.querySelectorAll('div.product');
     const seen = new Set();
     const results = [];
 
-    for (const link of links) {
+    for (const card of cards) {
+      const link = card.querySelector('a[href*="/cumpara/"]');
+      if (!link) continue;
+
       const url = link.href;
-      if (seen.has(url) || !link.querySelector('img')) continue;
-      seen.add(url);
-
-      const card = link.closest('[class]')?.parentElement;
-      if (!card) continue;
-
-      const titleLink = card.querySelector(`a[href="${link.getAttribute('href')}"]:not(:has(img))`);
-      const title = titleLink?.textContent?.trim() ?? link.getAttribute('aria-label') ?? link.querySelector('img')?.alt ?? null;
-
-      // Price: relaxed regex (no $ anchor)
-      let price = null;
-      const priceEls = card.querySelectorAll('div, span');
-      for (const el of priceEls) {
-        const match = el.textContent?.trim()?.match(/([\d.,]+)\s*RON/i);
-        if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-          break;
-        }
-      }
-
-      // Image: check data-src first for lazy-loaded
-      const imgEl = link.querySelector('img') ?? card.querySelector('img');
-      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
-
-      if (title) {
-        results.push({
-          title,
-          price,
-          url,
-          image_url: normalizeImageUrl(imgSrc, baseUrl),
-          store_name: storeName,
-          store_id: storeId,
-          in_stock: checkInStock(card, inStockSel, outOfStockSel),
-        });
-      }
-    }
-
-    return results;
-  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
-}
-
-/**
- * RegatulJocurilor.ro — PrestaShop platform
- * Uses search results page with product links and price spans.
- */
-async function scrapeRegatulJocurilor(page, store) {
-  try {
-    await page.waitForSelector('a[href*="/ro/acasa/"], a[href*="/ro/"][href*="pokemon"]', { timeout: 15000 });
-  } catch {
-    console.log(`  ${store.name}: No products found or page timed out`);
-    return [];
-  }
-
-  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
-        function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    function checkInStock(card, inSel, outSel) {
-      if (outSel && card.querySelector(outSel)) return false;
-      if (inSel) return !!card.querySelector(inSel);
-      return true;
-    }
-    const baseUrl = 'https://regatuljocurilor.ro';
-    const productContainers = document.querySelectorAll('[class*="product"], article, .ajax_block_product, li[class*="product"]');
-    const results = [];
-    const seen = new Set();
-
-    for (const container of productContainers) {
-      const titleEl = container.querySelector('h1 a, h2 a, h3 a, .product-title a, a[class*="product_name"], a[class*="product-name"]');
-      if (!titleEl) continue;
-
-      const url = titleEl.href?.startsWith('/') ? baseUrl + titleEl.href : titleEl.href;
       if (seen.has(url)) continue;
       seen.add(url);
 
-      const title = titleEl.textContent?.trim();
+      // Title: product__name link (text-only, not the image link)
+      const titleEl = card.querySelector('a.product__name');
+      const title = titleEl?.textContent?.trim() ?? link.getAttribute('title') ?? link.querySelector('img')?.alt ?? null;
 
-      // Price: prefer current/sale price elements
+      // Price: first span inside price-gross container
       let price = null;
-      const priceEl = container.querySelector('.product-price .price, [class*="price"] [class*="current"], [class*="price"], .product-price');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei)/i);
+      const priceContainer = card.querySelector('[class*="price-gross"]');
+      if (priceContainer) {
+        const match = priceContainer.textContent?.trim()?.match(/([\d.,]+)\s*RON/i);
         if (match) {
           price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
         }
       }
 
-      // Image: normalize URLs
-      const imgEl = container.querySelector('img[src*="img/p/"], img[data-src], img');
+      // Image: prefer data-src (lazy) inside the image link, fall back to src
+      const imgEl = link.querySelector('img[data-src]') ?? link.querySelector('img');
       const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
+
+      // In-stock: add-to-cart link present (out-of-stock items have no cart button)
+      const in_stock = !!card.querySelector('a[data-cart-add], a[class*="add-to-cart"]');
 
       if (title && url) {
         results.push({
@@ -321,13 +247,97 @@ async function scrapeRegatulJocurilor(page, store) {
           image_url: normalizeImageUrl(imgSrc, baseUrl),
           store_name: storeName,
           store_id: storeId,
-          in_stock: checkInStock(container, inStockSel, outOfStockSel),
+          in_stock,
         });
       }
     }
 
     return results;
-  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
+  }, store.name, store.id);
+}
+
+/**
+ * RegatulJocurilor.ro — PrestaShop platform
+ * Only scrapes actual search result rows (li.product_item), not featured sections.
+ * Filters to Pokemon TCG products only (excludes backpacks, toys, etc.).
+ */
+async function scrapeRegatulJocurilor(page, store) {
+  try {
+    await page.waitForSelector('li.product_item', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate((storeName, storeId) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    // Only TCG-related products (cards, boosters, decks, accessories)
+    const TCG_KEYWORDS = ['tcg', 'booster', 'deck', 'tin', 'pack', 'binder', 'portfolio', 'trainer', 'elite', 'promo', 'starter', 'collection box', 'battle box', 'ultra pro', 'card'];
+    function isTcgProduct(title) {
+      const t = title.toLowerCase();
+      return TCG_KEYWORDS.some((kw) => t.includes(kw));
+    }
+
+    const baseUrl = 'https://regatuljocurilor.ro';
+    // Use li.product_item to scope to actual search results only
+    const items = document.querySelectorAll('li.product_item');
+    const results = [];
+    const seen = new Set();
+
+    for (const item of items) {
+      const titleEl = item.querySelector('.product-title a, h3 a, h2 a, h1 a');
+      if (!titleEl) continue;
+
+      const title = titleEl.textContent?.trim();
+      if (!title) continue;
+
+      // Skip non-TCG items (backpacks, toys, labyrinth, etc.)
+      if (!isTcgProduct(title)) continue;
+
+      const url = titleEl.href?.startsWith('/') ? baseUrl + titleEl.href : titleEl.href;
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      // Price
+      let price = null;
+      const priceEl = item.querySelector('.product-price .price, [class*="price"] .price, [class*="price"]');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      // Image
+      const imgEl = item.querySelector('img[data-src], img[src*="img/p/"], img');
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
+
+      // In-stock: div.stock text — "Nu este momentan in stoc" = out of stock
+      const stockEl = item.querySelector('div.stock');
+      const stockText = stockEl?.textContent?.trim() ?? '';
+      const in_stock = !stockText.includes('Nu este momentan');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, store.name, store.id);
 }
 
 /**
