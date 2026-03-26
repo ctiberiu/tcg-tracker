@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: '0 */2 * * *'
   workflow_dispatch:
+    inputs:
+      store_id:
+        description: 'Specific store ID to scrape (empty = all enabled stores)'
+        required: false
+        type: string
+      run_id:
+        description: 'Scrape run ID for status tracking'
+        required: false
+        type: string
 
 jobs:
   scrape:
@@ -35,4 +44,6 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
+          SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scraper.js

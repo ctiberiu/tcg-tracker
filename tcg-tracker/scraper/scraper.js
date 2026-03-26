@@ -22,80 +22,111 @@ function initSupabase() {
   return createClient(url, key);
 }
 
-const STORES = [
-  {
-    name: 'Pokemonia',
-    url: 'https://www.pokemonia.ro/produse-1',
-    scrape: scrapePokemonia,
-  },
-  {
-    name: 'RedGoblin',
-    url: 'https://redgoblin.ro/collections/pokemon',
-    scrape: scrapeShopify,
-  },
-  {
-    name: 'TCGarena',
-    url: 'https://tcgarena.ro/collections/joc-de-carti-pokemon-tcg-romania',
-    scrape: scrapeShopify,
-  },
-  {
-    name: 'Hobby-Planet',
-    url: 'https://www.hobby-planet.ro/catalog/q/Pokemon',
-    scrape: scrapeHobbyPlanet,
-  },
-  {
-    name: 'RegatulJocurilor',
-    url: 'https://regatuljocurilor.ro/ro/cautare?controller=search&s=pokemon',
-    scrape: scrapeRegatulJocurilor,
-  },
-];
+/**
+ * Map scraper_type strings to scrape functions.
+ */
+const SCRAPER_MAP = {
+  pokemonia: scrapePokemonia,
+  shopify: scrapeShopify,
+  hobby_planet: scrapeHobbyPlanet,
+  regatul_jocurilor: scrapeRegatulJocurilor,
+};
+
+/**
+ * Fetch stores from Supabase. If SCRAPE_STORE_ID is set, fetch only that store.
+ */
+async function fetchStores(supabase) {
+  const storeId = process.env.SCRAPE_STORE_ID;
+  let query = supabase.from('stores').select('*');
+
+  if (storeId) {
+    query = query.eq('id', storeId);
+  } else {
+    query = query.eq('is_enabled', true);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(`Failed to fetch stores: ${error.message}`);
+  return data;
+}
 
 /**
  * Pokemonia.ro — Gomag platform
  * Products use [data-product-id] containers.
  */
-async function scrapePokemonia(page, storeName) {
+async function scrapePokemonia(page, store) {
   await page.waitForSelector('[data-product-id]', { timeout: 15000 });
 
-  return page.evaluate((store) => {
+  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
+        function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    function checkInStock(card, inSel, outSel) {
+      if (outSel && card.querySelector(outSel)) return false;
+      if (inSel) return !!card.querySelector(inSel);
+      return true;
+    }
+    const baseUrl = window.location.origin;
     const items = document.querySelectorAll('[data-product-id]');
     return Array.from(items).map((el) => {
       const id = el.dataset.productId;
-      const titleEl = el.querySelector(`a[class*="_productUrl_${id}"]`);
-      const priceEl = el.querySelector(`[class*="price"][class*="${id}"]`);
-      const imgEl = el.querySelector('img[data-src], img[src]');
+      const titleEl = el.querySelector(`a[class*="_productUrl_${id}"], a[href*=".html"]`);
+      const priceEl = el.querySelector(`[class*="price"][class*="${id}"], [class*="price"]`);
+      const imgEl = el.querySelector('img[data-lazy-src], img[data-src], img[src]');
       const linkEl = el.querySelector(`a[class*="_productUrl_${id}"], a[href*=".html"]`);
 
       const priceText = priceEl?.textContent?.trim() ?? '';
       const priceMatch = priceText.match(/([\d.,]+)\s*(RON|lei)/i);
       let price = null;
       if (priceMatch) {
-        price = parseFloat(
-          priceMatch[1].replace(/\./g, '').replace(',', '.')
-        );
+        price = parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.'));
       }
+
+      const imgSrc = imgEl?.getAttribute('data-lazy-src') ?? imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
       return {
         title: titleEl?.textContent?.trim() ?? null,
         price,
         url: linkEl?.href ?? null,
-        image_url: imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src') ?? null,
-        store_name: store,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock: checkInStock(el, inStockSel, outOfStockSel),
       };
     }).filter((p) => p.title && p.url);
-  }, storeName);
+  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
 }
 
 /**
  * Shopify stores (RedGoblin, TCGarena)
  * Products have h2 or h3 headings with links to /products/.
  */
-async function scrapeShopify(page, storeName) {
+async function scrapeShopify(page, store) {
   await page.waitForSelector('a[href*="/products/"]', { timeout: 15000 });
 
-  return page.evaluate((store) => {
+  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
+        function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    function checkInStock(card, inSel, outSel) {
+      if (outSel && card.querySelector(outSel)) return false;
+      if (inSel) return !!card.querySelector(inSel);
+      return true;
+    }
     const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('li, [class*="product-card"], [class*="grid-item"]');
+    const cards = document.querySelectorAll('[class*="product-card"], [class*="grid-product"], .product-item, [class*="grid-item"], li');
     const results = [];
     const seen = new Set();
 
@@ -108,15 +139,14 @@ async function scrapeShopify(page, storeName) {
       if (seen.has(url)) continue;
       seen.add(url);
 
-      // Price: look for text matching price pattern
-      const priceEls = card.querySelectorAll('[class*="price"], ins, status ins, span, div');
+      // Price: more permissive regex (no ^ anchor)
+      const priceEls = card.querySelectorAll('[class*="price"], ins, span, div');
       let price = null;
       for (const el of priceEls) {
         const text = el.textContent?.trim();
-        const match = text?.match(/^([\d.,]+)\s*(lei|RON)/i);
+        const match = text?.match(/([\d.,]+)\s*(lei|RON)/i);
         if (match) {
           const raw = match[1];
-          // Handle both "1.200,00" (RO) and "230.00" (EN) formats
           if (raw.includes(',')) {
             price = parseFloat(raw.replace(/\./g, '').replace(',', '.'));
           } else {
@@ -126,34 +156,60 @@ async function scrapeShopify(page, storeName) {
         }
       }
 
-      // Image
-      const imgEl = card.querySelector('img[src*="cdn.shopify"], img[srcset], figure img');
-      const image_url = imgEl?.getAttribute('src') ?? imgEl?.getAttribute('srcset')?.split(' ')[0] ?? null;
+      // Image: expanded selectors, prefer data-srcset/data-src for lazy-loaded
+      const imgEl = card.querySelector('img[data-srcset], img[data-src], img[src*="cdn.shopify"], img[srcset], figure img, img');
+      let imgSrc = imgEl?.getAttribute('data-src')
+        ?? imgEl?.getAttribute('src')
+        ?? imgEl?.getAttribute('data-srcset')?.split(' ')[0]
+        ?? imgEl?.getAttribute('srcset')?.split(' ')[0]
+        ?? null;
 
       if (title && url) {
-        results.push({ title, price, url, image_url, store_name: store });
+        results.push({
+          title,
+          price,
+          url,
+          image_url: normalizeImageUrl(imgSrc, baseUrl),
+          store_name: storeName,
+          store_id: storeId,
+          in_stock: checkInStock(card, inStockSel, outOfStockSel),
+        });
       }
     }
 
     return results;
-  }, storeName);
+  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
 }
 
 /**
  * Hobby-Planet.ro — MerchantPro platform
  * Product cards with links containing /cumpara/ and price in RON.
  */
-async function scrapeHobbyPlanet(page, storeName) {
-  // Check if "no results" message is present
+async function scrapeHobbyPlanet(page, store) {
   const noResults = await page.$('text=nu a intors niciun rezultat');
   if (noResults) {
-    console.log(`  ${storeName}: No Pokemon products found in catalog`);
+    console.log(`  ${store.name}: No Pokemon products found in catalog`);
     return [];
   }
 
   await page.waitForSelector('a[href*="/cumpara/"]', { timeout: 15000 });
 
-  return page.evaluate((store) => {
+  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
+        function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    function checkInStock(card, inSel, outSel) {
+      if (outSel && card.querySelector(outSel)) return false;
+      if (inSel) return !!card.querySelector(inSel);
+      return true;
+    }
+    const baseUrl = window.location.origin;
     const links = document.querySelectorAll('a[href*="/cumpara/"]');
     const seen = new Set();
     const results = [];
@@ -166,50 +222,69 @@ async function scrapeHobbyPlanet(page, storeName) {
       const card = link.closest('[class]')?.parentElement;
       if (!card) continue;
 
-      // Title from the second link with same href (text link)
       const titleLink = card.querySelector(`a[href="${link.getAttribute('href')}"]:not(:has(img))`);
       const title = titleLink?.textContent?.trim() ?? link.getAttribute('aria-label') ?? link.querySelector('img')?.alt ?? null;
 
-      // Price
+      // Price: relaxed regex (no $ anchor)
       let price = null;
       const priceEls = card.querySelectorAll('div, span');
       for (const el of priceEls) {
-        const match = el.textContent?.trim()?.match(/^([\d.,]+)\s*RON$/i);
+        const match = el.textContent?.trim()?.match(/([\d.,]+)\s*RON/i);
         if (match) {
           price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
           break;
         }
       }
 
-      // Image
+      // Image: check data-src first for lazy-loaded
       const imgEl = link.querySelector('img') ?? card.querySelector('img');
-      const image_url = imgEl?.src ?? null;
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
       if (title) {
-        results.push({ title, price, url, image_url, store_name: store });
+        results.push({
+          title,
+          price,
+          url,
+          image_url: normalizeImageUrl(imgSrc, baseUrl),
+          store_name: storeName,
+          store_id: storeId,
+          in_stock: checkInStock(card, inStockSel, outOfStockSel),
+        });
       }
     }
 
     return results;
-  }, storeName);
+  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
 }
 
 /**
  * RegatulJocurilor.ro — PrestaShop platform
  * Uses search results page with product links and price spans.
  */
-async function scrapeRegatulJocurilor(page, storeName) {
-  // Wait for either products or "no results"
+async function scrapeRegatulJocurilor(page, store) {
   try {
     await page.waitForSelector('a[href*="/ro/acasa/"], a[href*="/ro/"][href*="pokemon"]', { timeout: 15000 });
   } catch {
-    console.log(`  ${storeName}: No products found or page timed out`);
+    console.log(`  ${store.name}: No products found or page timed out`);
     return [];
   }
 
-  return page.evaluate((store) => {
+  return page.evaluate((storeName, storeId, inStockSel, outOfStockSel) => {
+        function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    function checkInStock(card, inSel, outSel) {
+      if (outSel && card.querySelector(outSel)) return false;
+      if (inSel) return !!card.querySelector(inSel);
+      return true;
+    }
     const baseUrl = 'https://regatuljocurilor.ro';
-    // PrestaShop search results: product items with title links and price
     const productContainers = document.querySelectorAll('[class*="product"], article, .ajax_block_product, li[class*="product"]');
     const results = [];
     const seen = new Set();
@@ -224,9 +299,9 @@ async function scrapeRegatulJocurilor(page, storeName) {
 
       const title = titleEl.textContent?.trim();
 
-      // Price
+      // Price: prefer current/sale price elements
       let price = null;
-      const priceEl = container.querySelector('[class*="price"], .product-price');
+      const priceEl = container.querySelector('.product-price .price, [class*="price"] [class*="current"], [class*="price"], .product-price');
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei)/i);
         if (match) {
@@ -234,27 +309,49 @@ async function scrapeRegatulJocurilor(page, storeName) {
         }
       }
 
-      // Image
+      // Image: normalize URLs
       const imgEl = container.querySelector('img[src*="img/p/"], img[data-src], img');
-      const image_url = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src') ?? null;
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
       if (title && url) {
-        results.push({ title, price, url, image_url, store_name: store });
+        results.push({
+          title,
+          price,
+          url,
+          image_url: normalizeImageUrl(imgSrc, baseUrl),
+          store_name: storeName,
+          store_id: storeId,
+          in_stock: checkInStock(container, inStockSel, outOfStockSel),
+        });
       }
     }
 
     return results;
-  }, storeName);
+  }, store.name, store.id, store.in_stock_selector, store.out_of_stock_selector);
 }
 
 /**
- * Main scraper — iterates all stores, collects products, handles errors per store.
+ * Main scraper — fetches stores from DB, iterates, collects products.
  */
 async function scrapeAll() {
+  const supabase = initSupabase();
+  const stores = await fetchStores(supabase);
+
+  if (stores.length === 0) {
+    console.log('No stores to scrape');
+    return [];
+  }
+
   const browser = await chromium.launch({ headless: true });
   const allProducts = [];
 
-  for (const store of STORES) {
+  for (const store of stores) {
+    const scrapeFn = SCRAPER_MAP[store.scraper_type];
+    if (!scrapeFn) {
+      console.error(`  ${store.name}: Unknown scraper type "${store.scraper_type}"`);
+      continue;
+    }
+
     try {
       console.log(`Scraping ${store.name}...`);
       const context = await browser.newContext({
@@ -269,7 +366,7 @@ async function scrapeAll() {
         timeout: 30000,
       });
 
-      const products = await store.scrape(page, store.name);
+      const products = await scrapeFn(page, store);
       allProducts.push(...products);
 
       console.log(`  ${store.name}: ${products.length} products found`);
@@ -286,14 +383,14 @@ async function scrapeAll() {
 }
 
 /**
- * Sync scraped products to Supabase.
- * Checks existing URLs to avoid duplicates, inserts new products.
- * Returns { inserted, skipped, insertedProducts } with full rows for alert use.
+ * Sync scraped products to Supabase using upsert on URL.
+ * Updates price, image_url, in_stock for existing products.
+ * Returns { inserted, updated, insertedProducts } for alert use.
  */
 async function syncToSupabase(products) {
   const supabase = initSupabase();
 
-  // Fetch all existing URLs in one query
+  // Fetch existing URLs to distinguish new vs updated
   const { data: existing, error: fetchError } = await supabase
     .from('products')
     .select('url');
@@ -303,43 +400,57 @@ async function syncToSupabase(products) {
   }
 
   const existingUrls = new Set(existing.map((row) => row.url));
-
-  const newProducts = products.filter((p) => !existingUrls.has(p.url));
   const insertedProducts = [];
-  let skipped = products.length - newProducts.length;
+  let updated = 0;
 
-  if (newProducts.length > 0) {
-    // Insert in batches of 50 to avoid payload limits
-    const BATCH_SIZE = 50;
-    for (let i = 0; i < newProducts.length; i += BATCH_SIZE) {
-      const batch = newProducts.slice(i, i + BATCH_SIZE).map((p) => ({
-        store_name: p.store_name,
-        title: p.title,
-        price: p.price,
-        url: p.url,
-        image_url: p.image_url,
-        is_notified: false,
-      }));
+  // Process in batches of 50
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    const batch = products.slice(i, i + BATCH_SIZE).map((p) => ({
+      store_name: p.store_name,
+      store_id: p.store_id ?? null,
+      title: p.title,
+      price: p.price,
+      url: p.url,
+      image_url: p.image_url,
+      in_stock: p.in_stock ?? true,
+    }));
 
-      const { error: insertError, data } = await supabase
-        .from('products')
-        .insert(batch)
-        .select();
+    const { error: upsertError, data } = await supabase
+      .from('products')
+      .upsert(batch, { onConflict: 'url' })
+      .select();
 
-      if (insertError) {
-        console.error(`  Insert batch error: ${insertError.message}`);
-      } else {
-        insertedProducts.push(...data);
+    if (upsertError) {
+      console.error(`  Upsert batch error: ${upsertError.message}`);
+    } else if (data) {
+      for (const row of data) {
+        if (!existingUrls.has(row.url)) {
+          insertedProducts.push(row);
+        } else {
+          updated++;
+        }
       }
     }
   }
 
-  return { inserted: insertedProducts.length, skipped, insertedProducts };
+  return { inserted: insertedProducts.length, updated, insertedProducts };
+}
+
+/**
+ * Update scrape_run status in Supabase (for manual scraping tracking).
+ */
+async function updateScrapeRun(supabase, runId, updates) {
+  if (!runId) return;
+  const { error } = await supabase
+    .from('scrape_runs')
+    .update(updates)
+    .eq('id', runId);
+  if (error) console.error(`  Failed to update scrape_run: ${error.message}`);
 }
 
 /**
  * Escape HTML special characters to prevent XSS in email templates.
- * Scraped product data is untrusted external input.
  */
 function escapeHtml(s) {
   if (!s) return '';
@@ -390,7 +501,6 @@ async function sendAlerts(insertedProducts) {
   const resend = new Resend(apiKey);
   const supabase = initSupabase();
 
-  // Build batched HTML email body
   const productRows = insertedProducts
     .map(
       (p) =>
@@ -436,7 +546,6 @@ async function sendAlerts(insertedProducts) {
 
   console.log(`  Alert email sent to ${alertTo}`);
 
-  // Mark all alerted products as notified
   const ids = insertedProducts.map((p) => p.id);
   const { error: updateError } = await supabase
     .from('products')
@@ -451,25 +560,40 @@ async function sendAlerts(insertedProducts) {
 }
 
 // Main entry point
-const products = await scrapeAll();
+const supabase = initSupabase();
+const runId = process.env.SCRAPE_RUN_ID;
 
-if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+// Mark scrape run as running
+await updateScrapeRun(supabase, runId, { status: 'running' });
+
+try {
+  const products = await scrapeAll();
+
   console.log('\nSyncing to Supabase...');
-  try {
-    const { inserted, skipped, insertedProducts } = await syncToSupabase(products);
-    console.log(`  Inserted: ${inserted} new products`);
-    console.log(`  Skipped: ${skipped} existing products`);
+  const { inserted, updated, insertedProducts } = await syncToSupabase(products);
+  console.log(`  Inserted: ${inserted} new products`);
+  console.log(`  Updated: ${updated} existing products`);
 
-    if (insertedProducts.length > 0) {
-      console.log('\nSending email alerts...');
-      await sendAlerts(insertedProducts);
-    }
-  } catch (err) {
-    console.error(`  Supabase sync failed: ${err.message}`);
+  // Update scrape run with results
+  await updateScrapeRun(supabase, runId, {
+    status: 'completed',
+    products_found: products.length,
+    products_new: inserted,
+    completed_at: new Date().toISOString(),
+  });
+
+  if (insertedProducts.length > 0) {
+    console.log('\nSending email alerts...');
+    await sendAlerts(insertedProducts);
   }
-} else {
-  console.log('\nSUPABASE_URL/SUPABASE_KEY not set — skipping DB sync');
-  console.log(JSON.stringify(products, null, 2));
+} catch (err) {
+  console.error(`  Scraper failed: ${err.message}`);
+  await updateScrapeRun(supabase, runId, {
+    status: 'failed',
+    error_message: err.message,
+    completed_at: new Date().toISOString(),
+  });
+  process.exit(1);
 }
 
 export { scrapeAll, syncToSupabase, sendAlerts };

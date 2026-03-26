@@ -1,37 +1,103 @@
-import { useAuth } from '../hooks/useAuth'
+import { useState, useMemo } from 'react'
 import { useProducts } from '../hooks/useProducts'
+import { useStores } from '../hooks/useStores'
+import { AppSidebar } from '../components/AppSidebar'
+import type { ProductFilters } from '../hooks/useProducts'
 
 export function DashboardPage() {
-  const { signOut } = useAuth()
-  const { products, loading, loadingMore, hasMore, error, loadMore } = useProducts()
+  const { stores } = useStores()
+
+  // Filter state
+  const [storeFilter, setStoreFilter] = useState('')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [inStockOnly, setInStockOnly] = useState(true)
+
+  const filters = useMemo<ProductFilters>(() => ({
+    store: storeFilter || undefined,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    inStockOnly,
+  }), [storeFilter, minPrice, maxPrice, inStockOnly])
+
+  const { products, loading, loadingMore, hasMore, error, loadMore } = useProducts(filters)
+
+  const clearFilters = () => {
+    setStoreFilter('')
+    setMinPrice('')
+    setMaxPrice('')
+    setInStockOnly(true)
+  }
+
+  const hasActiveFilters = storeFilter || minPrice || maxPrice || !inStockOnly
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="w-[72px] min-h-screen bg-surface-low flex flex-col items-center py-6 gap-2 shrink-0">
-        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-8">
-          <span className="text-primary text-lg font-bold">T</span>
-        </div>
-        <div className="mt-auto">
-          <button
-            onClick={signOut}
-            title="Sign out"
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-high hover:text-error transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
-        </div>
-      </aside>
+      <AppSidebar activePage="dashboard" />
+
+      {/* Main content */}
       <div className="flex-1 p-8">
         <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight mb-8">
           TCG Tracker
         </h1>
-        <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">
+        <h2 className="font-headline text-2xl font-bold text-on-surface mb-4">
           Recently Detected
         </h2>
+
+        {/* Filter bar */}
+        <div className="flex flex-wrap items-end gap-3 mb-6">
+          <div>
+            <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Store</label>
+            <select
+              value={storeFilter}
+              onChange={(e) => setStoreFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-surface-low text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary min-w-[160px]"
+            >
+              <option value="">All stores</option>
+              {stores.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Min Price</label>
+            <input
+              type="number"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              placeholder="0"
+              className="w-24 px-3 py-2 rounded-lg bg-surface-low text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Max Price</label>
+            <input
+              type="number"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              placeholder="9999"
+              className="w-24 px-3 py-2 rounded-lg bg-surface-low text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div className="flex items-center gap-2 pb-0.5">
+            <input
+              type="checkbox"
+              id="inStockOnly"
+              checked={inStockOnly}
+              onChange={(e) => setInStockOnly(e.target.checked)}
+              className="w-4 h-4 accent-primary"
+            />
+            <label htmlFor="inStockOnly" className="text-on-surface text-sm">In stock only</label>
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="px-3 py-2 rounded-lg text-on-surface-variant text-sm hover:bg-surface-high transition-colors"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
 
         {loading && (
           <p className="text-on-surface-variant text-sm">Loading products...</p>
@@ -45,13 +111,13 @@ export function DashboardPage() {
 
         {!loading && !error && products.length === 0 && (
           <p className="text-on-surface-variant text-sm">
-            No products detected yet.
+            No products found.
           </p>
         )}
 
         {!loading && !error && products.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {products.map((product) => (
                 <a
                   key={product.id}
@@ -70,9 +136,14 @@ export function DashboardPage() {
                     </div>
                   )}
                   <div className="p-4">
-                    <p className="text-on-surface-variant text-xs uppercase tracking-wider mb-1">
-                      {product.store_name}
-                    </p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-on-surface-variant text-xs uppercase tracking-wider">
+                        {product.store_name}
+                      </p>
+                      {!product.in_stock && (
+                        <span className="text-error text-xs font-bold">Out of stock</span>
+                      )}
+                    </div>
                     <h3 className="text-on-surface font-headline font-bold text-sm leading-tight mb-2 line-clamp-2">
                       {product.title}
                     </h3>
