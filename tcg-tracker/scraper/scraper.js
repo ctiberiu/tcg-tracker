@@ -57,7 +57,7 @@ async function fetchStores(supabase) {
 async function scrapePokemonia(page, store) {
   await page.waitForSelector('[data-product-id]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId) => {
+  return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -102,7 +102,7 @@ async function scrapePokemonia(page, store) {
         in_stock,
       };
     }).filter((p) => p.title && p.url);
-  }, store.name, store.id);
+  }, { storeName: store.name, storeId: store.id });
 }
 
 /**
@@ -112,7 +112,7 @@ async function scrapePokemonia(page, store) {
 async function scrapeShopify(page, store) {
   await page.waitForSelector('a[href*="/products/"]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId) => {
+  return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -178,7 +178,7 @@ async function scrapeShopify(page, store) {
     }
 
     return results;
-  }, store.name, store.id);
+  }, { storeName: store.name, storeId: store.id });
 }
 
 /**
@@ -194,7 +194,7 @@ async function scrapeHobbyPlanet(page, store) {
 
   await page.waitForSelector('a[href*="/cumpara/"]', { timeout: 15000 });
 
-  return page.evaluate((storeName, storeId) => {
+  return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -253,7 +253,7 @@ async function scrapeHobbyPlanet(page, store) {
     }
 
     return results;
-  }, store.name, store.id);
+  }, { storeName: store.name, storeId: store.id });
 }
 
 /**
@@ -269,7 +269,7 @@ async function scrapeRegatulJocurilor(page, store) {
     return [];
   }
 
-  return page.evaluate((storeName, storeId) => {
+  return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -327,7 +327,7 @@ async function scrapeRegatulJocurilor(page, store) {
     }
 
     return results;
-  }, store.name, store.id);
+  }, { storeName: store.name, storeId: store.id });
 }
 
 /**
