@@ -279,15 +279,8 @@ async function scrapeRegatulJocurilor(page, store) {
       if (src.startsWith('http')) return src;
       return base + '/' + src;
     }
-    // Only TCG-related products (cards, boosters, decks, accessories)
-    const TCG_KEYWORDS = ['tcg', 'booster', 'deck', 'tin', 'pack', 'binder', 'portfolio', 'trainer', 'elite', 'promo', 'starter', 'collection box', 'battle box', 'ultra pro', 'card'];
-    function isTcgProduct(title) {
-      const t = title.toLowerCase();
-      return TCG_KEYWORDS.some((kw) => t.includes(kw));
-    }
-
     const baseUrl = 'https://regatuljocurilor.ro';
-    // Use li.product_item to scope to actual search results only
+    // Use li.product_item to scope to actual search results only (excludes featured sections)
     const items = document.querySelectorAll('li.product_item');
     const results = [];
     const seen = new Set();
@@ -298,9 +291,6 @@ async function scrapeRegatulJocurilor(page, store) {
 
       const title = titleEl.textContent?.trim();
       if (!title) continue;
-
-      // Skip non-TCG items (backpacks, toys, labyrinth, etc.)
-      if (!isTcgProduct(title)) continue;
 
       const url = titleEl.href?.startsWith('/') ? baseUrl + titleEl.href : titleEl.href;
       if (seen.has(url)) continue;
@@ -341,6 +331,33 @@ async function scrapeRegatulJocurilor(page, store) {
 }
 
 /**
+ * Returns true if the product title looks like a Pokemon TCG item.
+ * Excludes merchandise (backpacks, caps, plushies, figures, puzzles, etc.).
+ */
+function isTcgProduct(title) {
+  if (!title) return false;
+  const t = title.toLowerCase();
+
+  // Exclude non-TCG merchandise
+  const NON_TCG = ['backpack', 'rucsac', 'geanta', 'cap', 't-shirt', 'tricou', 'plush',
+    'jucarie', 'toy', 'figure', 'figurine', 'figurina', 'puzzle', 'labyrinth', 'labirint',
+    'bag', 'wallet', 'portofel', 'mug', 'cana', 'poster', 'funko', 'pop!', 'umbrella',
+    'umbrela', 'keychain', 'breloc', 'pin ', 'lanyard', 'notebook', 'caiet', 'pencil',
+    'creion', 'pen ', 'sticker', 'badge', 'insigna', 'hoodie', 'hanorac', 'jacket',
+    'geaca', 'pillow', 'perna', 'blanket', 'patura', 'lamp', 'lampa', 'clock', 'ceas',
+    'water bottle', 'sticla', 'headband', 'bentita', 'socks', 'sosete', 'slippers'];
+  if (NON_TCG.some((kw) => t.includes(kw))) return false;
+
+  // Must contain at least one TCG keyword
+  const TCG_KEYWORDS = ['tcg', 'booster', 'deck', 'tin', ' pack', 'binder', 'portfolio',
+    'trainer box', 'elite trainer', 'etb', 'promo', 'starter', 'theme deck', 'collection box',
+    'battle box', 'ultra pro', 'card', 'playmat', 'sleeve', 'protector', 'deckbox',
+    'deck box', 'prerelease', 'build & battle', 'pokemon go', 'ex box', 'vmax', ' v box',
+    'booster bundle', 'premium collection', 'special collection', 'mini tin'];
+  return TCG_KEYWORDS.some((kw) => t.includes(kw));
+}
+
+/**
  * Main scraper — fetches stores from DB, iterates, collects products.
  */
 async function scrapeAll() {
@@ -376,10 +393,11 @@ async function scrapeAll() {
         timeout: 30000,
       });
 
-      const products = await scrapeFn(page, store);
+      const raw = await scrapeFn(page, store);
+      const products = raw.filter((p) => isTcgProduct(p.title));
       allProducts.push(...products);
 
-      console.log(`  ${store.name}: ${products.length} products found`);
+      console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)`);
       await context.close();
     } catch (err) {
       console.error(`  ${store.name}: ERROR — ${err.message}`);
