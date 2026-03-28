@@ -12,13 +12,15 @@ export function DashboardPage() {
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [inStockOnly, setInStockOnly] = useState(true)
+  const [search, setSearch] = useState('')
 
   const filters = useMemo<ProductFilters>(() => ({
     store: storeFilter || undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-  }), [storeFilter, minPrice, maxPrice, inStockOnly])
+    search: search.trim() || undefined,
+  }), [storeFilter, minPrice, maxPrice, inStockOnly, search])
 
   const { products, loading, loadingMore, hasMore, error, loadMore } = useProducts(filters)
 
@@ -27,9 +29,10 @@ export function DashboardPage() {
     setMinPrice('')
     setMaxPrice('')
     setInStockOnly(true)
+    setSearch('')
   }
 
-  const hasActiveFilters = storeFilter || minPrice || maxPrice || !inStockOnly
+  const hasActiveFilters = storeFilter || minPrice || maxPrice || !inStockOnly || search
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -46,6 +49,16 @@ export function DashboardPage() {
 
         {/* Filter bar */}
         <div className="flex flex-wrap items-end gap-3 mb-6">
+          <div>
+            <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Search</label>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="px-3 py-2 rounded-lg bg-surface-low text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary min-w-[200px]"
+            />
+          </div>
           <div>
             <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Store</label>
             <select

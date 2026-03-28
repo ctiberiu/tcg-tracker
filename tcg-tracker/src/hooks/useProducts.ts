@@ -9,6 +9,7 @@ export interface ProductFilters {
   minPrice?: number
   maxPrice?: number
   inStockOnly?: boolean
+  search?: string
 }
 
 export function useProducts(filters: ProductFilters = {}) {
@@ -40,9 +41,12 @@ export function useProducts(filters: ProductFilters = {}) {
     if (filters.inStockOnly) {
       query = query.eq('in_stock', true)
     }
+    if (filters.search) {
+      query = query.ilike('title', `%${filters.search}%`)
+    }
 
     return query
-  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly])
+  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search])
 
   useEffect(() => {
     // Reset when filters change
