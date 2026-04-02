@@ -117,14 +117,17 @@ async function scrapePokemonia(page, store) {
  * Shopify stores (RedGoblin, TCGarena, Guildhall)
  * Uses the Shopify JSON API (/products.json) for reliable product data and stock status.
  */
-async function scrapeShopify(page, store) {
+async function scrapeShopify(_page, store) {
   const baseUrl = new URL(store.url).origin;
   const jsonUrl = store.url.replace(/\?.*$/, '').replace(/\/$/, '') + '/products.json?limit=250';
 
   try {
-    await page.goto(jsonUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    const bodyText = await page.textContent('body');
-    const data = JSON.parse(bodyText);
+    const res = await fetch(jsonUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TCGTracker/1.0)' },
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
     return data.products.map((product) => ({
       title: product.title,
