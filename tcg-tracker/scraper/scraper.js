@@ -30,6 +30,14 @@ const SCRAPER_MAP = {
   shopify: scrapeShopify,
   hobby_planet: scrapeHobbyPlanet,
   regatul_jocurilor: scrapeRegatulJocurilor,
+  magento: scrapeMagento,
+  krit: scrapeKrit,
+  smyk: scrapeSmyk,
+  ozone: scrapeOzone,
+  woocommerce: scrapeWooCommerce,
+  lumea_jocurilor: scrapeLumeaJocurilor,
+  raijucarii: scrapeRaijucarii,
+  tulli: scrapeTulli,
 };
 
 /**
@@ -71,10 +79,10 @@ async function scrapePokemonia(page, store) {
     const items = document.querySelectorAll('[data-product-id]');
     return Array.from(items).map((el) => {
       const id = el.dataset.productId;
-      const titleEl = el.querySelector(`a[class*="_productUrl_${id}"], a[href*=".html"]`);
+      const titleEl = el.querySelector(`a.title[class*="_productUrl_${id}"], a[class*="_productUrl_${id}"]:not([class*="_productMainUrl_"]), a[href*=".html"]:not([class*="image"])`);
       const priceEl = el.querySelector(`[class*="price"][class*="${id}"], [class*="price"]`);
       const imgEl = el.querySelector('img[data-lazy-src], img[data-src], img[src]');
-      const linkEl = el.querySelector(`a[class*="_productUrl_${id}"], a[href*=".html"]`);
+      const linkEl = titleEl || el.querySelector(`a[href*=".html"]`);
 
       const priceText = priceEl?.textContent?.trim() ?? '';
       const priceMatch = priceText.match(/([\d.,]+)\s*(RON|lei)/i);
@@ -106,79 +114,31 @@ async function scrapePokemonia(page, store) {
 }
 
 /**
- * Shopify stores (RedGoblin, TCGarena)
- * Products have h2 or h3 headings with links to /products/.
+ * Shopify stores (RedGoblin, TCGarena, Guildhall)
+ * Uses the Shopify JSON API (/products.json) for reliable product data and stock status.
  */
 async function scrapeShopify(page, store) {
-  await page.waitForSelector('a[href*="/products/"]', { timeout: 15000 });
+  const baseUrl = new URL(store.url).origin;
+  const jsonUrl = store.url.replace(/\?.*$/, '').replace(/\/$/, '') + '/products.json?limit=250';
 
-  return page.evaluate(({ storeName, storeId }) => {
-    function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('[class*="product-card"], [class*="grid-product"], .product-item, [class*="grid-item"], li');
-    const results = [];
-    const seen = new Set();
+  try {
+    await page.goto(jsonUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    const bodyText = await page.textContent('body');
+    const data = JSON.parse(bodyText);
 
-    for (const card of cards) {
-      const titleEl = card.querySelector('h2 a[href*="/products/"], h3 a[href*="/products/"]');
-      if (!titleEl) continue;
-
-      const title = titleEl.textContent?.trim();
-      const url = titleEl.href?.startsWith('/') ? baseUrl + titleEl.href : titleEl.href;
-      if (seen.has(url)) continue;
-      seen.add(url);
-
-      // Price: more permissive regex (no ^ anchor)
-      const priceEls = card.querySelectorAll('[class*="price"], ins, span, div');
-      let price = null;
-      for (const el of priceEls) {
-        const text = el.textContent?.trim();
-        const match = text?.match(/([\d.,]+)\s*(lei|RON)/i);
-        if (match) {
-          const raw = match[1];
-          if (raw.includes(',')) {
-            price = parseFloat(raw.replace(/\./g, '').replace(',', '.'));
-          } else {
-            price = parseFloat(raw);
-          }
-          break;
-        }
-      }
-
-      // Image: expanded selectors, prefer data-srcset/data-src for lazy-loaded
-      const imgEl = card.querySelector('img[data-srcset], img[data-src], img[src*="cdn.shopify"], img[srcset], figure img, img');
-      let imgSrc = imgEl?.getAttribute('data-src')
-        ?? imgEl?.getAttribute('src')
-        ?? imgEl?.getAttribute('data-srcset')?.split(' ')[0]
-        ?? imgEl?.getAttribute('srcset')?.split(' ')[0]
-        ?? null;
-
-      // Out-of-stock: Shopify uses .productitem__badge--soldout badge
-      const soldOut = !!card.querySelector('.productitem__badge--soldout, [class*="sold-out"], [class*="soldout"]');
-
-      if (title && url) {
-        results.push({
-          title,
-          price,
-          url,
-          image_url: normalizeImageUrl(imgSrc, baseUrl),
-          store_name: storeName,
-          store_id: storeId,
-          in_stock: !soldOut,
-        });
-      }
-    }
-
-    return results;
-  }, { storeName: store.name, storeId: store.id });
+    return data.products.map((product) => ({
+      title: product.title,
+      price: product.variants?.[0]?.price ? parseFloat(product.variants[0].price) : null,
+      url: baseUrl + '/products/' + product.handle,
+      image_url: product.images?.[0]?.src ?? null,
+      store_name: store.name,
+      store_id: store.id,
+      in_stock: product.variants?.some((v) => v.available) ?? false,
+    }));
+  } catch (err) {
+    console.log(`  ${store.name}: Shopify JSON API failed (${err.message})`);
+    return [];
+  }
 }
 
 /**
@@ -331,30 +291,547 @@ async function scrapeRegatulJocurilor(page, store) {
 }
 
 /**
- * Returns true if the product title looks like a Pokemon TCG item.
- * Excludes merchandise (backpacks, caps, plushies, figures, puzzles, etc.).
+ * Magento stores (Noriel, Bookcity, Libhumanitas, Carrefour)
+ * Products use .product-item containers with standard Magento markup.
+ */
+async function scrapeMagento(page, store) {
+  try {
+    await page.waitForSelector('.product-item', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-item');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const titleEl = card.querySelector('h2.product-item-name, .product-item-name, a.product-item-link');
+      const title = titleEl?.textContent?.trim();
+      if (!title) continue;
+
+      const linkEl = card.querySelector('a[href]');
+      const url = linkEl?.href;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      let price = null;
+      const priceEl = card.querySelector('[data-price-type="finalPrice"] .price, .special-price .price, .price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img.product-image-photo, img');
+      const imgSrc = imgEl?.src;
+
+      const stockEl = card.querySelector('.stock, [class*="unavailable"]');
+      const stockText = stockEl?.textContent?.trim() ?? '';
+      const in_stock = !stockText.toLowerCase().includes('epuizat') && !stockText.toLowerCase().includes('indisponibil');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Krit.ro — custom Next.js/React platform
+ * Products use .product cards inside .product-grid-wrapper.
+ */
+async function scrapeKrit(page, store) {
+  try {
+    await page.waitForSelector('.product-grid-wrapper .product', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-grid-wrapper .product');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const link = card.querySelector('a.product-element');
+      if (!link) continue;
+
+      const url = link.href?.startsWith('/') ? baseUrl + link.href : link.href;
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      const title = card.querySelector('.product-title')?.textContent?.trim();
+      if (!title) continue;
+
+      let price = null;
+      const intPart = card.querySelector('.integer-price')?.textContent?.trim();
+      const fracPart = card.querySelector('.fractional-price')?.textContent?.trim();
+      if (intPart) {
+        price = parseFloat(intPart + '.' + (fracPart || '0').replace('.', ''));
+      }
+
+      const imgEl = card.querySelector('img');
+      const imgSrc = imgEl?.src;
+
+      const cardText = card.textContent ?? '';
+      const in_stock = !cardText.includes('Indisponibil') && !cardText.includes('Stoc epuizat');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Smyk.ro — custom React platform
+ * Products use a.complex-product__link-wrapper as card elements.
+ */
+async function scrapeSmyk(page, store) {
+  try {
+    await page.waitForSelector('a.complex-product__link-wrapper', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('a.complex-product__link-wrapper');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const title = card.querySelector('.complex-product__name')?.textContent?.trim();
+      if (!title) continue;
+
+      const url = card.href?.startsWith('/') ? baseUrl + card.href : card.href;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      let price = null;
+      const priceEl = card.querySelector('.price--new, .complex-product__price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img[data-testid="image"], img');
+      const imgSrc = imgEl?.src;
+
+      // Smyk search results include both available and unavailable products;
+      // check for unavailability indicators in the card
+      const cardText = card.textContent ?? '';
+      const unavailable = !!card.querySelector('[class*="unavailable"], button[disabled]')
+        || /indisponibil|stoc epuizat|sold\s*out/i.test(cardText);
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock: !unavailable,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Ozone.ro — Magento with FastSimon search overlay
+ * Products use .product-card with schema.org structured data.
+ */
+async function scrapeOzone(page, store) {
+  try {
+    await page.waitForSelector('.product-card', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-card');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const nameMeta = card.querySelector('meta[itemprop="name"]');
+      const urlMeta = card.querySelector('meta[itemprop="url"]');
+      const priceMeta = card.querySelector('meta[itemprop="price"]');
+      const availMeta = card.querySelector('meta[itemprop="availability"]');
+      const imgEl = card.querySelector('img');
+
+      const title = nameMeta?.content || imgEl?.alt;
+      const url = urlMeta?.content || card.querySelector('a[href*="/product"]')?.href;
+      if (!title || !url || seen.has(url)) continue;
+      seen.add(url);
+
+      const price = priceMeta?.content ? parseFloat(priceMeta.content) : null;
+      const imgSrc = imgEl?.src;
+      const in_stock = availMeta?.content?.includes('InStock') ?? true;
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * DexHit.ro — WooCommerce platform
+ * Products use article or div elements with .outofstock class for stock.
+ */
+async function scrapeWooCommerce(page, store) {
+  try {
+    await page.waitForSelector('a[href*="/product/"]', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('article, li.product, .type-product');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const linkEl = card.querySelector('a[href*="/product/"]');
+      if (!linkEl) continue;
+
+      const url = linkEl.href;
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      const titleEl = card.querySelector('.woocommerce-loop-product__title, h2, h3');
+      const title = titleEl?.textContent?.trim();
+      if (!title) continue;
+
+      let price = null;
+      const priceEl = card.querySelector('ins .woocommerce-Price-amount, .price .woocommerce-Price-amount, .price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img');
+      const imgSrc = imgEl?.src;
+
+      const outOfStock = card.classList.contains('outofstock')
+        || card.querySelector('[class*="out-of-stock"]') !== null;
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock: !outOfStock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * LumeaJocurilor.ro — custom platform
+ * Products use .wareItems .item cards with data-id attributes.
+ */
+async function scrapeLumeaJocurilor(page, store) {
+  try {
+    await page.waitForSelector('.wareItems .item', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.wareItems .item');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const titleLink = card.querySelector('a.name');
+      if (!titleLink) continue;
+
+      const title = titleLink.textContent?.trim();
+      const url = titleLink.href?.startsWith('/') ? baseUrl + titleLink.href : titleLink.href;
+      if (!title || !url || seen.has(url)) continue;
+      seen.add(url);
+
+      let price = null;
+      const priceEl = card.querySelector('.price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img.photo, img');
+      const imgSrc = imgEl?.src;
+
+      const stockEl = card.querySelector('.storeInfo');
+      const stockText = stockEl?.textContent?.trim() ?? '';
+      // Default to in-stock if no stock element found; only mark OOS when explicitly stated
+      const in_stock = !stockText || !stockText.includes('Nu este');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Raijucarii.ro — rShop platform
+ * Products use a.products__block__item__link as card elements.
+ */
+async function scrapeRaijucarii(page, store) {
+  try {
+    await page.waitForSelector('.products__block__item', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.products__block__item');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const linkEl = card.querySelector('a.products__block__item__link');
+      if (!linkEl) continue;
+
+      const url = linkEl.href;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      const title = card.querySelector('h2.products__block__item__title, h2')?.textContent?.trim();
+      if (!title) continue;
+
+      let price = null;
+      const priceEl = card.querySelector('.products__block__item__price, [class*="price"]');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img');
+      const imgSrc = imgEl?.src;
+
+      // RaiJucarii listing cards don't show explicit stock status;
+      // check for unavailability flags/badges in the card
+      const cardText = card.textContent ?? '';
+      const unavailable = !!card.querySelector('[class*="unavailable"], [class*="sold-out"]')
+        || /indisponibil|stoc epuizat|vypredané/i.test(cardText);
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock: !unavailable,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Tulli.ro — custom toy store platform
+ * Products use .product-box .item containers.
+ */
+async function scrapeTulli(page, store) {
+  try {
+    await page.waitForSelector('.product-box', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-box');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const titleEl = card.querySelector('a.product-name, h3, .product-name a, a[class*="name"]');
+      if (!titleEl) continue;
+
+      const title = titleEl.textContent?.trim();
+      const linkEl = titleEl.tagName === 'A' ? titleEl : card.querySelector('a[href]');
+      const url = linkEl?.href;
+      if (!title || !url || seen.has(url)) continue;
+      seen.add(url);
+
+      let price = null;
+      const priceEl = card.querySelector('.price, [class*="price"]');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('img[data-src], img');
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.src;
+
+      const stockText = card.textContent ?? '';
+      const in_stock = !stockText.includes('Indisponibil') && !stockText.includes('Stoc epuizat');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Returns true if the product title contains "TCG", "carti", or "cards" (case-insensitive).
+ * Simple keyword filter to keep only relevant trading card game products.
  */
 function isTcgProduct(title) {
   if (!title) return false;
-  const t = title.toLowerCase();
-
-  // Exclude non-TCG merchandise
-  const NON_TCG = ['backpack', 'rucsac', 'geanta', 'cap', 't-shirt', 'tricou', 'plush',
-    'jucarie', 'toy', 'figure', 'figurine', 'figurina', 'puzzle', 'labyrinth', 'labirint',
-    'bag', 'wallet', 'portofel', 'mug', 'cana', 'poster', 'funko', 'pop!', 'umbrella',
-    'umbrela', 'keychain', 'breloc', 'pin ', 'lanyard', 'notebook', 'caiet', 'pencil',
-    'creion', 'pen ', 'sticker', 'badge', 'insigna', 'hoodie', 'hanorac', 'jacket',
-    'geaca', 'pillow', 'perna', 'blanket', 'patura', 'lamp', 'lampa', 'clock', 'ceas',
-    'water bottle', 'sticla', 'headband', 'bentita', 'socks', 'sosete', 'slippers'];
-  if (NON_TCG.some((kw) => t.includes(kw))) return false;
-
-  // Must contain at least one TCG keyword
-  const TCG_KEYWORDS = ['tcg', 'booster', 'deck', 'tin', ' pack', 'binder', 'portfolio',
-    'trainer box', 'elite trainer', 'etb', 'promo', 'starter', 'theme deck', 'collection box',
-    'battle box', 'ultra pro', 'card', 'playmat', 'sleeve', 'protector', 'deckbox',
-    'deck box', 'prerelease', 'build & battle', 'pokemon go', 'ex box', 'vmax', ' v box',
-    'booster bundle', 'premium collection', 'special collection', 'mini tin'];
-  return TCG_KEYWORDS.some((kw) => t.includes(kw));
+  return /tcg|carti|cards/i.test(title);
 }
 
 /**
@@ -389,7 +866,7 @@ async function scrapeAll() {
       const page = await context.newPage();
 
       await page.goto(store.url, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: 'load',
         timeout: 30000,
       });
 

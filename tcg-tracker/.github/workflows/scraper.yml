@@ -4,13 +4,22 @@ on:
   schedule:
     - cron: '0 */2 * * *'
   workflow_dispatch:
+    inputs:
+      store_id:
+        description: 'Specific store ID to scrape (empty = all enabled stores)'
+        required: false
+        type: string
+      run_id:
+        description: 'Scrape run ID for status tracking'
+        required: false
+        type: string
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: scraper
+        working-directory: tcg-tracker/scraper
 
     steps:
       - name: Checkout repository
@@ -21,7 +30,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: scraper/package-lock.json
+          cache-dependency-path: tcg-tracker/scraper/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -35,4 +44,6 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
+          SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scraper.js
