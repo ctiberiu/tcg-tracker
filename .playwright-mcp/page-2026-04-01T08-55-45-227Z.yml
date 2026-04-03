@@ -1,0 +1,328 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - heading "Nav brand" [level=1] [ref=e7]:
+        - link "Nav brand" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - img "Nav brand" [ref=e9]
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - link "my profile" [ref=e14] [cursor=pointer]:
+            - /url: javascript:;
+            - img [ref=e15]
+        - generic [ref=e21]:
+          - button [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+          - generic:
+            - list:
+              - listitem:
+                - link "Română":
+                  - /url: "#"
+        - listitem [ref=e27]:
+          - combobox [ref=e29]:
+            - option "RON" [selected]
+        - listitem [ref=e30]:
+          - generic [ref=e31]:
+            - 'link "Cos Cumparaturi: 0.00 lei 0" [ref=e32] [cursor=pointer]':
+              - /url: javascript:;
+              - generic [ref=e33]:
+                - text: "Cos Cumparaturi:"
+                - generic [ref=e34]: 0.00 lei
+              - img [ref=e35]
+              - generic [ref=e39]: "0"
+            - generic [ref=e40]:
+              - generic [ref=e41]:
+                - heading "My Cart" [level=4] [ref=e42]
+                - generic [ref=e43]: 0 Items
+              - generic [ref=e44]:
+                - img [ref=e45]
+                - heading "Coșul tău este gol" [level=5] [ref=e47]
+              - generic [ref=e51]:
+                - generic [ref=e52]:
+                  - generic [ref=e53]:
+                    - img [ref=e54]
+                    - generic [ref=e66]: Add discount code
+                  - generic [ref=e67]:
+                    - textbox "Promo Code" [ref=e68]
+                    - link "Apply" [ref=e70] [cursor=pointer]:
+                      - /url: /checkout?discount=
+                  - generic [ref=e71]:
+                    - generic [ref=e72]: "Subtotal :"
+                    - generic [ref=e73]: 0.00 RON
+                - generic [ref=e74]:
+                  - button "Finalizează cumpărăturile" [ref=e75] [cursor=pointer]:
+                    - text: Finalizează cumpărăturile
+                    - img [ref=e76]
+                  - link "Vezi coșul de cumpărături" [ref=e80] [cursor=pointer]:
+                    - /url: /cart
+                    - text: Vezi coșul de cumpărături
+                    - img [ref=e81]
+    - generic [ref=e83]:
+      - img [ref=e85]
+      - list [ref=e88]
+  - main [ref=e89]:
+    - generic [ref=e94]:
+      - link "ionicons-v5-a Înapoi acasă" [ref=e95] [cursor=pointer]:
+        - /url: javascript:history.go(-1)
+        - img "ionicons-v5-a" [ref=e97]
+        - text: Înapoi acasă
+      - heading "Cartonase Pokémon TCG (13)" [level=2] [ref=e101]:
+        - text: Cartonase Pokémon TCG
+        - generic [ref=e102]: (13)
+      - paragraph
+      - paragraph [ref=e103]: Booster box, Elite trainer box, Premium Box, Blister
+      - paragraph
+    - generic [ref=e106]:
+      - generic [ref=e107]:
+        - heading "Filters" [level=4] [ref=e110]
+        - list [ref=e113]:
+          - listitem [ref=e114]:
+            - link "Home" [ref=e115] [cursor=pointer]:
+              - /url: javascript:history.go(-1)
+            - text: /
+          - listitem [ref=e116]:
+            - link "Cartonase Pokémon TCG" [ref=e117] [cursor=pointer]:
+              - /url: "#"
+      - generic [ref=e118]:
+        - status [ref=e122]:
+          - paragraph [ref=e123]: 13 produse
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - generic [ref=e127]:
+              - generic [ref=e128]:
+                - link "PKM - Greninja ex/Kingdra ex Special Collection - EN" [ref=e130] [cursor=pointer]:
+                  - /url: /products/pkm-greninja-ex-kingdra-ex-special-collection-en
+                - generic [ref=e131]:
+                  - heading "PKM - Greninja ex/Kingdra ex Special Collection - EN" [level=3] [ref=e133]:
+                    - link "PKM - Greninja ex/Kingdra ex Special Collection - EN" [ref=e134] [cursor=pointer]:
+                      - /url: /products/pkm-greninja-ex-kingdra-ex-special-collection-en
+                  - status [ref=e136]:
+                    - insertion [ref=e137]: 230.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e142]:
+                - generic [ref=e143]: Epuizat
+                - img [ref=e144]
+            - generic [ref=e147]:
+              - generic [ref=e148]:
+                - link "PKM - Snorlax ex/Blissey ex Special Collection - EN" [ref=e150] [cursor=pointer]:
+                  - /url: /products/pkm-snorlax-ex-blissey-ex-special-collection-en
+                - generic [ref=e151]:
+                  - heading "PKM - Snorlax ex/Blissey ex Special Collection - EN" [level=3] [ref=e153]:
+                    - link "PKM - Snorlax ex/Blissey ex Special Collection - EN" [ref=e154] [cursor=pointer]:
+                      - /url: /products/pkm-snorlax-ex-blissey-ex-special-collection-en
+                  - status [ref=e156]:
+                    - insertion [ref=e157]: 230.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e162]:
+                - generic [ref=e163]: Epuizat
+                - img [ref=e164]
+            - generic [ref=e167]:
+              - generic [ref=e168]:
+                - link "PKM - Mega Venusaur ex Premium Collection - EN" [ref=e170] [cursor=pointer]:
+                  - /url: /products/pkm-mega-venusaur-ex-premium-collection-en
+                - generic [ref=e171]:
+                  - heading "PKM - Mega Venusaur ex Premium Collection - EN" [level=3] [ref=e173]:
+                    - link "PKM - Mega Venusaur ex Premium Collection - EN" [ref=e174] [cursor=pointer]:
+                      - /url: /products/pkm-mega-venusaur-ex-premium-collection-en
+                  - status [ref=e176]:
+                    - insertion [ref=e177]: 250.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e182]:
+                - generic [ref=e183]: Epuizat
+                - img [ref=e184]
+            - generic [ref=e187]:
+              - generic [ref=e188]:
+                - 'link "PKM - Mega Battle Deck: Mega Diancie ex - EN" [ref=e190] [cursor=pointer]':
+                  - /url: /products/pkm-mega-battle-deck-mega-gengar-ex-mega-diancie-ex-en
+                - generic [ref=e191]:
+                  - 'heading "PKM - Mega Battle Deck: Mega Diancie ex - EN" [level=3] [ref=e193]':
+                    - 'link "PKM - Mega Battle Deck: Mega Diancie ex - EN" [ref=e194] [cursor=pointer]':
+                      - /url: /products/pkm-mega-battle-deck-mega-gengar-ex-mega-diancie-ex-en
+                  - status [ref=e196]:
+                    - insertion [ref=e197]: 105.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e202]:
+                - generic [ref=e203]: Epuizat
+                - img [ref=e204]
+            - generic [ref=e207]:
+              - generic [ref=e208]:
+                - 'link "Pokémon TCG: Stellar Crown Booster Pack" [ref=e210] [cursor=pointer]':
+                  - /url: /products/pokemon-tcg-twilight-masquerade-booster-pack-copy-1
+                - generic [ref=e211]:
+                  - 'heading "Pokémon TCG: Stellar Crown Booster Pack" [level=3] [ref=e213]':
+                    - 'link "Pokémon TCG: Stellar Crown Booster Pack" [ref=e214] [cursor=pointer]':
+                      - /url: /products/pokemon-tcg-twilight-masquerade-booster-pack-copy-1
+                  - status [ref=e216]:
+                    - insertion [ref=e217]: 24.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e222]:
+                - generic [ref=e223]: Epuizat
+                - img [ref=e224]
+            - generic [ref=e227]:
+              - generic [ref=e228]:
+                - link "Pokémon - Venusaur ex/Blastoise ex Premium Collection - EN" [ref=e230] [cursor=pointer]:
+                  - /url: /products/pokemon-venusaur-ex-blastoise-ex-premium-collection-en
+                - generic [ref=e231]:
+                  - heading "Pokémon - Venusaur ex/Blastoise ex Premium Collection - EN" [level=3] [ref=e233]:
+                    - link "Pokémon - Venusaur ex/Blastoise ex Premium Collection - EN" [ref=e234] [cursor=pointer]:
+                      - /url: /products/pokemon-venusaur-ex-blastoise-ex-premium-collection-en
+                  - status [ref=e236]:
+                    - insertion [ref=e237]: 270.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e242]:
+                - generic [ref=e243]: Epuizat
+                - img [ref=e244]
+            - generic [ref=e247]:
+              - generic [ref=e248]:
+                - link "Pokémon TCG Cynthia’s Garchomp ex Premium Collection" [ref=e250] [cursor=pointer]:
+                  - /url: /products/pokemon-tcg-cynthia-s-garchomp-ex-premium-collection
+                - generic [ref=e251]:
+                  - heading "Pokémon TCG Cynthia’s Garchomp ex Premium Collection" [level=3] [ref=e253]:
+                    - link "Pokémon TCG Cynthia’s Garchomp ex Premium Collection" [ref=e254] [cursor=pointer]:
+                      - /url: /products/pokemon-tcg-cynthia-s-garchomp-ex-premium-collection
+                  - status [ref=e256]:
+                    - insertion [ref=e257]: 235.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e262]:
+                - generic [ref=e263]: Epuizat
+                - img [ref=e264]
+            - generic [ref=e267]:
+              - generic [ref=e268]:
+                - link "Pokémon TCG Journey Together Booster Box" [ref=e270] [cursor=pointer]:
+                  - /url: /products/pokemon-tcg-journey-together-booster-box
+                - generic [ref=e271]:
+                  - heading "Pokémon TCG Journey Together Booster Box" [level=3] [ref=e273]:
+                    - link "Pokémon TCG Journey Together Booster Box" [ref=e274] [cursor=pointer]:
+                      - /url: /products/pokemon-tcg-journey-together-booster-box
+                  - status [ref=e276]:
+                    - insertion [ref=e277]: 795.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e282]:
+                - generic [ref=e283]: Epuizat
+                - img [ref=e284]
+            - generic [ref=e287]:
+              - generic [ref=e288]:
+                - link "Pokémon TCG Surging Sparks Booster Box" [ref=e290] [cursor=pointer]:
+                  - /url: /products/pokemon-tcg-surging-sparks-booster-pack-copy
+                - generic [ref=e291]:
+                  - heading "Pokémon TCG Surging Sparks Booster Box" [level=3] [ref=e293]:
+                    - link "Pokémon TCG Surging Sparks Booster Box" [ref=e294] [cursor=pointer]:
+                      - /url: /products/pokemon-tcg-surging-sparks-booster-pack-copy
+                  - status [ref=e296]:
+                    - insertion [ref=e297]: 820.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e302]:
+                - generic [ref=e303]: Epuizat
+                - img [ref=e304]
+            - generic [ref=e307]:
+              - generic [ref=e308]:
+                - 'link "Pokémon TCG: Charizard ex Special Collection" [ref=e310] [cursor=pointer]':
+                  - /url: /products/pokemon-tcg-charizard-ex-special-collection
+                - generic [ref=e311]:
+                  - 'heading "Pokémon TCG: Charizard ex Special Collection" [level=3] [ref=e313]':
+                    - 'link "Pokémon TCG: Charizard ex Special Collection" [ref=e314] [cursor=pointer]':
+                      - /url: /products/pokemon-tcg-charizard-ex-special-collection
+                  - status [ref=e316]:
+                    - insertion [ref=e317]: 185.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e322]:
+                - generic [ref=e323]: Epuizat
+                - img [ref=e324]
+            - generic [ref=e327]:
+              - generic [ref=e328]:
+                - link "Pokémon TCG White Flare Binder Collection" [ref=e330] [cursor=pointer]:
+                  - /url: /products/pokemon-tcg-white-flare-binder-collection
+                - generic [ref=e331]:
+                  - heading "Pokémon TCG White Flare Binder Collection" [level=3] [ref=e333]:
+                    - link "Pokémon TCG White Flare Binder Collection" [ref=e334] [cursor=pointer]:
+                      - /url: /products/pokemon-tcg-white-flare-binder-collection
+                  - status [ref=e336]:
+                    - insertion [ref=e337]: 205.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e342]:
+                - generic [ref=e343]: Epuizat
+                - img [ref=e344]
+            - generic [ref=e347]:
+              - generic [ref=e348]:
+                - link "Pokémon TCG White Flare Tech Sticker Collection" [ref=e350] [cursor=pointer]:
+                  - /url: /products/pokemon-tcg-white-flare-tech-sticker-collection
+                - generic [ref=e351]:
+                  - heading "Pokémon TCG White Flare Tech Sticker Collection" [level=3] [ref=e353]:
+                    - link "Pokémon TCG White Flare Tech Sticker Collection" [ref=e354] [cursor=pointer]:
+                      - /url: /products/pokemon-tcg-white-flare-tech-sticker-collection
+                  - status [ref=e356]:
+                    - insertion [ref=e357]: 105.00 RON
+                    - deletion
+              - button "Adaugă in coş" [disabled] [ref=e362]:
+                - generic [ref=e363]: Epuizat
+                - img [ref=e364]
+          - navigation "Paginare" [ref=e367]:
+            - list [ref=e368]:
+              - listitem [ref=e369]:
+                - generic "Pagina 1" [ref=e370]: "1"
+              - listitem [ref=e371]:
+                - link "Pagina 2" [ref=e372] [cursor=pointer]:
+                  - /url: /collections/joc-de-carti-pokemon-tcg-romania?page=2
+                  - text: "2"
+              - listitem [ref=e373]:
+                - link "Pagina următoare" [ref=e374] [cursor=pointer]:
+                  - /url: /collections/joc-de-carti-pokemon-tcg-romania?page=2
+                  - img [ref=e375]
+  - contentinfo [ref=e377]:
+    - generic [ref=e379]:
+      - generic [ref=e380]:
+        - generic [ref=e382]:
+          - link "footer logo" [ref=e384] [cursor=pointer]:
+            - /url: /
+            - img "footer logo" [ref=e385]
+          - paragraph [ref=e387]: "Pokémon & alte TCG-uri: One Piece, Digimon, Dragon Ball, YuGiOh, Weiss Schwarz 🏆 Turnee și comunitate pasionată 📍 Bulevardul Libertatii. 4, bloc 117, parter, spatiu comercial 2, sector 4 , Bucuresti, Romania"
+          - list [ref=e389]:
+            - listitem [ref=e390]:
+              - link [ref=e391] [cursor=pointer]:
+                - /url: https://www.youtube.com/c/pokecolectii
+                - img [ref=e392]
+            - listitem [ref=e394]:
+              - link [ref=e395] [cursor=pointer]:
+                - /url: https://www.facebook.com/groups/1015624028921178
+                - img [ref=e396]
+            - listitem [ref=e398]:
+              - link [ref=e399] [cursor=pointer]:
+                - /url: https://www.instagram.com/tcgarenabucharest?igsh=MXFsajlocWMycjRpbg==
+                - img [ref=e400]
+        - generic [ref=e402]:
+          - heading "Politica" [level=2] [ref=e403]
+          - list [ref=e405]:
+            - listitem [ref=e406]:
+              - link "Politica de Confidentialitate" [ref=e407] [cursor=pointer]:
+                - /url: /policies/privacy-policy
+            - listitem [ref=e408]:
+              - link "Termeni si Conditii" [ref=e409] [cursor=pointer]:
+                - /url: /policies/terms-of-service
+            - listitem [ref=e410]:
+              - link "Politica de Rambursare" [ref=e411] [cursor=pointer]:
+                - /url: /policies/refund-policy
+            - listitem [ref=e412]:
+              - link "Politica de Expediere" [ref=e413] [cursor=pointer]:
+                - /url: /policies/shipping-policy
+        - generic [ref=e414]:
+          - heading "ANPC" [level=2] [ref=e415]
+          - list [ref=e417]:
+            - listitem [ref=e418]:
+              - link "Protectia consumatorului - ANPC" [ref=e419] [cursor=pointer]:
+                - /url: https://anpc.ro/
+            - listitem [ref=e420]:
+              - link "Solutionarea Litigiilor SOL" [ref=e421] [cursor=pointer]:
+                - /url: https://ec.europa.eu/consumers/odr/main/index.cfm?event=main.home.chooseLanguage
+        - generic [ref=e423]:
+          - img "NETOPIA Payments" [ref=e425] [cursor=pointer]
+          - link [ref=e426] [cursor=pointer]:
+            - /url: https://anpc.ro/ce-este-sal/
+            - img [ref=e427]
+          - link [ref=e428] [cursor=pointer]:
+            - /url: https://ec.europa.eu/consumers/odr
+            - img [ref=e429]
+      - paragraph [ref=e433]:
+        - text: © 2026,
+        - link "TCG Arena | Magazin Specializat TCG" [ref=e434] [cursor=pointer]:
+          - /url: /
+        - text: ", Susținut de Shopify"

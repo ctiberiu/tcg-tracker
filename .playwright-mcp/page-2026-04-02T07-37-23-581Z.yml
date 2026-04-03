@@ -1,0 +1,500 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - button "Meniu" [ref=e12] [cursor=pointer]:
+            - img [ref=e14]
+          - link "Krit.ro" [ref=e16] [cursor=pointer]:
+            - /url: /
+            - img "Krit.ro" [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e24]:
+            - textbox "Căutare în site" [ref=e25]
+            - img [ref=e28] [cursor=pointer]
+          - generic [ref=e32] [cursor=pointer]:
+            - img [ref=e35]
+            - generic [ref=e38]: Contul meu
+            - img [ref=e41]
+          - generic [ref=e44] [cursor=pointer]:
+            - img [ref=e47]
+            - generic [ref=e49]: Coșul meu
+            - img [ref=e52]
+      - generic [ref=e54]:
+        - img [ref=e55]
+        - generic [ref=e56]:
+          - text: Livrare
+          - strong [ref=e57]: gratuita
+          - text: la comenzi peste 190 Lei
+      - generic [ref=e61]:
+        - link [ref=e63] [cursor=pointer]:
+          - /url: /
+          - img [ref=e65]
+        - generic [ref=e67]:
+          - text: ›
+          - link "Produse" [ref=e68] [cursor=pointer]:
+            - /url: /toate-produsele
+        - generic [ref=e69]:
+          - text: ›
+          - link "Trading Card Games" [ref=e70] [cursor=pointer]:
+            - /url: /categorie/trading-card-games
+        - generic [ref=e71]:
+          - text: ›
+          - generic [ref=e72]: Pokémon
+    - main [ref=e73]:
+      - generic [ref=e76]:
+        - generic [ref=e79]:
+          - link "VEZI TOATE PRODUSELE" [ref=e81] [cursor=pointer]:
+            - /url: /toate-produsele
+            - button "VEZI TOATE PRODUSELE" [ref=e83]
+          - generic [ref=e86]:
+            - generic [ref=e89] [cursor=pointer]: Board Games
+            - generic [ref=e92] [cursor=pointer]: Trading Card Games
+            - generic [ref=e95] [cursor=pointer]: Yu-Gi-Oh!
+            - generic [ref=e98] [cursor=pointer]: Magic The Gathering
+            - generic [ref=e101] [cursor=pointer]: "Riftbound: League of Legends TCG"
+            - generic [ref=e104] [cursor=pointer]: Pokémon
+            - generic [ref=e107] [cursor=pointer]: One Piece
+            - generic [ref=e110] [cursor=pointer]: Flesh and Blood
+            - generic [ref=e113] [cursor=pointer]: Gundam Card Game
+            - generic [ref=e116] [cursor=pointer]: Disney Lorcana
+            - generic [ref=e119] [cursor=pointer]: Digimon Card Game
+            - generic [ref=e122] [cursor=pointer]: Duel Masters OCG
+            - generic [ref=e125] [cursor=pointer]: Star Wars Unlimited
+            - generic [ref=e128] [cursor=pointer]: Other TCGs
+            - generic [ref=e131] [cursor=pointer]: Sleeves
+            - generic [ref=e134] [cursor=pointer]: Deckboxes
+            - generic [ref=e137] [cursor=pointer]: Mats & Binders
+            - generic [ref=e140] [cursor=pointer]: Pen & Paper RPG
+            - generic [ref=e143] [cursor=pointer]: Minis & Figurine
+            - generic [ref=e146] [cursor=pointer]: Merch & Gifts
+            - generic [ref=e149] [cursor=pointer]: Manga
+            - generic [ref=e152] [cursor=pointer]: Vestimentatie
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: Disponibilitate
+              - img [ref=e158] [cursor=pointer]
+            - generic [ref=e161]:
+              - generic [ref=e163] [cursor=pointer]:
+                - checkbox "In Stoc (8)"
+                - text: In Stoc (8)
+              - generic [ref=e166] [cursor=pointer]:
+                - checkbox "Indisponibil (178)"
+                - text: Indisponibil (178)
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e170]: Pret
+              - img [ref=e173] [cursor=pointer]
+            - generic [ref=e176]:
+              - generic [ref=e178] [cursor=pointer]:
+                - checkbox "1 - 50 Lei (42)"
+                - text: 1 - 50 Lei (42)
+              - generic [ref=e181] [cursor=pointer]:
+                - checkbox "51 - 100 Lei (12)"
+                - text: 51 - 100 Lei (12)
+              - generic [ref=e184] [cursor=pointer]:
+                - checkbox "101 - 150 Lei (53)"
+                - text: 101 - 150 Lei (53)
+              - generic [ref=e187] [cursor=pointer]:
+                - checkbox "151 - 200 Lei (17)"
+                - text: 151 - 200 Lei (17)
+              - generic [ref=e190] [cursor=pointer]:
+                - checkbox "201 - 250 Lei (7)"
+                - text: 201 - 250 Lei (7)
+              - generic [ref=e193] [cursor=pointer]:
+                - checkbox "> 250 Lei (55)"
+                - text: "> 250 Lei (55)"
+          - generic [ref=e195]:
+            - generic [ref=e196]:
+              - generic [ref=e197]: Limba
+              - img [ref=e200] [cursor=pointer]
+            - generic [ref=e203]:
+              - generic [ref=e205] [cursor=pointer]:
+                - checkbox "Engleza (72)"
+                - text: Engleza (72)
+              - generic [ref=e208] [cursor=pointer]:
+                - checkbox "Japoneza (34)"
+                - text: Japoneza (34)
+        - generic [ref=e210]:
+          - generic [ref=e214]:
+            - button "Filtre" [ref=e215] [cursor=pointer]:
+              - generic [ref=e216]:
+                - img [ref=e218]
+                - text: Filtre
+            - generic [ref=e224] [cursor=pointer]:
+              - generic [ref=e225]:
+                - generic [ref=e226]: Ultimele adaugate
+                - combobox [ref=e227]
+              - img [ref=e231]
+          - generic [ref=e237]:
+            - generic [ref=e238] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Build & Battle Box Pokémon TCG: Mega Evolution Perfect Order - Build & Battle Box 149 .99 Lei" [ref=e239]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-build-and-battle-box
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Build & Battle Box" [ref=e241]'
+                - generic [ref=e242]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Build & Battle Box" [ref=e243]'
+                  - generic [ref=e245]:
+                    - generic [ref=e246]: "149"
+                    - generic [ref=e247]: ".99"
+                    - generic [ref=e248]: Lei
+              - button "Adauga in Cos In stoc" [ref=e250]:
+                - img [ref=e254]
+                - generic [ref=e256]:
+                  - generic [ref=e257]: Adauga in Cos
+                  - generic [ref=e258]: In stoc
+            - generic [ref=e259] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Sleeved Booster Pokémon TCG: Mega Evolution Perfect Order - Sleeved Booster 25 .00 Lei" [ref=e260]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-sleeved-booster
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Sleeved Booster" [ref=e262]'
+                - generic [ref=e263]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Sleeved Booster" [ref=e264]'
+                  - generic [ref=e266]:
+                    - generic [ref=e267]: "25"
+                    - generic [ref=e268]: ".00"
+                    - generic [ref=e269]: Lei
+              - button "Adauga in Cos In stoc" [ref=e271]:
+                - img [ref=e275]
+                - generic [ref=e277]:
+                  - generic [ref=e278]: Adauga in Cos
+                  - generic [ref=e279]: In stoc
+            - generic [ref=e280] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Checklane Blister Pokémon TCG: Mega Evolution Perfect Order - Checklane Blister 29 .00 Lei" [ref=e281]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-checklane-blister
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Checklane Blister" [ref=e283]'
+                - generic [ref=e284]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Checklane Blister" [ref=e285]'
+                  - generic [ref=e287]:
+                    - generic [ref=e288]: "29"
+                    - generic [ref=e289]: ".00"
+                    - generic [ref=e290]: Lei
+              - button "Adauga in Cos In stoc" [ref=e292]:
+                - img [ref=e296]
+                - generic [ref=e298]:
+                  - generic [ref=e299]: Adauga in Cos
+                  - generic [ref=e300]: In stoc
+            - generic [ref=e301] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V1 Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V1 39 .00 Lei" [ref=e302]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-premium-checklane-blister-v1
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V1" [ref=e304]'
+                - generic [ref=e305]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V1" [ref=e306]'
+                  - generic [ref=e308]:
+                    - generic [ref=e309]: "39"
+                    - generic [ref=e310]: ".00"
+                    - generic [ref=e311]: Lei
+              - button "Adauga in Cos In stoc" [ref=e313]:
+                - img [ref=e317]
+                - generic [ref=e319]:
+                  - generic [ref=e320]: Adauga in Cos
+                  - generic [ref=e321]: In stoc
+            - generic [ref=e322] [cursor=pointer]:
+              - 'link "Pokémon TCG Mega Evolution: Perfect Order Booster Pack Pokémon TCG Mega Evolution: Perfect Order Booster Pack 25 .00 Lei" [ref=e323]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-booster-pack
+                - 'img "Pokémon TCG Mega Evolution: Perfect Order Booster Pack" [ref=e325]'
+                - generic [ref=e326]:
+                  - 'generic "Pokémon TCG Mega Evolution: Perfect Order Booster Pack" [ref=e327]'
+                  - generic [ref=e329]:
+                    - generic [ref=e330]: "25"
+                    - generic [ref=e331]: ".00"
+                    - generic [ref=e332]: Lei
+              - button "Adauga in Cos In stoc" [ref=e334]:
+                - img [ref=e338]
+                - generic [ref=e340]:
+                  - generic [ref=e341]: Adauga in Cos
+                  - generic [ref=e342]: In stoc
+            - generic [ref=e343] [cursor=pointer]:
+              - 'link "Pokémon TCG Mega Evolution: Perfect Order Booster Display (36 packs) Pokémon TCG Mega Evolution: Perfect Order Booster Display (36 packs) 900 .00 Lei" [ref=e344]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-booster-display-36-packs
+                - 'img "Pokémon TCG Mega Evolution: Perfect Order Booster Display (36 packs)" [ref=e346]'
+                - generic [ref=e347]:
+                  - 'generic "Pokémon TCG Mega Evolution: Perfect Order Booster Display (36 packs)" [ref=e348]'
+                  - generic [ref=e350]:
+                    - generic [ref=e351]: "900"
+                    - generic [ref=e352]: ".00"
+                    - generic [ref=e353]: Lei
+              - button "Adauga in Cos In stoc" [ref=e355]:
+                - img [ref=e359]
+                - generic [ref=e361]:
+                  - generic [ref=e362]: Adauga in Cos
+                  - generic [ref=e363]: In stoc
+            - generic [ref=e364] [cursor=pointer]:
+              - link "Pokémon TCG Scarlet & Violet - Journey Together Booster Box (36 packs) Pokémon TCG Scarlet & Violet - Journey Together Booster Box (36 packs) 900 .00 Lei" [ref=e365]:
+                - /url: /produs/pokemon-tcg-scarlet-and-violet-journey-together-booster-box-36-packs
+                - img "Pokémon TCG Scarlet & Violet - Journey Together Booster Box (36 packs)" [ref=e367]
+                - generic [ref=e368]:
+                  - generic "Pokémon TCG Scarlet & Violet - Journey Together Booster Box (36 packs)" [ref=e369]
+                  - generic [ref=e371]:
+                    - generic [ref=e372]: "900"
+                    - generic [ref=e373]: ".00"
+                    - generic [ref=e374]: Lei
+              - button "Adauga in Cos In stoc" [ref=e376]:
+                - img [ref=e380]
+                - generic [ref=e382]:
+                  - generic [ref=e383]: Adauga in Cos
+                  - generic [ref=e384]: In stoc
+            - generic [ref=e385] [cursor=pointer]:
+              - link "Pokémon TCG Scarlet & Violet - Journey Together Booster Pack Pokémon TCG Scarlet & Violet - Journey Together Booster Pack 25 .00 Lei" [ref=e386]:
+                - /url: /produs/pokemon-tcg-scarlet-and-violet-journey-together-booster-pack
+                - img "Pokémon TCG Scarlet & Violet - Journey Together Booster Pack" [ref=e388]
+                - generic [ref=e389]:
+                  - generic "Pokémon TCG Scarlet & Violet - Journey Together Booster Pack" [ref=e390]
+                  - generic [ref=e392]:
+                    - generic [ref=e393]: "25"
+                    - generic [ref=e394]: ".00"
+                    - generic [ref=e395]: Lei
+              - button "Adauga in Cos In stoc" [ref=e397]:
+                - img [ref=e401]
+                - generic [ref=e403]:
+                  - generic [ref=e404]: Adauga in Cos
+                  - generic [ref=e405]: In stoc
+            - generic [ref=e406] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V2 Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V2 39 .00 Lei" [ref=e407]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-premium-checklane-blister-v2
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V2" [ref=e409]'
+                - generic [ref=e410]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Premium Checklane Blister V2" [ref=e411]'
+                  - generic [ref=e413]:
+                    - generic [ref=e414]: "39"
+                    - generic [ref=e415]: ".00"
+                    - generic [ref=e416]: Lei
+              - generic [ref=e418]: Indisponibil
+            - generic [ref=e419] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - 3-Pack Blister Pokémon TCG: Mega Evolution Perfect Order - 3-Pack Blister 79 .00 Lei" [ref=e420]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-3-pack-blister
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - 3-Pack Blister" [ref=e422]'
+                - generic [ref=e423]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - 3-Pack Blister" [ref=e424]'
+                  - generic [ref=e426]:
+                    - generic [ref=e427]: "79"
+                    - generic [ref=e428]: ".00"
+                    - generic [ref=e429]: Lei
+              - generic [ref=e431]: Indisponibil
+            - generic [ref=e432] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Perfect Order - Booster Bundle (6 booster packs) Pokémon TCG: Mega Evolution Perfect Order - Booster Bundle (6 booster packs) 149 .99 Lei" [ref=e433]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-booster-bundle-6-booster-packs
+                - 'img "Pokémon TCG: Mega Evolution Perfect Order - Booster Bundle (6 booster packs)" [ref=e435]'
+                - generic [ref=e436]:
+                  - 'generic "Pokémon TCG: Mega Evolution Perfect Order - Booster Bundle (6 booster packs)" [ref=e437]'
+                  - generic [ref=e439]:
+                    - generic [ref=e440]: "149"
+                    - generic [ref=e441]: ".99"
+                    - generic [ref=e442]: Lei
+              - generic [ref=e444]: Indisponibil
+            - generic [ref=e445] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution Ascended Heroes - First Partner Deluxe Pin Collection Pokémon TCG: Mega Evolution Ascended Heroes - First Partner Deluxe Pin Collection 169 .00 Lei" [ref=e446]':
+                - /url: /produs/pokemon-tcg-mega-evolution-ascended-heroes-first-partner-deluxe-pin-collection
+                - 'img "Pokémon TCG: Mega Evolution Ascended Heroes - First Partner Deluxe Pin Collection" [ref=e448]'
+                - generic [ref=e449]:
+                  - 'generic "Pokémon TCG: Mega Evolution Ascended Heroes - First Partner Deluxe Pin Collection" [ref=e450]'
+                  - generic [ref=e452]:
+                    - generic [ref=e453]: "169"
+                    - generic [ref=e454]: ".00"
+                    - generic [ref=e455]: Lei
+              - generic [ref=e457]: Indisponibil
+            - generic [ref=e458] [cursor=pointer]:
+              - link "Pokémon Spring Tins - Mega Charizard Y Pokémon Spring Tins - Mega Charizard Y 129 .99 Lei" [ref=e459]:
+                - /url: /produs/pokemon-spring-tins-mega-charizard-y
+                - img "Pokémon Spring Tins - Mega Charizard Y" [ref=e461]
+                - generic [ref=e462]:
+                  - generic "Pokémon Spring Tins - Mega Charizard Y" [ref=e463]
+                  - generic [ref=e465]:
+                    - generic [ref=e466]: "129"
+                    - generic [ref=e467]: ".99"
+                    - generic [ref=e468]: Lei
+              - generic [ref=e470]: Indisponibil
+            - generic [ref=e471] [cursor=pointer]:
+              - link "Pokémon Spring Tins - Mega Charizard X Pokémon Spring Tins - Mega Charizard X 129 .99 Lei" [ref=e472]:
+                - /url: /produs/pokemon-spring-tins-mega-charizard-x
+                - img "Pokémon Spring Tins - Mega Charizard X" [ref=e474]
+                - generic [ref=e475]:
+                  - generic "Pokémon Spring Tins - Mega Charizard X" [ref=e476]
+                  - generic [ref=e478]:
+                    - generic [ref=e479]: "129"
+                    - generic [ref=e480]: ".99"
+                    - generic [ref=e481]: Lei
+              - generic [ref=e483]: Indisponibil
+            - generic [ref=e484] [cursor=pointer]:
+              - link "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Display (30 Packs) (JP) Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Display (30 Packs) (JP) 449 .99 Lei" [ref=e485]:
+                - /url: /produs/pokemon-tcg-mega-evolutions-nihil-zero-m3-booster-display-30-packs-jp
+                - img "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Display (30 Packs) (JP)" [ref=e487]
+                - generic [ref=e488]:
+                  - generic "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Display (30 Packs) (JP)" [ref=e489]
+                  - generic [ref=e491]:
+                    - generic [ref=e492]: "449"
+                    - generic [ref=e493]: ".99"
+                    - generic [ref=e494]: Lei
+              - generic [ref=e496]: Indisponibil
+            - generic [ref=e497] [cursor=pointer]:
+              - link "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Pack (JP) Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Pack (JP) 14 .99 Lei" [ref=e498]:
+                - /url: /produs/pokemon-tcg-mega-evolutions-nihil-zero-m3-booster-pack-jp
+                - img "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Pack (JP)" [ref=e500]
+                - generic [ref=e501]:
+                  - generic "Pokémon TCG Mega Evolutions Nihil Zero M3 Booster Pack (JP)" [ref=e502]
+                  - generic [ref=e504]:
+                    - generic [ref=e505]: "14"
+                    - generic [ref=e506]: ".99"
+                    - generic [ref=e507]: Lei
+              - generic [ref=e509]: Indisponibil
+            - generic [ref=e510] [cursor=pointer]:
+              - 'link "Pokémon TCG Mega Evolution: Perfect Order Elite Trainer Box Pokémon TCG Mega Evolution: Perfect Order Elite Trainer Box 299 .00 Lei" [ref=e511]':
+                - /url: /produs/pokemon-tcg-mega-evolution-perfect-order-elite-trainer-box
+                - 'img "Pokémon TCG Mega Evolution: Perfect Order Elite Trainer Box" [ref=e513]'
+                - generic [ref=e514]:
+                  - 'generic "Pokémon TCG Mega Evolution: Perfect Order Elite Trainer Box" [ref=e515]'
+                  - generic [ref=e517]:
+                    - generic [ref=e518]: "299"
+                    - generic [ref=e519]: ".00"
+                    - generic [ref=e520]: Lei
+              - generic [ref=e522]: Indisponibil
+            - generic [ref=e523] [cursor=pointer]:
+              - 'link "Pokemon TCG: Mega Evolution — Ascended Heroes Mini Tin Pokemon TCG: Mega Evolution — Ascended Heroes Mini Tin 69 .00 Lei" [ref=e524]':
+                - /url: /produs/pokemon-tcg-mega-evolution-ascended-heroes-mini-tin
+                - 'img "Pokemon TCG: Mega Evolution — Ascended Heroes Mini Tin" [ref=e526]'
+                - generic [ref=e527]:
+                  - 'generic "Pokemon TCG: Mega Evolution — Ascended Heroes Mini Tin" [ref=e528]'
+                  - generic [ref=e530]:
+                    - generic [ref=e531]: "69"
+                    - generic [ref=e532]: ".00"
+                    - generic [ref=e533]: Lei
+              - generic [ref=e535]: Indisponibil
+            - generic [ref=e536] [cursor=pointer]:
+              - 'link "Pokémon TCG: Pokémon Day 2026 Collection Pokémon TCG: Pokémon Day 2026 Collection 109 .99 Lei" [ref=e537]':
+                - /url: /produs/pokemon-tcg-pokemon-day-2026-collection
+                - 'img "Pokémon TCG: Pokémon Day 2026 Collection" [ref=e539]'
+                - generic [ref=e540]:
+                  - 'generic "Pokémon TCG: Pokémon Day 2026 Collection" [ref=e541]'
+                  - generic [ref=e543]:
+                    - generic [ref=e544]: "109"
+                    - generic [ref=e545]: ".99"
+                    - generic [ref=e546]: Lei
+              - generic [ref=e548]: Indisponibil
+            - generic [ref=e549] [cursor=pointer]:
+              - link "Pokémon TCG - 2025 Poké Ball Tin Pokémon TCG - 2025 Poké Ball Tin 89 .00 Lei" [ref=e550]:
+                - /url: /produs/pokemon-tcg-2025-poke-ball-tin
+                - img "Pokémon TCG - 2025 Poké Ball Tin" [ref=e552]
+                - generic [ref=e553]:
+                  - generic "Pokémon TCG - 2025 Poké Ball Tin" [ref=e554]
+                  - generic [ref=e556]:
+                    - generic [ref=e557]: "89"
+                    - generic [ref=e558]: ".00"
+                    - generic [ref=e559]: Lei
+              - generic [ref=e561]: Indisponibil
+            - generic [ref=e562] [cursor=pointer]:
+              - 'link "Pokemon TCG: Mega Evolution - Mega Kangaskhan Ex Box Pokemon TCG: Mega Evolution - Mega Kangaskhan Ex Box 119 .99 Lei" [ref=e563]':
+                - /url: /produs/pokemon-tcg-mega-evolution-mega-kangaskhan-ex-box
+                - 'img "Pokemon TCG: Mega Evolution - Mega Kangaskhan Ex Box" [ref=e565]'
+                - generic [ref=e566]:
+                  - 'generic "Pokemon TCG: Mega Evolution - Mega Kangaskhan Ex Box" [ref=e567]'
+                  - generic [ref=e569]:
+                    - generic [ref=e570]: "119"
+                    - generic [ref=e571]: ".99"
+                    - generic [ref=e572]: Lei
+              - generic [ref=e574]: Indisponibil
+            - generic [ref=e575] [cursor=pointer]:
+              - link "Pokemon TCG - Mega Venusaur Ex Premium Collection Pokemon TCG - Mega Venusaur Ex Premium Collection 249 .00 Lei" [ref=e576]:
+                - /url: /produs/pokemon-tcg-mega-venusaur-ex-premium-collection
+                - img "Pokemon TCG - Mega Venusaur Ex Premium Collection" [ref=e578]
+                - generic [ref=e579]:
+                  - generic "Pokemon TCG - Mega Venusaur Ex Premium Collection" [ref=e580]
+                  - generic [ref=e582]:
+                    - generic [ref=e583]: "249"
+                    - generic [ref=e584]: ".00"
+                    - generic [ref=e585]: Lei
+              - generic [ref=e587]: Indisponibil
+            - generic [ref=e588] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution - Phantasmal Flames Booster Bundle (6 booster packs) Pokémon TCG: Mega Evolution - Phantasmal Flames Booster Bundle (6 booster packs) 149 .99 Lei" [ref=e589]':
+                - /url: /produs/pokemon-tcg-mega-evolution-phantasmal-flames-booster-bundle-6-booster-packs
+                - 'img "Pokémon TCG: Mega Evolution - Phantasmal Flames Booster Bundle (6 booster packs)" [ref=e591]'
+                - generic [ref=e592]:
+                  - 'generic "Pokémon TCG: Mega Evolution - Phantasmal Flames Booster Bundle (6 booster packs)" [ref=e593]'
+                  - generic [ref=e595]:
+                    - generic [ref=e596]: "149"
+                    - generic [ref=e597]: ".99"
+                    - generic [ref=e598]: Lei
+              - generic [ref=e600]: Indisponibil
+            - generic [ref=e601] [cursor=pointer]:
+              - 'link "Pokémon TCG: Mega Evolution - Phantasmal Flames 3-pack Blister Pokémon TCG: Mega Evolution - Phantasmal Flames 3-pack Blister 79 .00 Lei" [ref=e602]':
+                - /url: /produs/pokemon-tcg-mega-evolution-phantasmal-flames-3-pack-blister
+                - 'img "Pokémon TCG: Mega Evolution - Phantasmal Flames 3-pack Blister" [ref=e604]'
+                - generic [ref=e605]:
+                  - 'generic "Pokémon TCG: Mega Evolution - Phantasmal Flames 3-pack Blister" [ref=e606]'
+                  - generic [ref=e608]:
+                    - generic [ref=e609]: "79"
+                    - generic [ref=e610]: ".00"
+                    - generic [ref=e611]: Lei
+              - generic [ref=e613]: Indisponibil
+          - generic [ref=e615]:
+            - generic [ref=e616]:
+              - strong [ref=e617]: "1"
+              - text: "-"
+              - strong [ref=e618]: "24"
+              - text: din
+              - strong [ref=e619]: "186"
+              - text: de produse
+            - generic [ref=e620]:
+              - img [ref=e623]
+              - generic [ref=e625] [cursor=pointer]: "1"
+              - generic [ref=e626] [cursor=pointer]: "2"
+              - generic [ref=e627] [cursor=pointer]: "3"
+              - generic [ref=e628] [cursor=pointer]: "4"
+              - generic [ref=e629] [cursor=pointer]: "5"
+              - generic [ref=e630]: ...
+              - generic [ref=e631] [cursor=pointer]: "8"
+              - img [ref=e634] [cursor=pointer]
+    - contentinfo [ref=e636]:
+      - generic [ref=e637]:
+        - generic [ref=e641]:
+          - link "Krit.ro" [ref=e643] [cursor=pointer]:
+            - /url: /
+            - img "Krit.ro" [ref=e646]
+          - generic [ref=e647]: Pop culture store & Boardgame Café
+        - generic [ref=e651]:
+          - generic [ref=e652]:
+            - generic [ref=e653]: DATE CONTACT
+            - link "Str. Buna Vestire, Nr. 55, Ploiești" [ref=e655] [cursor=pointer]:
+              - /url: https://www.google.com/maps/place/Krit/@44.9355967,26.036745,17z/data=!3m1!4b1!4m5!3m4!1s0x40b249f150465b7f:0x9a574b4d3a1f31ae!8m2!3d44.9355929!4d26.038939
+              - img [ref=e657]
+              - text: Str. Buna Vestire, Nr. 55, Ploiești
+            - link "0741 578 578" [ref=e661] [cursor=pointer]:
+              - /url: tel:+40741578578
+              - img [ref=e663]
+              - text: 0741 578 578
+            - link "contact@krit.ro" [ref=e666] [cursor=pointer]:
+              - /url: mailto:contact@krit.ro
+              - img [ref=e668]
+              - text: contact@krit.ro
+          - generic [ref=e671]:
+            - generic [ref=e672]: Informații generale
+            - link "Contact" [ref=e673] [cursor=pointer]:
+              - /url: /info/contact
+              - generic [ref=e674]: Contact
+            - link "Livrare și plată" [ref=e675] [cursor=pointer]:
+              - /url: /info/detalii-livrare
+              - generic [ref=e676]: Livrare și plată
+            - link "Politica Retur" [ref=e677] [cursor=pointer]:
+              - /url: /info/politica-retur
+              - generic [ref=e678]: Politica Retur
+          - generic [ref=e679]:
+            - generic [ref=e680]: Informații legale
+            - link "Termeni și Condiții" [ref=e681] [cursor=pointer]:
+              - /url: /info/termeni-si-conditii
+              - generic [ref=e682]: Termeni și Condiții
+            - link "Politica de utilizare Cookie-uri" [ref=e683] [cursor=pointer]:
+              - /url: /info/politica-utilizare-cookies
+              - generic [ref=e684]: Politica de utilizare Cookie-uri
+            - link "Politica de Confidențialitate" [ref=e685] [cursor=pointer]:
+              - /url: /info/politica-confidentialitate
+              - generic [ref=e686]: Politica de Confidențialitate
+            - link "ANPC" [ref=e687] [cursor=pointer]:
+              - /url: https://anpc.ro/
+              - generic [ref=e688]: ANPC
+        - generic [ref=e689]:
+          - img "EuPlatesc" [ref=e691]
+          - generic [ref=e695]: Copyright © KRIT ENTERTAINMENT SRL 2026. Toate drepturile rezervate
+    - generic [ref=e696]:
+      - generic [ref=e697]:
+        - strong [ref=e698]: KRIT.RO
+        - text: folosește cookies pentru a permite buna funcționare a site-ului.
+        - img "Cookie icon" [ref=e699]
+      - button "Accept cookies" [ref=e701] [cursor=pointer]: ACCEPTA
+  - alert [ref=e702]

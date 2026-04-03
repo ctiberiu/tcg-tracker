@@ -1,0 +1,403 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - text: Bookcity utilizează fişiere de tip cookie pentru a personaliza și îmbunătăți experiența ta pe Website-ul nostru. Înainte de a continua navigarea pe Website-ul nostru te rugăm să aloci timpul necesar pentru a citi și înțelege conținutul
+      - link "Politicii de Confidentialitate" [ref=e4] [cursor=pointer]:
+        - /url: /politica-de-confidentialitate
+      - text: .
+    - generic [ref=e5]:
+      - button "Setari" [ref=e6] [cursor=pointer]
+      - button "Agree All" [ref=e7] [cursor=pointer]
+  - generic [ref=e8]:
+    - banner [ref=e9]:
+      - generic [ref=e10]:
+        - link "Nu știi care ar fi cadoul perfect? Mai bine ia un CARD CADOU!" [ref=e13] [cursor=pointer]:
+          - /url: https://www.bookcity.ro/cadouri/vouchere.html
+          - paragraph [ref=e14]: Nu știi care ar fi cadoul perfect? Mai bine ia un CARD CADOU!
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - text: 
+            - link "store logo" [ref=e17] [cursor=pointer]:
+              - /url: https://www.bookcity.ro/
+          - generic [ref=e21]:
+            - generic [ref=e22]:
+              - generic [ref=e23]:
+                - text: 
+                - generic [ref=e24]: Cautare
+              - combobox " Cautare" [ref=e26]: pokemon tcg
+            - generic:
+              - button "Search" [disabled]:
+                - generic: Cautare
+          - generic [ref=e28]:
+            - list [ref=e29]:
+              - listitem [ref=e30]:
+                - link "Favorite" [ref=e31] [cursor=pointer]:
+                  - /url: https://www.bookcity.ro/wishlist/
+                  - text: Favorite
+              - listitem:
+                - link:
+                  - /url: /customer/account/
+              - listitem [ref=e32]:
+                - link "Cont" [ref=e33] [cursor=pointer]:
+                  - /url: https://www.bookcity.ro/customer/account/login/referer/aHR0cHM6Ly93d3cuYm9va2NpdHkucm8vc2VhcmNoL3Bva2Vtb24rdGNn/
+              - text:   *
+            - link "Coș" [ref=e35] [cursor=pointer]:
+              - /url: https://www.bookcity.ro/checkout/cart/
+              - generic [ref=e36]: Coș
+        - tablist [ref=e38]:
+          - tabpanel [ref=e39]:
+            - navigation [ref=e40]:
+              - menu [ref=e41]:
+                - menuitem "Cărți" [ref=e42] [cursor=pointer]: Cărți
+                - menuitem "Cadouri" [ref=e43] [cursor=pointer]: Cadouri
+                - menuitem "Jocuri" [ref=e44] [cursor=pointer]: Jocuri
+                - menuitem "Muzică & Film" [ref=e45] [cursor=pointer]: Muzică & Film
+                - menuitem "Papetărie" [ref=e46] [cursor=pointer]: Papetărie
+    - main [ref=e47]:
+      - list [ref=e50]:
+        - listitem [ref=e51]:
+          - link "Pagina principala" [ref=e52] [cursor=pointer]:
+            - /url: https://www.bookcity.ro/
+          - text: 
+        - listitem [ref=e53]:
+          - strong [ref=e54]: Rezultate pentru 'pokemon tcg'
+      - heading "Rezultate pentru 'pokemon tcg'" [level=1] [ref=e57]
+      - generic [ref=e58]:
+        - generic [ref=e60]:
+          - generic: ( ) ( ) ( ) ( )
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - text:  
+              - generic:
+                - generic [ref=e63]:
+                  - generic:
+                    - generic [ref=e65]: "Sortează după:"
+                    - generic [ref=e66]:
+                      - generic:
+                        - link "Cele mai noi" [ref=e68] [cursor=pointer]:
+                          - /url: "?product_list_order=new"
+                        - link "Preț crescător" [ref=e70] [cursor=pointer]:
+                          - /url: "?product_list_order=price_asc"
+                        - link "Preț descrescător" [ref=e72] [cursor=pointer]:
+                          - /url: "?product_list_order=price_desc"
+                        - link "Nume produs" [ref=e74] [cursor=pointer]:
+                          - /url: "?product_list_order=name"
+                - generic [ref=e75]:
+                  - generic [ref=e76]: "Produse:"
+                  - 'combobox "Produse: Produse:" [ref=e78]':
+                    - option "24"
+                    - option "36" [selected]
+                    - option "48"
+                    - option "72"
+            - list [ref=e80]:
+              - listitem [ref=e81]:
+                - generic [ref=e82]:
+                  - generic [ref=e84]:
+                    - paragraph [ref=e85]:
+                      - img "Livrare gratuita" [ref=e86]
+                    - paragraph [ref=e87]: Gratuit
+                  - 'link "Pokemon TCG: Q1 Deluxe Pin Collection" [ref=e89] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-q1-deluxe-pin-collection.html
+                    - 'img "Pokemon TCG: Q1 Deluxe Pin Collection" [ref=e93]'
+                  - generic [ref=e94]:
+                    - strong [ref=e95]:
+                      - 'link "Pokemon TCG: Q1 Deluxe Pin Collection" [ref=e96] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-q1-deluxe-pin-collection.html
+                    - generic [ref=e97]: "Producator: Blackfire"
+                    - generic [ref=e100]: 194,99 Lei
+                    - generic [ref=e102]:
+                      - button "Adauga in cos" [ref=e105] [cursor=pointer]
+                      - generic [ref=e106]:
+                        - button "Adaugati la Wishlist" [ref=e107] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e108]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e109] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e110]: Adaugati pentru comparare
+              - listitem [ref=e111]:
+                - generic [ref=e112]:
+                  - 'link "Pokemon TCG: SV10 Destined Rivals - Booster" [ref=e114] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-sv10-destined-rivals-booster.html
+                    - 'img "Pokemon TCG: SV10 Destined Rivals - Booster" [ref=e118]'
+                  - generic [ref=e119]:
+                    - strong [ref=e120]:
+                      - 'link "Pokemon TCG: SV10 Destined Rivals - Booster" [ref=e121] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-sv10-destined-rivals-booster.html
+                    - generic [ref=e122]: "Producator: Blackfire"
+                    - generic [ref=e125]: 31,99 Lei
+                    - generic [ref=e127]:
+                      - button "Adauga in cos" [ref=e130] [cursor=pointer]
+                      - generic [ref=e131]:
+                        - button "Adaugati la Wishlist" [ref=e132] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e133]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e134] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e135]: Adaugati pentru comparare
+              - listitem [ref=e136]:
+                - generic [ref=e137]:
+                  - 'link "Pokemon TCG: March 2026 - Expansion Checklane Blister" [ref=e139] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-checklane-blister.html
+                    - 'img "Pokemon TCG: March 2026 - Expansion Checklane Blister" [ref=e143]'
+                  - generic [ref=e144]:
+                    - strong [ref=e145]:
+                      - 'link "Pokemon TCG: March 2026 - Expansion Checklane Blister" [ref=e146] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-checklane-blister.html
+                    - generic [ref=e147]: "Producator: Blackfire"
+                    - generic [ref=e150]: 41,99 Lei
+                    - generic [ref=e152]:
+                      - button "Adauga in cos" [ref=e155] [cursor=pointer]
+                      - generic [ref=e156]:
+                        - button "Adaugati la Wishlist" [ref=e157] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e158]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e159] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e160]: Adaugati pentru comparare
+              - listitem [ref=e161]:
+                - generic [ref=e162]:
+                  - 'link "Pokemon TCG : March 2026 - Expansion Boosters" [ref=e164] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-boosters.html
+                    - 'img "Pokemon TCG : March 2026 - Expansion Boosters" [ref=e168]'
+                  - generic [ref=e169]:
+                    - strong [ref=e170]:
+                      - 'link "Pokemon TCG : March 2026 - Expansion Boosters" [ref=e171] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-boosters.html
+                    - generic [ref=e172]: "Producator: Blackfire"
+                    - generic [ref=e175]: 31,99 Lei
+                    - generic [ref=e177]:
+                      - button "Adauga in cos" [ref=e180] [cursor=pointer]
+                      - generic [ref=e181]:
+                        - button "Adaugati la Wishlist" [ref=e182] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e183]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e184] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e185]: Adaugati pentru comparare
+              - listitem [ref=e186]:
+                - generic [ref=e187]:
+                  - generic [ref=e189]:
+                    - paragraph [ref=e190]:
+                      - img "Livrare gratuita" [ref=e191]
+                    - paragraph [ref=e192]: Gratuit
+                  - 'link "Pokemon TCG: March 2026 - Expansion Elite Trainer Box" [ref=e194] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-elite-trainer-box.html
+                    - 'img "Pokemon TCG: March 2026 - Expansion Elite Trainer Box" [ref=e198]'
+                  - generic [ref=e199]:
+                    - strong [ref=e200]:
+                      - 'link "Pokemon TCG: March 2026 - Expansion Elite Trainer Box" [ref=e201] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-elite-trainer-box.html
+                    - generic [ref=e202]: "Producator: Blackfire"
+                    - generic [ref=e205]: 374,99 Lei
+                    - generic [ref=e207]:
+                      - button "Adauga in cos" [ref=e210] [cursor=pointer]
+                      - generic [ref=e211]:
+                        - button "Adaugati la Wishlist" [ref=e212] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e213]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e214] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e215]: Adaugati pentru comparare
+              - listitem [ref=e216]:
+                - generic [ref=e217]:
+                  - generic [ref=e219]:
+                    - paragraph [ref=e220]:
+                      - img "Livrare gratuita" [ref=e221]
+                    - paragraph [ref=e222]: Gratuit
+                  - 'link "Pokemon TCG: March 2026 Expansion Booster Bundle - INT size" [ref=e224] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-booster-bundle-int-size.html
+                    - 'img "Pokemon TCG: March 2026 Expansion Booster Bundle - INT size" [ref=e228]'
+                  - generic [ref=e229]:
+                    - strong [ref=e230]:
+                      - 'link "Pokemon TCG: March 2026 Expansion Booster Bundle - INT size" [ref=e231] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-booster-bundle-int-size.html
+                    - generic [ref=e232]: "Producator: Blackfire"
+                    - generic [ref=e235]: 189,99 Lei
+                    - generic [ref=e237]:
+                      - button "Adauga in cos" [ref=e240] [cursor=pointer]
+                      - generic [ref=e241]:
+                        - button "Adaugati la Wishlist" [ref=e242] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e243]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e244] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e245]: Adaugati pentru comparare
+              - listitem [ref=e246]:
+                - generic [ref=e247]:
+                  - 'link "Pokemon TCG : March 2026 - Expansion 3 Blister Booster" [ref=e249] [cursor=pointer]':
+                    - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-3-blister-booster.html
+                    - 'img "Pokemon TCG : March 2026 - Expansion 3 Blister Booster" [ref=e253]'
+                  - generic [ref=e254]:
+                    - strong [ref=e255]:
+                      - 'link "Pokemon TCG : March 2026 - Expansion 3 Blister Booster" [ref=e256] [cursor=pointer]':
+                        - /url: https://www.bookcity.ro/pokemon-tcg-march-2026-expansion-3-blister-booster.html
+                    - generic [ref=e257]: "Producator: Blackfire"
+                    - generic [ref=e260]: 114,99 Lei
+                    - generic [ref=e262]:
+                      - button "Adauga in cos" [ref=e265] [cursor=pointer]
+                      - generic [ref=e266]:
+                        - button "Adaugati la Wishlist" [ref=e267] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e268]: Adaugati la Wishlist
+                        - button "Adaugati pentru comparare" [ref=e269] [cursor=pointer]:
+                          - text: 
+                          - generic [ref=e270]: Adaugati pentru comparare
+            - generic [ref=e272]:
+              - text:  
+              - paragraph [ref=e273]: 7 Articole
+        - generic [ref=e278]:
+          - heading "Categorie" [level=3] [ref=e279]
+          - definition [ref=e280]:
+            - generic [ref=e281]:
+              - text: ( )
+              - list [ref=e282]:
+                - listitem [ref=e283]:
+                  - link "Cadouri (7 articole )" [ref=e284] [cursor=pointer]:
+                    - /url: https://www.bookcity.ro/search/pokemon+tcg/category/cadouri
+                    - text: Cadouri
+                    - generic [ref=e285]:
+                      - text: (7
+                      - generic [ref=e286]: articole
+                      - text: )
+                - listitem [ref=e287]:
+                  - link "Jocuri (7 articole )" [ref=e288] [cursor=pointer]:
+                    - /url: https://www.bookcity.ro/search/pokemon+tcg/category/jocuri
+                    - text: Jocuri
+                    - generic [ref=e289]:
+                      - text: (7
+                      - generic [ref=e290]: articole
+                      - text: )
+          - heading "Producator" [level=3] [ref=e291]
+          - definition [ref=e292]:
+            - list [ref=e293]:
+              - listitem [ref=e294]:
+                - link "Blackfire (7 articole )" [ref=e295] [cursor=pointer]:
+                  - /url: https://www.bookcity.ro/search/pokemon+tcg/producator/blackfire
+                  - text: Blackfire
+                  - generic [ref=e296]:
+                    - text: (7
+                    - generic [ref=e297]: articole
+                    - text: )
+          - heading "Pret" [level=3] [ref=e298]
+          - definition [ref=e299]:
+            - generic [ref=e305]: 31 Lei - 375 Lei
+    - contentinfo [ref=e306]:
+      - generic [ref=e307]:
+        - generic [ref=e308]:
+          - strong [ref=e310]:
+            - text: Inscrie-te la Newsletter-ul BOOKCITY
+            - text: Iti vom fi alaturi cu noutati si promotii relevante. Pe cuvant de librar ca nu te vom zapaci cu info inutile.
+          - generic [ref=e312]:
+            - textbox [ref=e316]:
+              - /placeholder: Adauga adresa ta de e-mail
+            - button "Subscribe" [ref=e318] [cursor=pointer]: Abonare
+            - generic [ref=e319]:
+              - text: Adresa ta de e-mail va fi utilizata in conformitate cu
+              - link "Termenii si Conditiile noastre" [ref=e320] [cursor=pointer]:
+                - /url: https://www.bookcity.ro/termeni-si-conditii/
+        - generic [ref=e321]:
+          - generic [ref=e322]:
+            - heading "Descoperă toate categoriile de produse" [level=3] [ref=e323]
+            - generic [ref=e324]:
+              - link [ref=e325] [cursor=pointer]:
+                - /url: /carti.html
+              - link [ref=e326] [cursor=pointer]:
+                - /url: /cadouri.html
+              - link [ref=e327] [cursor=pointer]:
+                - /url: /multimedia.html
+              - link [ref=e328] [cursor=pointer]:
+                - /url: /papetarie.html
+              - link [ref=e329] [cursor=pointer]:
+                - /url: /jocuri.html
+          - generic [ref=e331]:
+            - generic [ref=e333]:
+              - heading "SOCIAL MEDIA" [level=3] [ref=e334]
+              - list [ref=e335]:
+                - listitem [ref=e336]:
+                  - link " Facebook" [ref=e337] [cursor=pointer]:
+                    - /url: https://www.facebook.com/bookcity.ro/
+                - listitem [ref=e338]:
+                  - link " Instagram" [ref=e339] [cursor=pointer]:
+                    - /url: https://www.instagram.com/bookcityro/?hl=ro
+                - listitem [ref=e340]:
+                  - link " Linkedin" [ref=e341] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/company/bookcity/
+                - listitem [ref=e342]:
+                  - link " YouTube" [ref=e343] [cursor=pointer]:
+                    - /url: https://www.youtube.com/channel/UCfD-HA-yeQOX2HWLIDpeNzA
+            - generic [ref=e344]:
+              - heading "LOCAȚIILE NOASTRE" [level=3] [ref=e345]
+              - list [ref=e346]:
+                - listitem [ref=e347]:
+                  - link "Despre noi" [ref=e348] [cursor=pointer]:
+                    - /url: /despre-noi
+                - listitem [ref=e349]:
+                  - link "Brașov" [ref=e350] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e351]:
+                  - link "Iași" [ref=e352] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e353]:
+                  - link "Galați" [ref=e354] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e355]:
+                  - link "Timișoara" [ref=e356] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e357]:
+                  - link "Alba Iulia" [ref=e358] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e359]:
+                  - link "Pitești" [ref=e360] [cursor=pointer]:
+                    - /url: /librarii
+                - listitem [ref=e361]:
+                  - link "Ploiești" [ref=e362] [cursor=pointer]:
+                    - /url: /librarii
+              - heading "UTIL" [level=3] [ref=e363]
+              - list [ref=e364]:
+                - listitem [ref=e365]:
+                  - link "Autori" [ref=e366] [cursor=pointer]:
+                    - /url: /autori
+                - listitem [ref=e367]:
+                  - link "Edituri" [ref=e368] [cursor=pointer]:
+                    - /url: /edituri
+            - generic [ref=e369]:
+              - heading "SUPORT ȘI ASISTENȚĂ" [level=3] [ref=e370]
+              - list [ref=e371]:
+                - listitem [ref=e372]:
+                  - link "Contact" [ref=e373] [cursor=pointer]:
+                    - /url: /contact
+                - listitem [ref=e374]:
+                  - link "Cariere" [ref=e375] [cursor=pointer]:
+                    - /url: /cariere
+                - listitem [ref=e376]:
+                  - link "Livrare" [ref=e377] [cursor=pointer]:
+                    - /url: /informatii-livrare
+                - listitem [ref=e378]:
+                  - link "Întrebări frecvente" [ref=e379] [cursor=pointer]:
+                    - /url: /faq
+                - listitem [ref=e380]:
+                  - link "Politică de retur" [ref=e381] [cursor=pointer]:
+                    - /url: /politica-retur
+                - listitem [ref=e382]:
+                  - link "Termeni și condiții" [ref=e383] [cursor=pointer]:
+                    - /url: /termeni-si-conditii
+                - listitem [ref=e384]:
+                  - link "Regulament concurs" [ref=e385] [cursor=pointer]:
+                    - /url: /termeni-concurs-back2school
+                - listitem [ref=e386]:
+                  - link "Confidențialitate" [ref=e387] [cursor=pointer]:
+                    - /url: /politica-de-confidentialitate
+                - listitem [ref=e388]:
+                  - link "Blog" [ref=e389] [cursor=pointer]:
+                    - /url: https://www.bookcity.ro/blog
+                - listitem [ref=e390]:
+                  - link "Dezabonare SMS" [ref=e391] [cursor=pointer]:
+                    - /url: /dezabonare-sms
+            - generic [ref=e392]:
+              - heading "METODE DE PLATĂ" [level=3] [ref=e393]
+              - link [ref=e396] [cursor=pointer]:
+                - /url: http://www.anpc.gov.ro/
+              - link [ref=e399] [cursor=pointer]:
+                - /url: http://ec.europa.eu/consumers/odr/
+          - generic [ref=e403]: © Bookcity 2023. Conținut cu drepturi protejate.
+      - text: 

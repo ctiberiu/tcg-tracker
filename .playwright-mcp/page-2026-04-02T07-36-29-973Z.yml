@@ -1,0 +1,407 @@
+- generic [ref=e4]:
+  - img [ref=e6]
+  - generic [ref=e8]:
+    - banner [ref=e9]:
+      - generic [ref=e13]:
+        - paragraph [ref=e18]:
+          - link "link":
+            - /url: /
+            - img "SMYK All for kids!" [ref=e19] [cursor=pointer]
+        - generic [ref=e22]:
+          - generic [ref=e24]:
+            - generic "Produse" [ref=e25] [cursor=pointer]:
+              - generic [ref=e26]: Produse
+              - img [ref=e27]
+            - combobox [ref=e29]:
+              - option "Produse" [selected]
+              - option "Mama si copilul"
+              - option "Carti, muzica si filme"
+              - option "Jocuri si jucarii"
+              - option "Haine si incaltaminte"
+              - option "Casa si gradina"
+              - option "Imbracaminte si incaltaminte adulti"
+          - searchbox "Cauta produsul..." [ref=e32]: pokemon tcg
+          - button "Cautare" [ref=e33] [cursor=pointer]:
+            - img [ref=e35]
+            - generic [ref=e37]: Cautare
+      - generic [ref=e43]:
+        - generic "Produse" [ref=e48] [cursor=pointer]:
+          - img [ref=e49]
+          - generic [ref=e51]: Produse
+        - generic [ref=e52]:
+          - button "Promotii" [ref=e55]:
+            - list [ref=e56]:
+              - listitem [ref=e57] [cursor=pointer]:
+                - link "Promotii" [ref=e58]:
+                  - /url: /promotii
+                  - generic [ref=e59]: Promotii
+          - button "Ultimele bucati" [ref=e62]:
+            - list [ref=e63]:
+              - listitem [ref=e64] [cursor=pointer]:
+                - link "Ultimele bucati" [ref=e65]:
+                  - /url: /ultimele-bucati
+                  - generic [ref=e66]: Ultimele bucati
+          - link "Produse vizualizate recent" [ref=e70] [cursor=pointer]:
+            - /url: /contul-tau/vizualizate-recent
+            - generic [ref=e71]: Produse vizualizate recent
+            - img [ref=e72]
+          - button "Urmarire comanda Locatii magazine Contact" [ref=e76]:
+            - list [ref=e77]:
+              - listitem [ref=e78] [cursor=pointer]:
+                - link "Urmarire comanda" [ref=e79]:
+                  - /url: /urmarire-comanda
+                  - generic [ref=e80]: Urmarire comanda
+              - listitem [ref=e81] [cursor=pointer]:
+                - link "Locatii magazine" [ref=e82]:
+                  - /url: /locatii-magazine
+                  - generic [ref=e83]: Locatii magazine
+              - listitem [ref=e84] [cursor=pointer]:
+                - link "Contact" [ref=e85]:
+                  - /url: /suport/contact
+                  - generic [ref=e86]: Contact
+        - generic [ref=e87]:
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]: Ne pasa de confidentialitatea datelor tale
+              - generic [ref=e94]:
+                - generic [ref=e95]:
+                  - text: Site-ul nostru smyk.ro foloseste fisiere cookie si alte tehnologii pentru a-i putea asigura functionarea corespunzatoare, a masura performanta paginii, a-ti furniza continut personalizat si reclame adaptate preferintelor tale.
+                  - text: In aceste scopuri colectam informatii despre tine, comportamentul tau ca utilizator si dispozitivele pe care le utilizezi, inclusiv cele necesare pentru functionarea corespunzatoare a site-ului smyk.ro. Aceste fisiere cookie necesare pot fi dezactivate prin modificarea setarilor browserului, insa acest lucru poate cauza functionarea defectuoasa a site-ului nostru.
+                  - text: In plus, numai cu acordul tau, folosim fisiere cookie suplimentare si conversii extinse cu scopul de a accesa, a analiza si a stoca informatii suplimentare, precum si anumite date cu caracter personal. In plus, distribuim aceste informatii, inclusiv datele tale cu caracter personal tertilor, acestia fiind partenerii nostri de marketing care le pot combina cu alte informatii despre tine, pe care le transmiti lor sau pe care le colecteaza prin intermediul serviciilor lor cu scopul de a-ti furniza reclame personalizate
+                  - link "lista partenerilor de marketing" [ref=e96] [cursor=pointer]:
+                    - /url: https://smyk.ro/politica-cookies
+                  - text: . In cazul in care nu esti de acord, folosim doar fisierele cookie necesare si nu vei primi niciun continut personalizat si nici reclame adaptate preferintelor tale.
+                - generic [ref=e97]:
+                  - text: Iti poti exprima acordul cu privire la plasarea de catre noi a tuturor fisierelor cookie si a conversiilor extinse, facand click pe butonul „
+                  - strong [ref=e98]: Accept toate
+                  - text: ” sau poti selecta fisierele cookie sau conversiile extinse, facand click pe butonul „
+                  - strong [ref=e99]: Gestioneaza acordul
+                  - text: ”.
+                  - text: Exprimarea acordului este voluntara. In orice moment iti poti da consimtamantul, poti refuza acordarea acestuia sau il poti retrage, folosind optiunea
+                  - link "gestioneaza acordul" [ref=e100] [cursor=pointer]:
+                    - /url: https://smyk.ro/suport/modifica-setarile-de-confidentialitate
+                  - text: pe site-ul smyk.ro. Retragerea consimtamantului nu afecteaza legalitatea prelucrarii anterioare a datelor de catre noi.
+                  - text: "Pentru mai multe informatii despre datele prelucrate, consulta politica noastra de confidentialitate:"
+                  - link "Politica de confidentialitate" [ref=e101] [cursor=pointer]:
+                    - /url: https://smyk.ro/politica-de-confidentialitate
+                  - text: .
+            - generic [ref=e102]:
+              - button "Gestioneaza acordul" [ref=e103] [cursor=pointer]:
+                - generic [ref=e104]: Gestioneaza acordul
+              - button "Accept toate" [ref=e105] [cursor=pointer]:
+                - generic [ref=e106]: Accept toate
+          - link "Login" [ref=e110] [cursor=pointer]:
+            - /url: /login
+            - generic [ref=e111]: Login
+            - img [ref=e112]
+          - button "Card de fidelitate" [ref=e116]:
+            - list [ref=e117]:
+              - listitem [ref=e118] [cursor=pointer]:
+                - link "Card de fidelitate" [ref=e119]:
+                  - /url: /card-de-fidelitate
+                  - generic [ref=e120]: Card de fidelitate
+          - link "Cos" [ref=e124] [cursor=pointer]:
+            - /url: /cos
+            - img [ref=e125]
+            - generic [ref=e131]: Cos
+            - img [ref=e132]
+    - main [ref=e134]:
+      - button "Acasa Rezultatele cautarii" [ref=e139]:
+        - list [ref=e140]:
+          - listitem [ref=e141] [cursor=pointer]:
+            - link "Acasa" [ref=e142]:
+              - /url: /
+              - generic [ref=e143]: Acasa
+              - img [ref=e144]
+          - listitem [ref=e146]: Rezultatele cautarii
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - generic [ref=e152]: Filtru
+          - generic [ref=e155]:
+            - heading "Categorii" [level=3] [ref=e156]:
+              - generic [ref=e157]: Categorii
+            - generic [ref=e161]:
+              - link "Jocuri si jucarii" [ref=e163] [cursor=pointer]:
+                - /url: /jocuri-si-jucarii,03.html?limit=84&q=pokemon%20tcg
+                - img [ref=e164]
+                - generic [ref=e166]: Jocuri si jucarii (1)
+              - link "Jocuri" [ref=e170] [cursor=pointer]:
+                - /url: /jocuri-si-jucarii/jocuri,0302.html?limit=84&q=pokemon%20tcg
+                - img [ref=e171]
+                - generic [ref=e173]: Jocuri (1)
+          - generic [ref=e177]:
+            - heading "Varsta" [level=3] [ref=e178] [cursor=pointer]:
+              - generic [ref=e179]: Varsta
+              - img [ref=e180]
+            - generic [ref=e184]:
+              - generic [ref=e186] [cursor=pointer]:
+                - checkbox "name 6-8 ani(1) name name name name name name name name name" [ref=e187]
+                - checkbox "name" [ref=e188]
+                - text: 6-8 ani
+                - generic [ref=e189]: (1)
+              - generic [ref=e191] [cursor=pointer]:
+                - checkbox "name 9-12 ani(1)" [ref=e192]
+                - checkbox "name" [ref=e193]
+                - text: 9-12 ani
+                - generic [ref=e194]: (1)
+              - generic [ref=e196] [cursor=pointer]:
+                - checkbox "name 12-14 ani(1)" [ref=e197]
+                - checkbox "name" [ref=e198]
+                - text: 12-14 ani
+                - generic [ref=e199]: (1)
+              - generic [ref=e201] [cursor=pointer]:
+                - checkbox "name +15 ani(1)" [ref=e202]
+                - checkbox "name" [ref=e203]
+                - text: +15 ani
+                - generic [ref=e204]: (1)
+          - generic [ref=e207]:
+            - heading "Gen" [level=3] [ref=e208] [cursor=pointer]:
+              - generic [ref=e209]: Gen
+              - img [ref=e210]
+            - generic [ref=e214]:
+              - generic [ref=e216] [cursor=pointer]:
+                - checkbox "name Baieti(1)" [ref=e217]
+                - checkbox "name" [ref=e218]
+                - text: Baieti
+                - generic [ref=e219]: (1)
+              - generic [ref=e221] [cursor=pointer]:
+                - checkbox "name Fete(1)" [ref=e222]
+                - checkbox "name" [ref=e223]
+                - text: Fete
+                - generic [ref=e224]: (1)
+          - generic [ref=e228]:
+            - heading "Marca" [level=3] [ref=e229] [cursor=pointer]:
+              - generic [ref=e230]: Marca
+              - img [ref=e231]
+            - generic [ref=e233]:
+              - generic [ref=e234]:
+                - searchbox "Cautati" [ref=e236]
+                - button [ref=e237]:
+                  - img [ref=e239]
+              - generic [ref=e244] [cursor=pointer]:
+                - checkbox "name Pokemon(1)" [ref=e245]
+                - checkbox "name" [ref=e246]
+                - text: Pokemon
+                - generic [ref=e247]: (1)
+          - generic [ref=e250]:
+            - heading "Licenta" [level=3] [ref=e251] [cursor=pointer]:
+              - generic [ref=e252]: Licenta
+              - img [ref=e253]
+            - generic [ref=e255]:
+              - generic [ref=e256]:
+                - searchbox "Cautati" [ref=e258]
+                - button [ref=e259]:
+                  - img [ref=e261]
+              - generic [ref=e266] [cursor=pointer]:
+                - checkbox "name Pokemon(1)" [ref=e267]
+                - checkbox "name" [ref=e268]
+                - text: Pokemon
+                - generic [ref=e269]: (1)
+          - generic [ref=e272]:
+            - heading "Pret" [level=3] [ref=e273] [cursor=pointer]:
+              - generic [ref=e274]: Pret
+              - img [ref=e275]
+            - generic [ref=e277]:
+              - generic [ref=e281] [cursor=pointer]:
+                - checkbox "name 25 - 50 Lei(1)" [ref=e282]
+                - checkbox "name" [ref=e283]
+                - text: 25 - 50 Lei
+                - generic [ref=e284]: (1)
+              - generic [ref=e285]:
+                - textbox "minim" [ref=e287]
+                - text: –
+                - textbox "maxim" [ref=e289]
+                - button "vezi" [ref=e290] [cursor=pointer]:
+                  - generic [ref=e291]: vezi
+          - generic [ref=e296]:
+            - heading "Serie colectie" [level=3] [ref=e297] [cursor=pointer]:
+              - generic [ref=e298]: Serie colectie
+              - img [ref=e299]
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - searchbox "Cauta" [ref=e304]
+                - button [ref=e305]:
+                  - img [ref=e307]
+              - generic [ref=e312] [cursor=pointer]:
+                - checkbox "name Mega Evolution(1)" [ref=e313]
+                - checkbox "name" [ref=e314]
+                - text: Mega Evolution
+                - generic [ref=e315]: (1)
+        - generic [ref=e322]:
+          - heading "Rezultatele cautarii \"pokemon tcg\"" [level=1] [ref=e325]:
+            - generic [ref=e326]: Rezultatele cautarii "pokemon tcg"
+          - generic [ref=e329]:
+            - generic [ref=e330]:
+              - generic [ref=e331]:
+                - text: "Rezultate gasite:"
+                - generic [ref=e332]: 1 produs
+              - generic [ref=e333]:
+                - generic [ref=e334]: "Rezultate pe pagina:"
+                - generic [ref=e336]:
+                  - generic "84" [ref=e337] [cursor=pointer]:
+                    - generic [ref=e338]: "84"
+                    - img [ref=e339]
+                  - combobox [ref=e341]:
+                    - option "36"
+                    - option "60"
+                    - option "84" [selected]
+                - generic [ref=e342]: "Sorteaza dupa:"
+                - generic [ref=e344]:
+                  - generic "Popularitate" [ref=e345] [cursor=pointer]:
+                    - generic [ref=e346]: Popularitate
+                    - img [ref=e347]
+                  - combobox [ref=e349]:
+                    - option "Relevanta"
+                    - option "Popularitate" [selected]
+                    - option "Denumire A-Z"
+                    - option "Denumire Z-A"
+                    - option "Pret crescator"
+                    - option "Pret descrescator"
+            - generic [ref=e351]:
+              - generic:
+                - button:
+                  - img [ref=e353] [cursor=pointer]
+                  - img [ref=e355] [cursor=pointer]
+              - generic [ref=e357]:
+                - 'link "Pokemon TCG: Mega Evolution, Premium Checklane Blister, Tyranitar/Meowscarada, joc de carti, add-on"':
+                  - /url: /p/pokemon-tcg-mega-evolution-premium-checklane-blister-tyranitarmeowscarada-joc-de-carti-add-on-i8151152
+                  - 'button "Pokemon TCG: Mega Evolution, Premium Checklane Blister, Tyranitar/Meowscarada, joc de carti, add-on" [ref=e358] [cursor=pointer]':
+                    - 'img "Pokemon TCG: Mega Evolution, Premium Checklane Blister, Tyranitar/Meowscarada, joc de carti, add-on" [ref=e359]'
+              - 'link "Pokemon TCG: Mega Evolution, Premium Checklane Blister, Tyranitar/Meowscarada, joc de carti, add-on" [ref=e360] [cursor=pointer]':
+                - /url: /p/pokemon-tcg-mega-evolution-premium-checklane-blister-tyranitarmeowscarada-joc-de-carti-add-on-i8151152
+                - generic [ref=e361]:
+                  - generic [ref=e362]: "Pokemon TCG: Mega Evolution, Premium Checklane Blister, Tyranitar/Meowscarada, joc de carti, add-on"
+                  - generic [ref=e365]: 45,99 Lei
+    - contentinfo [ref=e367]:
+      - generic [ref=e369]:
+        - generic [ref=e372]:
+          - generic "Produse" [ref=e373]:
+            - generic [ref=e374]: Produse
+          - button "Imbracaminte, incaltaminte si accesorii Mama si copilul Jucarii si jocuri Promotii Blog smyk.ro" [ref=e375]:
+            - list [ref=e376]:
+              - listitem [ref=e377] [cursor=pointer]:
+                - link "Imbracaminte, incaltaminte si accesorii" [ref=e378]:
+                  - /url: /imbracaminte-incaltaminte-si-accesorii
+                  - generic [ref=e379]: Imbracaminte, incaltaminte si accesorii
+              - listitem [ref=e380] [cursor=pointer]:
+                - link "Mama si copilul" [ref=e381]:
+                  - /url: /mama-si-copilul
+                  - generic [ref=e382]: Mama si copilul
+              - listitem [ref=e383] [cursor=pointer]:
+                - link "Jucarii si jocuri" [ref=e384]:
+                  - /url: /jucarii-si-jocuri
+                  - generic [ref=e385]: Jucarii si jocuri
+              - listitem [ref=e386] [cursor=pointer]:
+                - link "Promotii" [ref=e387]:
+                  - /url: /promotii
+                  - generic [ref=e388]: Promotii
+              - listitem [ref=e389] [cursor=pointer]:
+                - link "Blog smyk.ro" [ref=e390]:
+                  - /url: /blog
+                  - generic [ref=e391]: Blog smyk.ro
+        - generic [ref=e394]:
+          - generic "Informatii clienti" [ref=e395]:
+            - generic [ref=e396]: Informatii clienti
+          - button "Contact Informatii actuale Suport Card de fidelitate Card Cadou Costuri si metode de livrare Schimb si retur Metode de plata Locatii magazine Aplicatia mobila Comunicare Newsletter" [ref=e397]:
+            - list [ref=e398]:
+              - listitem [ref=e399] [cursor=pointer]:
+                - link "Contact" [ref=e400]:
+                  - /url: /suport/contact
+                  - generic [ref=e401]: Contact
+              - listitem [ref=e402] [cursor=pointer]:
+                - link "Informatii actuale" [ref=e403]:
+                  - /url: /suport/informatii-actuale
+                  - generic [ref=e404]: Informatii actuale
+              - listitem [ref=e405] [cursor=pointer]:
+                - link "Suport" [ref=e406]:
+                  - /url: /suport
+                  - generic [ref=e407]: Suport
+              - listitem [ref=e408] [cursor=pointer]:
+                - link "Card de fidelitate" [ref=e409]:
+                  - /url: /card-de-fidelitate
+                  - generic [ref=e410]: Card de fidelitate
+              - listitem [ref=e411] [cursor=pointer]:
+                - link "Card Cadou" [ref=e412]:
+                  - /url: /card-cadou-smyk
+                  - generic [ref=e413]: Card Cadou
+              - listitem [ref=e414] [cursor=pointer]:
+                - link "Costuri si metode de livrare" [ref=e415]:
+                  - /url: /suport/costuri-si-metode-livrare
+                  - generic [ref=e416]: Costuri si metode de livrare
+              - listitem [ref=e417] [cursor=pointer]:
+                - link "Schimb si retur" [ref=e418]:
+                  - /url: /suport/schimb-retur
+                  - generic [ref=e419]: Schimb si retur
+              - listitem [ref=e420] [cursor=pointer]:
+                - link "Metode de plata" [ref=e421]:
+                  - /url: /suport/metode-de-plata
+                  - generic [ref=e422]: Metode de plata
+              - listitem [ref=e423] [cursor=pointer]:
+                - link "Locatii magazine" [ref=e424]:
+                  - /url: /locatii-magazine
+                  - generic [ref=e425]: Locatii magazine
+              - listitem [ref=e426] [cursor=pointer]:
+                - link "Aplicatia mobila" [ref=e427]:
+                  - /url: /aplicatia-mobila
+                  - generic [ref=e428]: Aplicatia mobila
+              - listitem [ref=e429] [cursor=pointer]:
+                - link "Comunicare" [ref=e430]:
+                  - /url: /suport/comunicare
+                  - generic [ref=e431]: Comunicare
+              - listitem [ref=e432] [cursor=pointer]:
+                - link "Newsletter" [ref=e433]:
+                  - /url: /abonarea-la-newsletter
+                  - generic [ref=e434]: Newsletter
+        - generic [ref=e437]:
+          - generic "Informatii legale" [ref=e438]:
+            - generic [ref=e439]: Informatii legale
+          - button "Politica de Confidentialitate Termeni si conditii Politica cookies Modifica setarile de confidentialitate Informatii garantie Informatii produse electronice Protectia consumatorilor – ANPC Despre companie Cariera Actul privind serviciile digitale Nota de informare privind supravegherea video Date de identificare si obiect de activitate" [ref=e440]:
+            - list [ref=e441]:
+              - listitem [ref=e442] [cursor=pointer]:
+                - link "Politica de Confidentialitate" [ref=e443]:
+                  - /url: /politica-de-confidentialitate
+                  - generic [ref=e444]: Politica de Confidentialitate
+              - listitem [ref=e445] [cursor=pointer]:
+                - link "Termeni si conditii" [ref=e446]:
+                  - /url: /termeni-si-conditii
+                  - generic [ref=e447]: Termeni si conditii
+              - listitem [ref=e448] [cursor=pointer]:
+                - link "Politica cookies" [ref=e449]:
+                  - /url: /politica-cookies
+                  - generic [ref=e450]: Politica cookies
+              - listitem [ref=e451] [cursor=pointer]:
+                - link "Modifica setarile de confidentialitate" [ref=e452]:
+                  - /url: /suport/modifica-setarile-de-confidentialitate
+                  - generic [ref=e453]: Modifica setarile de confidentialitate
+              - listitem [ref=e454] [cursor=pointer]:
+                - link "Informatii garantie" [ref=e455]:
+                  - /url: /suport/informatii-garantie
+                  - generic [ref=e456]: Informatii garantie
+              - listitem [ref=e457] [cursor=pointer]:
+                - link "Informatii produse electronice" [ref=e458]:
+                  - /url: /informatii-produse-electronice
+                  - generic [ref=e459]: Informatii produse electronice
+              - listitem [ref=e460] [cursor=pointer]:
+                - link "Protectia consumatorilor – ANPC" [ref=e461]:
+                  - /url: https://anpc.ro/
+                  - generic [ref=e462]: Protectia consumatorilor – ANPC
+              - listitem [ref=e463] [cursor=pointer]:
+                - link "Despre companie" [ref=e464]:
+                  - /url: /despre-companie
+                  - generic [ref=e465]: Despre companie
+              - listitem [ref=e466] [cursor=pointer]:
+                - link "Cariera" [ref=e467]:
+                  - /url: /cariera
+                  - generic [ref=e468]: Cariera
+              - listitem [ref=e469] [cursor=pointer]:
+                - link "Actul privind serviciile digitale" [ref=e470]:
+                  - /url: /actul-privind-serviciile-digitale
+                  - generic [ref=e471]: Actul privind serviciile digitale
+              - listitem [ref=e472] [cursor=pointer]:
+                - link "Nota de informare privind supravegherea video" [ref=e473]:
+                  - /url: /nota-de-informare-privind-supravegherea-video
+                  - generic [ref=e474]: Nota de informare privind supravegherea video
+              - listitem [ref=e475] [cursor=pointer]:
+                - link "Date de identificare si obiect de activitate" [ref=e476]:
+                  - /url: /date-de-identificare-si-obiect-de-activitate
+                  - generic [ref=e477]: Date de identificare si obiect de activitate

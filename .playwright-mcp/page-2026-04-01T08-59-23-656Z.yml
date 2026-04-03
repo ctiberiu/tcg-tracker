@@ -1,0 +1,441 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#content"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e9]:
+        - link "dexHIT – Pokémon TCG Shop" [ref=e14] [cursor=pointer]:
+          - /url: https://dexhit.ro/
+          - img "dexHIT – Pokémon TCG Shop" [ref=e15]
+        - generic [ref=e16]:
+          - button "Search button" [ref=e20] [cursor=pointer]:
+            - generic [ref=e21]: Search
+            - img [ref=e23]
+          - navigation "Primary Site Navigation" [ref=e28]:
+            - list [ref=e30]:
+              - listitem [ref=e31]:
+                - link "Produse" [ref=e32] [cursor=pointer]:
+                  - /url: https://dexhit.ro/home/produse/
+              - listitem [ref=e33]:
+                - link "Despre Noi" [ref=e34] [cursor=pointer]:
+                  - /url: https://dexhit.ro/despre-noi/
+              - listitem [ref=e35]:
+                - link "Contact" [ref=e36] [cursor=pointer]:
+                  - /url: https://dexhit.ro/contact-2/
+              - listitem [ref=e37]:
+                - link "Contul Meu" [ref=e38] [cursor=pointer]:
+                  - /url: https://dexhit.ro/my-account-2/
+          - link "View Shopping Cart, empty" [ref=e42] [cursor=pointer]:
+            - /url: https://dexhit.ro/cart-2/
+            - generic [ref=e44]:
+              - img [ref=e46]
+              - text: "0"
+      - text: "0"
+    - heading "Pokémon TCG EN" [level=1] [ref=e50]
+    - generic [ref=e52]:
+      - generic [ref=e56]:
+        - heading "Produse" [level=2] [ref=e57]
+        - generic [ref=e61]:
+          - generic [ref=e63]:
+            - link "Rip’n’Ship" [ref=e64] [cursor=pointer]:
+              - /url: https://dexhit.ro/product-category/ripnship/
+              - generic [ref=e65]: Rip’n’Ship
+            - generic [ref=e68]: 
+          - generic [ref=e69]:
+            - generic [ref=e70]:
+              - link "Pokémon TCG EN" [ref=e71] [cursor=pointer]:
+                - /url: https://dexhit.ro/product-category/pokemon-tcg-en/
+                - generic [ref=e72]: Pokémon TCG EN
+              - generic [ref=e75]: 
+            - text:               
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - link "Pokémon TCG JP" [ref=e78] [cursor=pointer]:
+                - /url: https://dexhit.ro/product-category/pokemon-tcg-jp/
+                - generic [ref=e79]: Pokémon TCG JP
+              - generic [ref=e82]: 
+            - text: 
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - link "Plușuri și figurine" [ref=e85] [cursor=pointer]:
+                - /url: https://dexhit.ro/product-category/plusuri-si-figurine/
+                - generic [ref=e86]: Plușuri și figurine
+              - generic [ref=e89]: 
+            - text:  
+          - generic [ref=e91]:
+            - link "Accesorii TCG" [ref=e92] [cursor=pointer]:
+              - /url: https://dexhit.ro/product-category/acesorii-tcg/
+              - generic [ref=e93]: Accesorii TCG
+            - generic [ref=e96]: 
+          - generic [ref=e98]:
+            - link "One Piece TCG" [ref=e99] [cursor=pointer]:
+              - /url: https://dexhit.ro/product-category/one-piece-tcg/
+              - generic [ref=e100]: One Piece TCG
+            - generic [ref=e103]: 
+      - main [ref=e105]:
+        - generic [ref=e106]:
+          - alert [ref=e107]: Afișez 1 - 12 din 78 de rezultate
+          - combobox "Comandă magazin" [ref=e109]:
+            - option "Sortare implicită" [selected]
+            - option "Sortează după popularitatea vânzărilor"
+            - option "Sortează după cele mai recente"
+            - 'option "Sortează după preț: de la mic la mare"'
+            - 'option "Sortează după preț: de la mare la mic"'
+          - list [ref=e110]:
+            - listitem [ref=e111]:
+              - link "Pokemon TCG - Pokemon Day 2026 Collection Promoție" [ref=e113] [cursor=pointer]:
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-gastly-copie/
+                - generic [ref=e114]:
+                  - img "Pokemon TCG - Pokemon Day 2026 Collection" [ref=e115]
+                  - generic [ref=e118]:
+                    - generic [ref=e119]: Promoție
+                    - img [ref=e121]
+              - generic [ref=e126]:
+                - link "Pokemon TCG – Pokemon Day 2026 Collection" [ref=e127] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-gastly-copie/
+                  - heading "Pokemon TCG – Pokemon Day 2026 Collection" [level=2] [ref=e128]
+                - generic [ref=e129]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e130]:
+                  - deletion [ref=e131]:
+                    - generic [ref=e133]: 129,99 lei
+                  - generic [ref=e134]: "Prețul inițial a fost: 129,99 lei."
+                  - insertion [ref=e135]:
+                    - generic [ref=e137]: 109,99 lei
+                  - generic [ref=e138]: "Prețul curent este: 109,99 lei."
+                - 'button "Adaugă în coș: “Pokemon TCG - Pokemon Day 2026 Collection”" [ref=e139] [cursor=pointer]': Adaugă în coș
+            - listitem [ref=e141]:
+              - 'link "Pokémon TCG: 1 x Tin 2025 - Team Rocket - Selecție aleatorie Out of stock" [ref=e143] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ex-tins-2025-team-rocket-selectie-aleatorie/
+                - 'img "Pokémon TCG: 1 x Tin 2025 - Team Rocket - Selecție aleatorie" [ref=e144]'
+                - generic [ref=e145]: Out of stock
+              - generic [ref=e146]:
+                - 'link "Pokémon TCG: 1 x Tin 2025 – Team Rocket – Selecție aleatorie" [ref=e147] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ex-tins-2025-team-rocket-selectie-aleatorie/
+                  - 'heading "Pokémon TCG: 1 x Tin 2025 – Team Rocket – Selecție aleatorie" [level=2] [ref=e148]'
+                - generic [ref=e149]: "Pokemon TCG: Destined Rivals"
+                - generic [ref=e150]:
+                  - deletion [ref=e151]:
+                    - generic [ref=e153]: 149,99 lei
+                  - generic [ref=e154]: "Prețul inițial a fost: 149,99 lei."
+                  - insertion [ref=e155]:
+                    - generic [ref=e157]: 139,99 lei
+                  - generic [ref=e158]: "Prețul curent este: 139,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: 1 x Tin 2025 - Team Rocket - Selecție aleatorie”" [ref=e159] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ex-tins-2025-team-rocket-selectie-aleatorie/
+                  - text: Citește mai mult
+            - listitem [ref=e161]:
+              - 'link "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Charmander Out of stock" [ref=e163] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-charmander/
+                - 'img "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Charmander" [ref=e164]'
+                - generic [ref=e165]: Out of stock
+              - generic [ref=e166]:
+                - 'link "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Charmander" [ref=e167] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-charmander/
+                  - 'heading "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Charmander" [level=2] [ref=e168]'
+                - generic [ref=e169]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e170]:
+                  - deletion [ref=e171]:
+                    - generic [ref=e173]: 129,99 lei
+                  - generic [ref=e174]: "Prețul inițial a fost: 129,99 lei."
+                  - insertion [ref=e175]:
+                    - generic [ref=e177]: 109,99 lei
+                  - generic [ref=e178]: "Prețul curent este: 109,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: Ascended Heroes – Tech Sticker Collection Charmander”" [ref=e179] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-charmander/
+                  - text: Citește mai mult
+            - listitem [ref=e181]:
+              - 'link "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Gastly Out of stock" [ref=e183] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-gastly/
+                - 'img "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Gastly" [ref=e184]'
+                - generic [ref=e185]: Out of stock
+              - generic [ref=e186]:
+                - 'link "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Gastly" [ref=e187] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-gastly/
+                  - 'heading "Pokémon TCG: Ascended Heroes – Tech Sticker Collection Gastly" [level=2] [ref=e188]'
+                - generic [ref=e189]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e190]:
+                  - deletion [ref=e191]:
+                    - generic [ref=e193]: 129,99 lei
+                  - generic [ref=e194]: "Prețul inițial a fost: 129,99 lei."
+                  - insertion [ref=e195]:
+                    - generic [ref=e197]: 109,99 lei
+                  - generic [ref=e198]: "Prețul curent este: 109,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: Ascended Heroes – Tech Sticker Collection Gastly”" [ref=e199] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-tech-sticker-collection-gastly/
+                  - text: Citește mai mult
+            - listitem [ref=e201]:
+              - 'link "Pokémon TCG: Ascended Heroes – Trainer''s 2 Pack Blister Larry''s Komala Out of stock" [ref=e203] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-larrys-komala/
+                - 'img "Pokémon TCG: Ascended Heroes – Trainer''s 2 Pack Blister Larry''s Komala" [ref=e204]'
+                - generic [ref=e205]: Out of stock
+              - generic [ref=e206]:
+                - 'link "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Larry’s Komala" [ref=e207] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-larrys-komala/
+                  - 'heading "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Larry’s Komala" [level=2] [ref=e208]'
+                - generic [ref=e209]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e210]:
+                  - deletion [ref=e211]:
+                    - generic [ref=e213]: 89,99 lei
+                  - generic [ref=e214]: "Prețul inițial a fost: 89,99 lei."
+                  - insertion [ref=e215]:
+                    - generic [ref=e217]: 69,99 lei
+                  - generic [ref=e218]: "Prețul curent este: 69,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: Ascended Heroes – Trainer''s 2 Pack Blister Larry''s Komala”" [ref=e219] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-larrys-komala/
+                  - text: Citește mai mult
+            - listitem [ref=e221]:
+              - 'link "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Erika’s Tangela Out of stock" [ref=e223] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-erikas-tangela/
+                - 'img "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Erika’s Tangela" [ref=e224]'
+                - generic [ref=e225]: Out of stock
+              - generic [ref=e226]:
+                - 'link "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Erika’s Tangela" [ref=e227] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-erikas-tangela/
+                  - 'heading "Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Erika’s Tangela" [level=2] [ref=e228]'
+                - generic [ref=e229]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e230]:
+                  - deletion [ref=e231]:
+                    - generic [ref=e233]: 89,99 lei
+                  - generic [ref=e234]: "Prețul inițial a fost: 89,99 lei."
+                  - insertion [ref=e235]:
+                    - generic [ref=e237]: 69,99 lei
+                  - generic [ref=e238]: "Prețul curent este: 69,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: Ascended Heroes – Trainer’s 2 Pack Blister Erika’s Tangela”" [ref=e239] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-trainers-2-pack-blister-erikas-tangela/
+                  - text: Citește mai mult
+            - listitem [ref=e241]:
+              - 'link "Pokémon TCG: Ascended Heroes Elite Trainer Box Out of stock" [ref=e243] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-elite-trainer-box/
+                - 'img "Pokémon TCG: Ascended Heroes Elite Trainer Box" [ref=e244]'
+                - generic [ref=e245]: Out of stock
+              - generic [ref=e246]:
+                - 'link "Pokémon TCG: Ascended Heroes Elite Trainer Box" [ref=e247] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-elite-trainer-box/
+                  - 'heading "Pokémon TCG: Ascended Heroes Elite Trainer Box" [level=2] [ref=e248]'
+                - generic [ref=e249]: "Pokémon TCG: Ascended Heroes"
+                - generic [ref=e250]:
+                  - deletion [ref=e251]:
+                    - generic [ref=e253]: 319,99 lei
+                  - generic [ref=e254]: "Prețul inițial a fost: 319,99 lei."
+                  - insertion [ref=e255]:
+                    - generic [ref=e257]: 299,99 lei
+                  - generic [ref=e258]: "Prețul curent este: 299,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: Ascended Heroes Elite Trainer Box”" [ref=e259] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-ascended-heroes-elite-trainer-box/
+                  - text: Citește mai mult
+            - listitem [ref=e261]:
+              - 'link "Pokémon TCG: Charizard ex Tin – Charizard X Promoție" [ref=e263] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-charizard-ex-tin-charizard-x/
+                - generic [ref=e264]:
+                  - 'img "Pokémon TCG: Charizard ex Tin – Charizard X" [ref=e265]'
+                  - generic [ref=e268]:
+                    - generic [ref=e269]: Promoție
+                    - img [ref=e271]
+              - generic [ref=e276]:
+                - 'link "Pokémon TCG: Charizard ex Tin – Charizard X" [ref=e277] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-charizard-ex-tin-charizard-x/
+                  - 'heading "Pokémon TCG: Charizard ex Tin – Charizard X" [level=2] [ref=e278]'
+                - generic [ref=e279]: Special Boxes
+                - generic [ref=e280]:
+                  - deletion [ref=e281]:
+                    - generic [ref=e283]: 199,99 lei
+                  - generic [ref=e284]: "Prețul inițial a fost: 199,99 lei."
+                  - insertion [ref=e285]:
+                    - generic [ref=e287]: 149,99 lei
+                  - generic [ref=e288]: "Prețul curent este: 149,99 lei."
+                - 'button "Adaugă în coș: “Pokémon TCG: Charizard ex Tin – Charizard X”" [ref=e289] [cursor=pointer]': Adaugă în coș
+            - listitem [ref=e291]:
+              - 'link "Pokémon TCG: Charizard ex Tin – Charizard Y Promoție" [ref=e293] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-charizard-ex-tin-charizard-y/
+                - generic [ref=e294]:
+                  - 'img "Pokémon TCG: Charizard ex Tin – Charizard Y" [ref=e295]'
+                  - generic [ref=e298]:
+                    - generic [ref=e299]: Promoție
+                    - img [ref=e301]
+              - generic [ref=e306]:
+                - 'link "Pokémon TCG: Charizard ex Tin – Charizard Y" [ref=e307] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-charizard-ex-tin-charizard-y/
+                  - 'heading "Pokémon TCG: Charizard ex Tin – Charizard Y" [level=2] [ref=e308]'
+                - generic [ref=e309]: Special Boxes
+                - generic [ref=e310]:
+                  - deletion [ref=e311]:
+                    - generic [ref=e313]: 199,99 lei
+                  - generic [ref=e314]: "Prețul inițial a fost: 199,99 lei."
+                  - insertion [ref=e315]:
+                    - generic [ref=e317]: 149,99 lei
+                  - generic [ref=e318]: "Prețul curent este: 149,99 lei."
+                - 'button "Adaugă în coș: “Pokémon TCG: Charizard ex Tin – Charizard Y”" [ref=e319] [cursor=pointer]': Adaugă în coș
+            - listitem [ref=e321]:
+              - 'link "Pokémon TCG: Collector Chest 2025 Promoție" [ref=e323] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-collector-chest-2025/
+                - generic [ref=e324]:
+                  - 'img "Pokémon TCG: Collector Chest 2025" [ref=e325]'
+                  - generic [ref=e328]:
+                    - generic [ref=e329]: Promoție
+                    - img [ref=e331]
+              - generic [ref=e336]:
+                - 'link "Pokémon TCG: Collector Chest 2025" [ref=e337] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-collector-chest-2025/
+                  - 'heading "Pokémon TCG: Collector Chest 2025" [level=2] [ref=e338]'
+                - generic [ref=e339]: Special Boxes
+                - generic [ref=e340]:
+                  - deletion [ref=e341]:
+                    - generic [ref=e343]: 219,99 lei
+                  - generic [ref=e344]: "Prețul inițial a fost: 219,99 lei."
+                  - insertion [ref=e345]:
+                    - generic [ref=e347]: 199,99 lei
+                  - generic [ref=e348]: "Prețul curent este: 199,99 lei."
+                - 'button "Adaugă în coș: “Pokémon TCG: Collector Chest 2025”" [ref=e349] [cursor=pointer]': Adaugă în coș
+            - listitem [ref=e351]:
+              - 'link "Pokémon TCG: First Partner Deluxe Pin Collection Out of stock" [ref=e353] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-deluxe-pin-collection/
+                - 'img "Pokémon TCG: First Partner Deluxe Pin Collection" [ref=e354]'
+                - generic [ref=e355]: Out of stock
+              - generic [ref=e356]:
+                - 'link "Pokémon TCG: First Partner Deluxe Pin Collection" [ref=e357] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-deluxe-pin-collection/
+                  - 'heading "Pokémon TCG: First Partner Deluxe Pin Collection" [level=2] [ref=e358]'
+                - generic [ref=e359]: Special Boxes
+                - generic [ref=e360]:
+                  - deletion [ref=e361]:
+                    - generic [ref=e363]: 199,99 lei
+                  - generic [ref=e364]: "Prețul inițial a fost: 199,99 lei."
+                  - insertion [ref=e365]:
+                    - generic [ref=e367]: 179,99 lei
+                  - generic [ref=e368]: "Prețul curent este: 179,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: First Partner Deluxe Pin Collection”" [ref=e369] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-deluxe-pin-collection/
+                  - text: Citește mai mult
+            - listitem [ref=e371]:
+              - 'link "Pokémon TCG: First Partner Illustration Collection – Series 1 Out of stock" [ref=e373] [cursor=pointer]':
+                - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-illustration-collection-series-1/
+                - 'img "Pokémon TCG: First Partner Illustration Collection – Series 1" [ref=e374]'
+                - generic [ref=e375]: Out of stock
+              - generic [ref=e376]:
+                - 'link "Pokémon TCG: First Partner Illustration Collection – Series 1" [ref=e377] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-illustration-collection-series-1/
+                  - 'heading "Pokémon TCG: First Partner Illustration Collection – Series 1" [level=2] [ref=e378]'
+                - generic [ref=e379]: Special Boxes
+                - generic [ref=e380]:
+                  - deletion [ref=e381]:
+                    - generic [ref=e383]: 149,99 lei
+                  - generic [ref=e384]: "Prețul inițial a fost: 149,99 lei."
+                  - insertion [ref=e385]:
+                    - generic [ref=e387]: 119,99 lei
+                  - generic [ref=e388]: "Prețul curent este: 119,99 lei."
+                - 'link "Citește mai multe despre „Pokémon TCG: First Partner Illustration Collection – Series 1”" [ref=e389] [cursor=pointer]':
+                  - /url: https://dexhit.ro/product/pokemon-tcg-first-partner-illustration-collection-series-1/
+                  - text: Citește mai mult
+          - navigation "Paginație produse" [ref=e391]:
+            - list [ref=e392]:
+              - listitem [ref=e393]:
+                - generic "Pagină 1" [ref=e394]: "1"
+              - listitem [ref=e395]:
+                - link "Pagină 2" [ref=e396] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/2/
+                  - text: "2"
+              - listitem [ref=e397]:
+                - link "Pagină 3" [ref=e398] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/3/
+                  - text: "3"
+              - listitem [ref=e399]:
+                - link "Pagină 4" [ref=e400] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/4/
+                  - text: "4"
+              - listitem [ref=e401]:
+                - link "Pagină 5" [ref=e402] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/5/
+                  - text: "5"
+              - listitem [ref=e403]:
+                - link "Pagină 6" [ref=e404] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/6/
+                  - text: "6"
+              - listitem [ref=e405]:
+                - link "Pagină 7" [ref=e406] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/7/
+                  - text: "7"
+              - listitem [ref=e407]:
+                - link "→" [ref=e408] [cursor=pointer]:
+                  - /url: https://dexhit.ro/product-category/pokemon-tcg-en/page/2/
+    - contentinfo [ref=e409]:
+      - generic [ref=e412]:
+        - generic [ref=e414]:
+          - img [ref=e420]
+          - heading "Alătură-te comunității noastre pe Discord!" [level=2] [ref=e424]
+          - paragraph [ref=e427]:
+            - strong [ref=e428]: Discută cu alți colecționari și pasionați de Pokémon TCG, schimbă cărți, împărtășește experiențe și rămâi la curent cu toate noutățile.
+            - text: În plus, te așteaptă
+            - strong [ref=e429]: giveaway-uri periodice
+            - text: doar pentru membrii comunității!
+          - link "Alătură-te comunității" [ref=e433] [cursor=pointer]:
+            - /url: https://discord.gg/cTjqz2r7Sz
+            - generic [ref=e435]: Alătură-te comunității
+        - generic [ref=e436]:
+          - generic [ref=e438]:
+            - img "Asset 5@0.5x"
+          - generic [ref=e439]:
+            - navigation [ref=e443]:
+              - list [ref=e444]:
+                - listitem [ref=e445]:
+                  - link "Produse" [ref=e446] [cursor=pointer]:
+                    - /url: https://dexhit.ro/home/produse/
+                - listitem [ref=e447]:
+                  - link "Despre Noi" [ref=e448] [cursor=pointer]:
+                    - /url: https://dexhit.ro/despre-noi/
+                - listitem [ref=e449]:
+                  - link "Contact" [ref=e450] [cursor=pointer]:
+                    - /url: https://dexhit.ro/contact-2/
+                - listitem [ref=e451]:
+                  - link "Contul Meu" [ref=e452] [cursor=pointer]:
+                    - /url: https://dexhit.ro/my-account-2/
+            - navigation [ref=e456]:
+              - list [ref=e457]:
+                - listitem [ref=e458]:
+                  - link "Termeni și condiții" [ref=e459] [cursor=pointer]:
+                    - /url: https://dexhit.ro/termeni-si-conditii/
+                - listitem [ref=e460]:
+                  - link "Politica de confidențialitate" [ref=e461] [cursor=pointer]:
+                    - /url: https://dexhit.ro/politica-de-confidentialitate/
+                - listitem [ref=e462]:
+                  - link "Politica de retur" [ref=e463] [cursor=pointer]:
+                    - /url: https://dexhit.ro/politica-de-retur/
+                - listitem [ref=e464]:
+                  - link "Politica de cookies" [ref=e465] [cursor=pointer]:
+                    - /url: https://dexhit.ro/politica-de-cookies/
+            - generic [ref=e466]:
+              - heading "Abonează-te la Newsletter" [level=5] [ref=e469]
+              - generic [ref=e473]:
+                - generic [ref=e474]:
+                  - generic [ref=e477]: Abonează-te Abonează-te Abonează-te
+                  - generic [ref=e478]:
+                    - generic [ref=e479]: Abonează-te la newsletter *
+                    - textbox "Abonează-te la newsletter" [ref=e480]:
+                      - /placeholder: Adresa de email
+                - button "Mă abonez!" [ref=e482] [cursor=pointer]
+          - generic [ref=e483]:
+            - heading "Follow us" [level=5] [ref=e486]
+            - list [ref=e489]:
+              - listitem [ref=e490]:
+                - link [ref=e491] [cursor=pointer]:
+                  - /url: https://www.facebook.com/dexhit.ro
+                  - img [ref=e493]
+              - listitem [ref=e495]:
+                - link [ref=e496] [cursor=pointer]:
+                  - /url: https://www.instagram.com/dexhittcg
+                  - img [ref=e498]
+              - listitem [ref=e500]:
+                - link [ref=e501] [cursor=pointer]:
+                  - /url: https://www.youtube.com/@dexHitTCG
+                  - img [ref=e503]
+              - listitem [ref=e505]:
+                - link [ref=e506] [cursor=pointer]:
+                  - /url: https://discord.gg/cTjqz2r7Sz
+                  - img [ref=e508]
+          - generic [ref=e511]:
+            - link [ref=e516] [cursor=pointer]:
+              - /url: https://anpc.ro/
+            - link [ref=e519] [cursor=pointer]:
+              - /url: https://ec.europa.eu/consumers/odr
+          - generic [ref=e522]: Copyright © 2026 dexHIT
+  - generic [ref=e523]: desktop
+  - status [ref=e524]

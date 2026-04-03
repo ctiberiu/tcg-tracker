@@ -1,0 +1,226 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - navigation [ref=e5]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - button "Meniu Principal" [ref=e12] [cursor=pointer]
+            - link "Carrefour Universul Casei Tale" [ref=e16] [cursor=pointer]:
+              - /url: https://carrefour.ro/
+              - img "Carrefour" [ref=e17]
+              - generic [ref=e18]: Universul Casei Tale
+          - generic [ref=e22]:
+            - textbox "Cauta in gama de produse" [ref=e23]: pokemon tcg
+            - button "Cauta" [ref=e24] [cursor=pointer]
+          - generic [ref=e25]:
+            - link "Marci proprii" [ref=e27] [cursor=pointer]:
+              - /url: /marci-proprii
+            - link "Cataloage" [ref=e29] [cursor=pointer]:
+              - /url: /corporate/cataloage
+            - link "B2B" [ref=e31] [cursor=pointer]:
+              - /url: /corporate/b2b
+            - link "Cariere" [ref=e33] [cursor=pointer]:
+              - /url: /corporate/cariere
+          - generic [ref=e34]:
+            - link "Te ajutam cu ceva?" [ref=e36] [cursor=pointer]:
+              - /url: /intrebari-frecvente-reclamatii
+              - img [ref=e37]
+              - generic [ref=e41]: Te ajutam cu ceva?
+            - text: 
+            - link "Intra in cont" [ref=e43] [cursor=pointer]:
+              - /url: https://carrefour.ro/customer/account/login/referer/aHR0cHM6Ly9jYXJyZWZvdXIucm8vY2F0YWxvZ3NlYXJjaC9yZXN1bHQvaW5kZXgvP3E9cG9rZW1vbit0Y2c%3D/
+              - img [ref=e44]
+              - generic [ref=e46]: Intra in cont
+            - generic [ref=e47]:
+              - link "Favoritele mele" [ref=e49] [cursor=pointer]:
+                - /url: /wishlist
+                - img [ref=e50]
+              - text: 
+            - generic [ref=e52]:
+              - button "Cosul meu" [ref=e54] [cursor=pointer]:
+                - img [ref=e55]
+              - text: 
+    - main [ref=e57]:
+      - note
+      - heading "Rezultatele cautarii 'pokemon tcg' 0 rezultate gasite" [level=1] [ref=e59]:
+        - generic [ref=e60]:
+          - text: Rezultatele cautarii 'pokemon tcg'
+          - generic [ref=e61]: 0 rezultate gasite
+      - generic [ref=e64]:
+        - img [ref=e66]
+        - heading "Graba strica treaba." [level=3] [ref=e72]
+        - text: Se aplica si la tastat. Arunca un ochi sa vezi daca ai scris corect.
+  - generic [ref=e75]:
+    - generic [ref=e76]:
+      - contentinfo [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - img "Carrefour" [ref=e81]
+              - paragraph [ref=e82]:
+                - text: Carrefour
+                - text: Str. Gara Herastrau, nr. 4C Green Court, Cladirea B, etaj 7, Sector 2, Bucuresti, Romania, 020334
+            - generic [ref=e83]:
+              - link "ANPC - Solutionarea online a litigiilor" [ref=e84] [cursor=pointer]:
+                - /url: https://anpc.ro/ce-este-sal/
+                - img "ANPC - Solutionarea online a litigiilor" [ref=e85]
+              - link "ANPC - Solutionarea alternativa a litigiilor" [ref=e86] [cursor=pointer]:
+                - /url: https://ec.europa.eu/consumers/odr
+                - img "ANPC - Solutionarea alternativa a litigiilor" [ref=e87]
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - generic [ref=e92]:
+                - term [ref=e93]: Lumea Carrefour
+                - definition [ref=e94]:
+                  - link "Despre Carrefour Grup" [ref=e95] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/despre-grup-carrefour
+                - definition [ref=e96]:
+                  - link "Despre Magazine" [ref=e97] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/despre-magazine/hipermarket
+                - definition [ref=e98]:
+                  - link "Marci Proprii" [ref=e99] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/marci-proprii/carrefour
+                - definition [ref=e100]:
+                  - link "Stiri si Presa" [ref=e101] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/stiri-presa
+                - definition [ref=e102]:
+                  - link "Responsabilitate Sociala" [ref=e103] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/responsabilitate-sociala/solidaritate
+              - generic [ref=e104]:
+                - term [ref=e105]: Resurse umane
+                - definition [ref=e106]:
+                  - link "Cariere" [ref=e107] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/cariere
+            - listitem [ref=e108]:
+              - generic [ref=e109]:
+                - term [ref=e110]: Comenzi, plati si livrari
+                - definition [ref=e111]:
+                  - link "Cum comand" [ref=e112] [cursor=pointer]:
+                    - /url: https://carrefour.ro/cum-comand
+                - definition [ref=e113]:
+                  - link "Cum platesc" [ref=e114] [cursor=pointer]:
+                    - /url: https://carrefour.ro/cum-platesc
+                - definition [ref=e115]:
+                  - link "Cum mi se livreaza" [ref=e116] [cursor=pointer]:
+                    - /url: https://carrefour.ro/cum-mi-se-livreaza
+                - definition [ref=e117]:
+                  - link "Cum returnez" [ref=e118] [cursor=pointer]:
+                    - /url: https://carrefour.ro/cum-returnez
+                - definition [ref=e119]:
+                  - link "Garantia produselor" [ref=e120] [cursor=pointer]:
+                    - /url: https://carrefour.ro/garantia-produselor
+              - generic [ref=e121]:
+                - term [ref=e122]: Magazine si Cataloage
+                - definition [ref=e123]:
+                  - link "Magazine Carrefour" [ref=e124] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/magazine
+                - definition [ref=e125]:
+                  - link "Cataloage Carrefour" [ref=e126] [cursor=pointer]:
+                    - /url: " https://carrefour.ro/corporate/cataloage/bucuresti"
+                - definition [ref=e127]:
+                  - link "Mandat de gestiune" [ref=e128] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/mandatar
+                - definition [ref=e129]:
+                  - link "Franciza" [ref=e130] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/franciza
+            - listitem [ref=e131]:
+              - generic [ref=e132]:
+                - term [ref=e133]: Servicii si informatii utile
+                - definition [ref=e134]:
+                  - link "Servicii clienti" [ref=e135] [cursor=pointer]:
+                    - /url: https://carrefour.ro/servicii
+                - definition [ref=e136]:
+                  - link "Servicii financiare" [ref=e137] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/servicii-utile/servicii-financiare/cardul-de-credit
+                - definition [ref=e138]:
+                  - link "Card cadou Carrefour" [ref=e139] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/servicii-utile/card-cadou
+                - definition [ref=e140]:
+                  - link "Alte servicii" [ref=e141] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/servicii-utile/alte-servicii/plati-facturi
+                - definition [ref=e142]:
+                  - link "Serviciul foto Carrefour" [ref=e143] [cursor=pointer]:
+                    - /url: https://serviciulfoto.carrefour.ro/
+                - definition [ref=e144]:
+                  - link "Conduita etica" [ref=e145] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/servicii-utile/conduita-etica
+                - definition [ref=e146]:
+                  - link "Politica de confidentialitate" [ref=e147] [cursor=pointer]:
+                    - /url: https://accounts.eu1.gigya.com/accounts.store.downloadPublicConsentDocument?docID=69434470_575788182010_20099cc99aaf4ce09c0b7eb123d1440b.pdf
+                - definition [ref=e148]:
+                  - link "Politica de cookies" [ref=e149] [cursor=pointer]:
+                    - /url: https://accounts.eu1.gigya.com/accounts.store.downloadPublicConsentDocument?docID=69434470_575788182010_e472fa0e717d4241a8ad7e9015495a6c.pdf
+                - definition [ref=e150]:
+                  - link "Setari cookies" [ref=e151] [cursor=pointer]:
+                    - /url: javascript:OneTrust.ToggleInfoDisplay()
+            - listitem [ref=e152]:
+              - generic [ref=e153]:
+                - term [ref=e154]: Relatii clienti
+                - definition [ref=e155]:
+                  - link "Contacteaza-ne" [ref=e156] [cursor=pointer]:
+                    - /url: https://carrefour.ro/contact
+                - definition [ref=e157]:
+                  - link "Intrebari frecvente" [ref=e158] [cursor=pointer]:
+                    - /url: https://carrefour.ro/intrebari-frecvente-reclamatii
+                - definition [ref=e159]:
+                  - link "Termene si conditii site si cont" [ref=e160] [cursor=pointer]:
+                    - /url: https://accounts.eu1.gigya.com/accounts.store.downloadPublicConsentDocument?docID=69434470_575788182010_c7f70616c30d46de935db6f39e7e3972.pdf
+                - definition [ref=e161]:
+                  - link "Termene si conditii pentru magazine" [ref=e162] [cursor=pointer]:
+                    - /url: https://carrefour.ro/termene-si-conditii-pentru-magazine
+                - definition [ref=e163]:
+                  - link "Termene si conditii pentru programul de loialitate Act for Good" [ref=e164] [cursor=pointer]:
+                    - /url: https://accounts.eu1.gigya.com/accounts.store.downloadPublicConsentDocument?docID=69434470_575788182010_34979b2f9a734356aaafa3cb4b3751d8.pdf
+                - definition [ref=e165]:
+                  - link "Regulamente tombole si promotii" [ref=e166] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/servicii-utile/regulamente-tombole-promotii/2026
+              - generic [ref=e167]:
+                - term [ref=e168]: Aplicatia Carrefour
+                - definition [ref=e169]:
+                  - link "Descarcă aplicația Carrefour" [ref=e170] [cursor=pointer]:
+                    - /url: https://carrefour.ro/corporate/actforgood/download
+      - generic [ref=e173]:
+        - generic [ref=e174]: © 2026 Carrefour. Toate drepturile rezervate.
+        - list [ref=e176]:
+          - listitem [ref=e177]:
+            - link "Instagram" [ref=e178] [cursor=pointer]:
+              - /url: https://www.instagram.com/carrefourromania/
+              - img "Instagram" [ref=e179]
+          - listitem [ref=e180]:
+            - link "tiktok" [ref=e181] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@carrefourromania
+              - img "tiktok" [ref=e182]
+          - listitem [ref=e183]:
+            - link "Linkedin" [ref=e184] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/carrefourromania/
+              - img "Linkedin" [ref=e185]
+          - listitem [ref=e186]:
+            - link "Facebook" [ref=e187] [cursor=pointer]:
+              - /url: https://www.facebook.com/CarrefourRomania
+              - img "Facebook" [ref=e188]
+          - listitem [ref=e189]:
+            - link "YouTube" [ref=e190] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/CarrefourRomania
+              - img "YouTube" [ref=e191]
+    - text: 
+  - region "Cookie banner" [ref=e192]:
+    - dialog "Centru de preferințe a confidențialității" [ref=e193]:
+      - generic [ref=e194]:
+        - generic [ref=e196]:
+          - img "Logoul companiei" [ref=e198]
+          - heading "Centru de preferințe a confidențialității" [level=2] [ref=e199]
+          - generic [ref=e200]:
+            - text: "Bine ai venit pe Carrefour.ro! În timp ce navigați pe acest website, Carrefour Romania și cei 306 parteneri ai săi, utilizează module cookies și interactionează cu datele dumneavoastră cu caracter personal (cum ar fi datele de navigare, precum și datele asociate contului de utilizator) precum și cu dispozitivul dumneavoastră pentru a stoca și/sau accesa informații în scopuri, precum: asigurarea funcționării corecte a website-ului, pentru personalizarea conținutului oferit, pentru măsurarea performanței publicității și a conținutului, pentru analize de audiență și dezvoltarea de produse. Puteți să vă dați acordul pentru a autoriza instalarea tuturor modulelor cookies sau pentru o parte din acestea și implicit asupra activităților de prelucrare a datelor, aferente sau să le refuzați, cu excepția celor necesare pentru funcționarea acestui website. Dacă blocați anumite tipuri de module cookie, experiența dumneavoastră de navigare și serviciile pe care vi le putem oferi, pot fi afectate. Vă puteți modifica opțiunile, făcând clic pe \"Setari module cookies\" în partea de jos a paginii."
+            - link "Mai multe informații despre confidențialitatea datelor dvs., se deschide într-o fereastră nouă" [ref=e201] [cursor=pointer]:
+              - /url: https://carrefour.ro/politica-de-cookies
+              - text: Politica de cookies
+          - generic [ref=e202]:
+            - heading "Atât noi, cât și partenerii noștri prelucrăm datele pentru a oferi:" [level=3] [ref=e203]
+            - paragraph [ref=e205]:
+              - text: Utilizarea unor date precise de geolocație. Scanarea activă a caracteristicilor dispozitivului pentru identificare. Stocarea și/sau accesarea informațiilor de pe un dispozitiv. Publicitate și conținut personalizat, măsurători ale publicității și de conținut, cercetarea audienței și dezvoltarea serviciilor.
+              - button "Lista partenerilor noștri (furnizori)" [ref=e206] [cursor=pointer]
+        - generic [ref=e208]:
+          - button "Setări module cookies" [ref=e209] [cursor=pointer]
+          - generic [ref=e210]:
+            - button "Continuați fără a accepta" [ref=e211] [cursor=pointer]
+            - button "Acceptați toate" [ref=e212] [cursor=pointer]

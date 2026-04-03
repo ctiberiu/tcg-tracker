@@ -1,0 +1,498 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "RaiJucării.ro":
+              - /url: /
+              - img "RaiJucării.ro" [ref=e9] [cursor=pointer]
+          - text: 
+          - generic [ref=e13]:
+            - textbox "Aici scrieți ce căutați:" [ref=e14]: pokemon tcg
+            - link "" [ref=e15] [cursor=pointer]:
+              - /url: /vyhladavanie?search=pokemon%20tcg
+              - generic [ref=e16]: 
+          - list [ref=e18]:
+            - listitem [ref=e19]:
+              - link "Logare Logare" [ref=e20] [cursor=pointer]:
+                - /url: "#login-modal"
+                - img "Logare" [ref=e21]
+                - generic [ref=e22]: Logare
+          - generic [ref=e23]:
+            - link "0 0,00 lei" [ref=e24] [cursor=pointer]:
+              - /url: /nakupny-kosik
+              - generic [ref=e25]:
+                - img [ref=e26]
+                - img [ref=e27]
+                - strong [ref=e28]: "0"
+              - text: 0,00 lei
+            - text: 
+        - list [ref=e33]:
+          - listitem [ref=e34]:
+            - link "Jucării " [ref=e35] [cursor=pointer]:
+              - /url: /jucarii-c1
+              - text: Jucării
+              - generic [ref=e36]: 
+            - text: 
+          - listitem [ref=e37]:
+            - link "Pentru cei mai mici " [ref=e38] [cursor=pointer]:
+              - /url: /pentru-cei-mai-mici-c1607
+              - text: Pentru cei mai mici
+              - generic [ref=e39]: 
+            - text: 
+          - listitem [ref=e40]:
+            - link "Jucării pentru afară " [ref=e41] [cursor=pointer]:
+              - /url: /jucarii-pentru-afara-c11595
+              - text: Jucării pentru afară
+              - generic [ref=e42]: 
+            - text: 
+          - listitem [ref=e43]:
+            - link "Modele " [ref=e44] [cursor=pointer]:
+              - /url: /modele-c12196
+              - text: Modele
+              - generic [ref=e45]: 
+            - text: 
+          - listitem [ref=e46]:
+            - link "Gospodărie " [ref=e47] [cursor=pointer]:
+              - /url: /gospodarie-c22985
+              - text: Gospodărie
+              - generic [ref=e48]: 
+            - text: 
+          - text: 
+          - listitem [ref=e49]:
+            - link "Reduceri mari" [ref=e50] [cursor=pointer]:
+              - /url: black-friday
+          - listitem [ref=e51]:
+            - link "Hituri de primăvară" [ref=e52] [cursor=pointer]:
+              - /url: /sezonne-produkty
+    - generic:
+      - generic:
+        - generic: 
+    - main [ref=e53]:
+      - generic [ref=e54]:
+        - heading "Rezultatele căutării 88 produse - rezultatele pentru termenul căutat \"pokemon tcg\"" [level=1] [ref=e61]:
+          - text: Rezultatele căutării
+          - generic [ref=e62]: 88 produse
+          - generic [ref=e63]:
+            - text: "- rezultatele pentru termenul căutat"
+            - strong [ref=e64]: "\"pokemon tcg\""
+        - generic [ref=e65]:
+          - generic [ref=e67]:
+            - img [ref=e68]
+            - img [ref=e69]
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - text: 
+                - generic [ref=e72]:
+                  - strong [ref=e73]: Filtru
+                  - button "Anulați filtrul" [ref=e74] [cursor=pointer]
+              - generic [ref=e75]:
+                - generic [ref=e76]:
+                  - generic [ref=e77]: preț
+                  - generic [ref=e79]:
+                    - generic [ref=e81]: 40,00 lei
+                    - generic [ref=e87]: 502,00 lei
+                - generic [ref=e88]:
+                  - generic [ref=e89]:
+                    - generic [ref=e90]: preț
+                    - text: 
+                    - tabpanel [ref=e91]:
+                      - generic [ref=e93]:
+                        - generic [ref=e98] [cursor=pointer]: 40 – 156 lei
+                        - generic [ref=e103] [cursor=pointer]: 156 – 272 lei
+                        - generic [ref=e108] [cursor=pointer]: 272 – 388 lei
+                        - generic [ref=e113] [cursor=pointer]: 388 – 504 lei
+                  - generic [ref=e114]:
+                    - generic [ref=e115]: Vârsta
+                    - text: 
+                    - tabpanel [ref=e116]:
+                      - generic [ref=e118]:
+                        - generic [ref=e123] [cursor=pointer]: 0 - 2
+                        - generic [ref=e128] [cursor=pointer]: 2 - 10
+                        - generic [ref=e133] [cursor=pointer]: 10 - 18
+                        - generic [ref=e138] [cursor=pointer]: 18 - 99
+              - text: 
+            - generic [ref=e139]:
+              - strong [ref=e144] [cursor=pointer]: Doar în stoc
+              - generic [ref=e146]:
+                - generic [ref=e147]: Pe o pagina
+                - generic [ref=e148]:
+                  - button "12 " [ref=e149] [cursor=pointer]:
+                    - generic [ref=e150]: "12"
+                    - generic [ref=e151]: 
+                  - combobox [ref=e152]:
+                    - option "12" [selected]
+                    - option "24"
+                    - option "48"
+              - generic [ref=e154]: 88 produse
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - generic [ref=e160]:
+                - link [ref=e161] [cursor=pointer]:
+                  - /url: /pokemon-tcg-me03-perfect-order-booster-p527877
+                  - generic [ref=e162]:
+                    - img [ref=e163]
+                    - generic [ref=e166]: Noutate
+                    - generic [ref=e167]: 6+
+                  - generic [ref=e168]:
+                    - 'heading "Pokémon TCG: ME03 - Perfect Order - Booster" [level=2] [ref=e169]'
+                    - generic [ref=e170]: "Pokémon TCG: Mega Evolution — Perfect Order Booster este un pachet booster individual din ediția ME03 — Perfect Order, care te va duce într-un oraș vibrant, unde oamenii și Pokémonii trăiesc în perfectă armonie. Peste această ordine fragilă veghează legendarul Mega Zygarde ex, care întruchipează puterea și unitatea de neclintit. Fiecare pachet îți deschide ușile către noi aventuri — vei avea noroc cu un rar Meowth ex, sau vei adăuga un puternic Mega Zygarde ex în echipa ta? Conținutul pachetului 10 cărți amestecate aleatoriu inclusiv șansa de a găsi cărți Rare și ex rare 1x cod pentru versiunea online a jocului Pokémon TCG Live Ce te așteaptă în ediție? 120+ cărți noi în întreaga ediție, inclusiv mai mult de 30 de cărți cu ilustrații speciale 9 Pokémoni ex clasici și 4 Pokémoni ex Mega Evolution puternici, pregătiți să schimbe regulile jocului Cărți exclusive: Șansa de a găsi cărți rare Illustration Rare și Special Illustration Rare cu tematică urbană Mega evoluții: Folosește puterea devastatoare a Pokémonilor ex Mega Evolution precum Mega Clefable ex sau Mega Starmie ex Prelucrare precisă: Cărți cu un design detaliat, care se evidențiază în orice album Potrivit pentru toată lumea — începători și colecționari experimentați în căutarea cărților Secret Rare Principiile de bază ale jocului Fiecare jucător folosește un pachet de 60 de cărți (Pokémon, Trainer, Energy) Obiectivul este de a obține toate șase cărți de recompensă ale adversarului, de a elimina toți Pokémonii săi din joc sau de a-i împiedica să joace Strategia se concentrează pe utilizarea corectă a atacurilor, abilităților și cărților de antrenor Vârstă 6+"
+                - generic [ref=e171]:
+                  - generic [ref=e172]:
+                    - generic [ref=e174]: În stoc > 5 buc
+                    - strong [ref=e176]: 40,09 lei
+                  - button " " [ref=e180] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e181]: 
+              - generic [ref=e183]:
+                - link "6+ Pokémon TCG - Colecția Premium Bellibolt ex a lui Iono Întărește-ți Pokémonii în zona Iono! Șefa de sală de gimnastică Levincia, Iono, și partenerul ei Pokémon, Bellibolt, sunt o echipă nedespărțită plină de spirit super-energic. Cu această colecție, poți chema Bellibolt și abilitatea sa Electric Streamer Ability, oferind astfel energie celorlalți Pokémoni ai lui Iono de partea ta. Apoi, lasă-te purtat în distracția electrizantă cu suporturile acrilice, autocolantele colorate și pachetele booster Pokémon TCG! CONTINUTUL PACHETULUI INCLUDE - 1 carte promoțională full-art foil Iono’s Bellibolt ex - 1 carte foil Iono’s Tadbulb - suporturi acrilice Iono, Bellibolt și altele - 1 display backdrop dublu față - 1 autocolant Iono și Bellibolt - 6 pachete booster Pokémon TCG - Un cod pentru Pokémon TCG Live" [ref=e184] [cursor=pointer]:
+                  - /url: /pokemon-tcg-colectia-premium-bellibolt-ex-a-lui-iono-p488349
+                  - generic [ref=e185]:
+                    - img [ref=e186]
+                    - generic [ref=e187]: 6+
+                  - generic [ref=e188]:
+                    - heading "Pokémon TCG - Colecția Premium Bellibolt ex a lui Iono" [level=2] [ref=e189]
+                    - generic [ref=e190]: Întărește-ți Pokémonii în zona Iono! Șefa de sală de gimnastică Levincia, Iono, și partenerul ei Pokémon, Bellibolt, sunt o echipă nedespărțită plină de spirit super-energic. Cu această colecție, poți chema Bellibolt și abilitatea sa Electric Streamer Ability, oferind astfel energie celorlalți Pokémoni ai lui Iono de partea ta. Apoi, lasă-te purtat în distracția electrizantă cu suporturile acrilice, autocolantele colorate și pachetele booster Pokémon TCG! CONTINUTUL PACHETULUI INCLUDE - 1 carte promoțională full-art foil Iono’s Bellibolt ex - 1 carte foil Iono’s Tadbulb - suporturi acrilice Iono, Bellibolt și altele - 1 display backdrop dublu față - 1 autocolant Iono și Bellibolt - 6 pachete booster Pokémon TCG - Un cod pentru Pokémon TCG Live
+                - generic [ref=e191]:
+                  - generic [ref=e192]:
+                    - generic [ref=e194]: Ultimele 3 bucăți
+                    - strong [ref=e196]: 207,00 lei
+                  - button " " [ref=e200] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e201]: 
+              - generic [ref=e203]:
+                - link [ref=e204] [cursor=pointer]:
+                  - /url: /pokemon-tcg-me03-perfect-order-cutie-de-antrenor-de-elita-p527879
+                  - generic [ref=e205]:
+                    - img [ref=e206]
+                    - generic [ref=e209]: Noutate
+                    - generic [ref=e210]: 6+
+                  - generic [ref=e211]:
+                    - 'heading "Pokémon TCG: ME03 - Perfect Order - Cutie de antrenor de elită" [level=2] [ref=e212]'
+                    - generic [ref=e213]: "Pokémon TCG: Mega Evolution — Perfect Order Elite Trainer Box te va duce în pitoreasca regiune Kalos, inspirată de eleganța și cultura Franței, pe care o cunoști din popularele jocuri video Pokémon X și Y. Ediția Mega Evolution — Perfect Order se concentrează pe frumusețe, evoluție și, mai presus de toate, pe legătura profundă dintre antrenor și Pokémonul său. Această conexiune permite evocarea puterii devastatoare a Mega evoluțiilor, care joacă un rol principal în această serie. Păzitorul ordinii este Mega Zygarde ex — un Pokémon legendar care întruchipează puterea unității, alături de care luptă Mega Clefable ex, Mega Starmie ex și Meowth ex. Conținutul pachetului 9x pachete booster din ediția Perfect Order — fiecare conține 10 cărți 1x carte promoțională full-art exclusivă cu Pokémonul Tyrunt, disponibilă doar în acest Elite Trainer Box 65x protecții pentru cărți 40x cărți Energy Dice pentru marcarea daunelor, zaruri și monedă din plastic pentru un joc fluid Ghidul jucătorului cu sfaturi pentru construirea unui pachet din cărțile acestei ediții Cod pentru versiunea online a jocului Pokémon TCG Live Cutie de colecție rigidă pentru stocarea întregului conținut Ce te așteaptă în ediție? 120+ cărți noi care îmbogățesc pachetele tale de joc și albumele de colecție Cărți rare: 11 cărți Illustration Rare cu ilustrații uimitoare și 18 cărți Ultra Rare care se remarcă prin valoarea lor Regiunea Kalos: Cărți inspirate de estetica generației a 6-a, unde stilul, evoluția și energia puternică a acestui loc unic joacă un rol principal Mega evoluții: Folosește întregul potențial al Mega evoluției și arată-ți adversarilor cât de puternică este legătura ta cu echipa Principiile de bază ale jocului Fiecare jucător folosește un pachet de 60 de cărți (Pokémon, Trainer, Energy) Obiectivul este de a obține toate șase cărți de recompensă ale adversarului, de a elimina toți Pokémonii săi din joc sau de a-i împiedica să joace Strategia se concentrează pe utilizarea corectă a atacurilor, abilităților și cărților de antrenor Vârstă 6+"
+                - generic [ref=e214]:
+                  - generic [ref=e215]:
+                    - generic [ref=e217]: În stoc > 5 buc
+                    - strong [ref=e219]: 501,21 lei
+                  - button " " [ref=e223] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e224]: 
+              - generic [ref=e226]:
+                - 'link "6+ POKEMON POKEPLA Fuecoco Pokepla de la Bandai sunt kituri – mai precis, este vorba despre modele din plastic ale Pokémonilor. Aceste modele, cunoscute și sub numele de Pokémon Plamo, sunt destinate asamblării fără a necesita lipici. Sunt concepute pentru a fi ușor de montat folosind un sistem snap-fit, ceea ce înseamnă că părțile individuale se fixează între ele cu ușurință. Saga Pokémon este o poveste despre antrenori care călătoresc prin lume pentru a captura, antrena și lupta cu Pokémonii. Temele principale includ prietenia, curajul și aventura. Scopul antrenorului este de a deveni cel mai bun și de a explora diversitatea lumii Pokémon. Fuecoco este un mic crocodil cu piele roșie, cunoscut pentru natura sa relaxată și iubitoare de mâncare – adesea este puțin leneș, dar foarte prietenos și distractiv. Atenție: Inadecvat pentru copii sub 3 ani. Conține părți mici. Riscul de sufocare." [ref=e227] [cursor=pointer]':
+                  - /url: /pokemon-pokepla-fuecoco-p512623
+                  - generic [ref=e228]:
+                    - img [ref=e229]
+                    - generic [ref=e230]: 6+
+                  - generic [ref=e231]:
+                    - heading "POKEMON POKEPLA Fuecoco" [level=2] [ref=e232]
+                    - generic [ref=e233]: "Pokepla de la Bandai sunt kituri – mai precis, este vorba despre modele din plastic ale Pokémonilor. Aceste modele, cunoscute și sub numele de Pokémon Plamo, sunt destinate asamblării fără a necesita lipici. Sunt concepute pentru a fi ușor de montat folosind un sistem snap-fit, ceea ce înseamnă că părțile individuale se fixează între ele cu ușurință. Saga Pokémon este o poveste despre antrenori care călătoresc prin lume pentru a captura, antrena și lupta cu Pokémonii. Temele principale includ prietenia, curajul și aventura. Scopul antrenorului este de a deveni cel mai bun și de a explora diversitatea lumii Pokémon. Fuecoco este un mic crocodil cu piele roșie, cunoscut pentru natura sa relaxată și iubitoare de mâncare – adesea este puțin leneș, dar foarte prietenos și distractiv. Atenție: Inadecvat pentru copii sub 3 ani. Conține părți mici. Riscul de sufocare."
+                - generic [ref=e234]:
+                  - generic [ref=e235]:
+                    - generic [ref=e237]: Ultimele 3 bucăți
+                    - generic [ref=e238]:
+                      - strong [ref=e239]: 60,20 lei
+                      - generic [ref=e240]: 75,23 lei
+                  - button " " [ref=e244] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e245]: 
+              - generic [ref=e247]:
+                - link [ref=e248] [cursor=pointer]:
+                  - /url: /pokemon-pokepla-eevee-eevee-p512617
+                  - generic [ref=e249]:
+                    - img [ref=e250]
+                    - generic [ref=e251]: 6+
+                  - generic [ref=e252]:
+                    - heading "POKEMON POKEPLA Eevee (Eevee)" [level=2] [ref=e253]
+                    - generic [ref=e254]: "Pokepla de la Bandai sunt kituri – mai precis, este vorba despre modele din plastic ale Pokémonilor. Aceste modele, cunoscute și sub numele de Pokémon Plamo, sunt destinate asamblării fără a necesita lipici. Sunt concepute pentru a fi ușor de montat folosind un sistem snap-fit, ceea ce înseamnă că părțile individuale se fixează între ele cu ușurință. Saga Pokémon este o poveste despre antrenori care călătoresc prin lume pentru a captura, antrena și lupta cu Pokémonii. Temele principale includ prietenia, curajul și aventura. Scopul antrenorului este de a deveni cel mai bun și de a explora diversitatea lumii Pokémon. este unul dintre cei mai cunoscuți și iubiți Pokémoni din seria Pokémon. În poveste, este cunoscut în special pentru abilitatea sa de a evolua în mai multe evoluții diferite – de exemplu, în Vaporeon, Jolteon, Flareon, Espeon, Umbreon, Leafeon, Glaceon sau Sylveon. ATENȚIE: Inadecvat pentru copii sub 3 ani. Conține părți mici. Pericol de sufocare."
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - generic [ref=e258]: Ultimele 2 bucăți
+                    - generic [ref=e259]:
+                      - strong [ref=e260]: 60,20 lei
+                      - generic [ref=e261]: 75,23 lei
+                  - button " " [ref=e265] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e266]: 
+              - generic [ref=e268]:
+                - 'link "2+ Pokémon - Psyduck (45 cm) Ce zici de o siestă cu Psyduck? Această jucărie de pluș mare are o înălțime de 45 cm.Este de asemenea super moale și fabricată dintr-un material unic, ideal pentru îmbrățișat. După o zi lungă de antrenament Pokémon, Psyduck va adormi cu siguranță repede.Pelușa drăguță Pokémon înfățișând Psyduck este un partener potrivit pentru a juca jocuri, jocuri de cărți, a vâna în Pokémon GO sau pentru a lenevi pe canapea! Produs oficial licențiat de Jazwares. Vârstă: 2+" [ref=e269] [cursor=pointer]':
+                  - /url: /pokemon-psyduck-45-cm-p475859
+                  - generic [ref=e270]:
+                    - img [ref=e271]
+                    - generic [ref=e272]: 2+
+                  - generic [ref=e273]:
+                    - heading "Pokémon - Psyduck (45 cm)" [level=2] [ref=e274]
+                    - generic [ref=e275]: "Ce zici de o siestă cu Psyduck? Această jucărie de pluș mare are o înălțime de 45 cm.Este de asemenea super moale și fabricată dintr-un material unic, ideal pentru îmbrățișat. După o zi lungă de antrenament Pokémon, Psyduck va adormi cu siguranță repede.Pelușa drăguță Pokémon înfățișând Psyduck este un partener potrivit pentru a juca jocuri, jocuri de cărți, a vâna în Pokémon GO sau pentru a lenevi pe canapea! Produs oficial licențiat de Jazwares. Vârstă: 2+"
+                - generic [ref=e277]:
+                  - generic [ref=e279]:
+                    - text: Momentan nu este disponibil
+                    - generic [ref=e280]: 
+                  - strong [ref=e282]: 144,00 lei
+              - generic [ref=e285]:
+                - link "2+ Pokémon Eevee 45 cm, pluș Încântă-ți copilul cu acest Pokemon de pluș de 45 cm. Plușul are un exterior din material moale și o umplutură pufoasă care oferă o îmbrățișare confortabilă și jucăușă. Detaliile de broderie creează o notă realistă. Potrivit pentru copii de la 2 ani" [ref=e286] [cursor=pointer]:
+                  - /url: /pokemon-eevee-45-cm-plus-p389947
+                  - generic [ref=e287]:
+                    - img [ref=e288]
+                    - generic [ref=e289]: 2+
+                  - generic [ref=e290]:
+                    - heading "Pokémon Eevee 45 cm, pluș" [level=2] [ref=e291]
+                    - generic [ref=e292]: Încântă-ți copilul cu acest Pokemon de pluș de 45 cm. Plușul are un exterior din material moale și o umplutură pufoasă care oferă o îmbrățișare confortabilă și jucăușă. Detaliile de broderie creează o notă realistă. Potrivit pentru copii de la 2 ani
+                - generic [ref=e293]:
+                  - generic [ref=e294]:
+                    - generic [ref=e296]: Ultimele 2 bucăți
+                    - strong [ref=e298]: 158,00 lei
+                  - button " " [ref=e302] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e303]: 
+              - generic [ref=e305]:
+                - link [ref=e306] [cursor=pointer]:
+                  - /url: /ns2-pokemon-legende-z-a-p518439
+                  - generic [ref=e307]:
+                    - img [ref=e308]
+                    - generic [ref=e309]: 7+
+                  - generic [ref=e310]:
+                    - 'heading "NS2 Pokémon Legende: Z-A" [level=2] [ref=e311]'
+                    - generic [ref=e312]: "În jocul Pokémon Legends: Z-A te așteaptă o nouă aventură care se desfășoară în orașul Lumiose, care va fi lansat pe Nintendo Switch și Nintendo Switch 2 la sfârșitul anului 2025. Explorează orașul, descoperă-i misterul și luptă cu Pokémonii ca niciodată înainte! Metropola strălucitoare În orașul Lumiose se pregătește totul pentru reconstrucția întregului oraș! Scopul este de a-l transforma într-un loc unde Pokémonii și oamenii pot trăi cot la cot. La scurt timp după sosirea în oraș, vei alege unul dintre următorii Pokémoni care te vor însoți în călătoria ta - Chikorita, Tepig sau Totodile. Împreună puteți explora străzile acestui oraș vast sau vizita așa-numitele Wild Zones – locuri unde te vei întâlni cu Pokémoni sălbatici. Dacă vrei să-i capturezi, țintește cu atenție și aruncă Poké Ball sau aruncă-te asupra lor cu ajutorul altor Pokémoni din echipa ta. Lucruri noi, lupte dinamice Pentru prima dată, antrenorii și Pokémonii lor se vor mișca în timp real în timpul luptelor. Pokémonii pot să-și execute atacurile, în timp ce antrenorii le vor da instrucțiuni. Antrenori, Pokémon Legends: Z-A și Pokémon Legends: Z-A – Nintendo Switch 2 Edition vor fi lansate pe 16 octombrie!"
+                - generic [ref=e313]:
+                  - generic [ref=e314]:
+                    - generic [ref=e316]:
+                      - text: 3 - 7 zile
+                      - generic [ref=e317]: 
+                    - strong [ref=e319]: 302,38 lei
+                  - button " " [ref=e323] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e324]: 
+              - generic [ref=e326]:
+                - link [ref=e327] [cursor=pointer]:
+                  - /url: /switch-pokemon-sword-p458237
+                  - generic [ref=e328]:
+                    - img [ref=e329]
+                    - generic [ref=e330]: 7+
+                  - generic [ref=e331]:
+                    - heading "SWITCH Pokémon Sword" [level=2] [ref=e332]
+                    - generic [ref=e333]: "Noua generație de Pokémoni vine pe Nintendo Switch Începe-ți cariera de antrenor Pokémon alegând unul dintre cei trei noi ajutoare Pokémon: Grookey, Scorbunny sau Sobble. Te așteaptă regiunea Galar, unde va trebui să te confrunți cu răufăcătorii din echipa Yell și să descoperi secretele legendariilor Pokémon Zacian și Zamazenta! Explorează Zona Sălbatică - un teritoriu vast în care poți mișca liber camera. Conectează-te local sau online cu până la trei alți jucători în noile bătălii multiplayer Max Raid, unde jucătorii se confruntă împreună cu uriașii, super puternici Pokémon cunoscuți sub numele de Pokémon Dynamax. Pokémonii evoluați pot atinge forma Gigantamax, care le oferă un nou aspect și abilități puternice G-Max. Distracția nu se oprește însă la îmbunătățirea abilităților de luptă - vizitează magazinele din oraș și alege-ți haine noi sau fă-ți o tunsoare. Astfel, vei deveni exact antrenorul pe care vrei să-l fii. Pe parcursul aventurii tale, vei întâlni nu doar Pokémoni complet noi, ci și pe cei cunoscuți în noi forme galars! Pentru a-ți facilita creșterea nivelului Pokémonilor tăi, dă-le ordine să îndeplinească așa-numitele Poké Jobs. Pentru distracție, există tabăra Pokémon, unde te poți juca cu Pokémonii tăi! Prinde, schimbă și luptă cu Pokémoni în expediția ta de aventură în Galar Alege dintre cei trei noi prieteni Pokémon și descoperă Pokémoni complet noi Descifrează misterul legendariilor Pokémon Zacian și Zamazenta! Jucătorii pot mișca liber camera în vasta zonă sălbatică Alătură-te altor antrenori în bătăliile Max Raid! Luptă împotriva Pokémonilor Dynamax sălbatici în bătăliile Max Raid și încearcă să-i prinzi! Poke Ball Plus Folosește funcțiile controlerului Poké Ball Plus (vândut separat). Ia-ți Pokémonii la o plimbare în lumea reală! Dacă petreci suficient timp cu Pokémonii tăi preferați, se va întâmpla ceva uimitor!"
+                - generic [ref=e334]:
+                  - generic [ref=e335]:
+                    - generic [ref=e337]:
+                      - text: 3 - 7 zile
+                      - generic [ref=e338]: 
+                    - strong [ref=e340]: 246,34 lei
+                  - button " " [ref=e344] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e345]: 
+              - generic [ref=e347]:
+                - 'link "12+ FDP Pokémon Charmander Revitalizează-ți Pokémonul preferat! Legendarul Charmander vine ca un set de construcție 3D detaliat din carton de calitate. Cadoul ideal pentru fanii Pokémon și iubitorii de modelare! 241 de piese de distracție: Setul conține piese robuste din carton care se potrivesc perfect. Asamblarea este simplă – fără necesitatea de unelte sau lipici. Un obiect de colecție grozav: Modelul final nu este doar o piesă de expunere mândră, ci și un obiect de colecție preferat. Charmander va adăuga strălucire oricărei polițe! Dimensiunile modelului asamblat: 25 x 24 x 26 cm Conținutul pachetului: 6 foi de carton cu 241 de piese Instrucțiuni detaliate de utilizare Recomandat pentru copii de la 12 ani" [ref=e348] [cursor=pointer]':
+                  - /url: /fdp-pokemon-charmander-p505375
+                  - generic [ref=e349]:
+                    - img [ref=e350]
+                    - generic [ref=e351]: 12+
+                  - generic [ref=e352]:
+                    - heading "FDP Pokémon Charmander" [level=2] [ref=e353]
+                    - generic [ref=e354]: "Revitalizează-ți Pokémonul preferat! Legendarul Charmander vine ca un set de construcție 3D detaliat din carton de calitate. Cadoul ideal pentru fanii Pokémon și iubitorii de modelare! 241 de piese de distracție: Setul conține piese robuste din carton care se potrivesc perfect. Asamblarea este simplă – fără necesitatea de unelte sau lipici. Un obiect de colecție grozav: Modelul final nu este doar o piesă de expunere mândră, ci și un obiect de colecție preferat. Charmander va adăuga strălucire oricărei polițe! Dimensiunile modelului asamblat: 25 x 24 x 26 cm Conținutul pachetului: 6 foi de carton cu 241 de piese Instrucțiuni detaliate de utilizare Recomandat pentru copii de la 12 ani"
+                - generic [ref=e355]:
+                  - generic [ref=e356]:
+                    - generic [ref=e358]: În stoc > 5 buc
+                    - strong [ref=e360]: 96,00 lei
+                  - button " " [ref=e364] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e365]: 
+              - generic [ref=e367]:
+                - link [ref=e368] [cursor=pointer]:
+                  - /url: /switch-pokemon-violet-p452207
+                  - generic [ref=e369]:
+                    - img [ref=e370]
+                    - generic [ref=e371]: 7+
+                  - generic [ref=e372]:
+                    - heading "SWITCH Pokémon Violet" [level=2] [ref=e373]
+                    - generic [ref=e374]: Bine ați venit în lumea deschisă a Pokémonilor! Pokémon Scarlet și Pokémon Violet, cele mai recente capitole din seria Pokémon, sosesc pe Nintendo Switch pe 18 noiembrie. Cu aceste titluri noi, seria Pokémon face un nou pas evolutiv, permițându-vă să explorați liber într-o lume deschisă vastă. Diferitele orașe se integrează perfect în sălbăticie fără limite. Veți vedea Pokémonii din această regiune în cer, în mări, în păduri, pe străzi – peste tot! Experimentați adevărata bucurie a seriei Pokémon – luptați împotriva Pokémonilor sălbatici pentru a-i captura – acum într-un joc cu lume deschisă, pe care îl pot savura jucătorii de orice vârstă. Împărtășiți bucuria descoperirii cu prietenii și familia, în timp ce porniți în aventura voastră alături de încă trei jucători!* Ceilalți trei Pokémoni din care vă puteți alege primul partener sunt Sprigatito, Fuecoco și Quaxly. Prezentarea personajelor Prietenă voastră, Nemona, este veselă, energică și adoră cu adevărat luptele Pokémon! Ca antrenor experimentat de Pokémon, vă va fi un ghid de încredere în aventurile voastre. În Pokémon Scarlet, veți întâlni profesorul Sada, în timp ce în Pokémon Violet veți întâlni profesorul Turo. Fiecare dintre ei explorează anumite tradiții transmise în regiune... Când porniți în aventura voastră, ținuta voastră va fi diferită în funcție de faptul că jucați Pokémon Scarlet sau Pokémon Violet. Cine știe ce poveste vă așteaptă? *Pentru modul multiplayer, este posibil să fie necesare accesorii suplimentare, jocuri și/sau sisteme care se vând separat. O conexiune la internet este necesară pentru jocul online. Pentru a utiliza serviciile online, trebuie să creați un cont Nintendo și să acceptați contractul aferent. Se aplică politica de confidențialitate a contului Nintendo. Unele servicii online pot să nu fie disponibile în toate țările. Jocul online necesită un abonament plătit. Aflați mai multe despre abonamentul plătit.
+                - generic [ref=e375]:
+                  - generic [ref=e376]:
+                    - generic [ref=e378]:
+                      - text: 3 - 7 zile
+                      - generic [ref=e379]: 
+                    - strong [ref=e381]: 246,34 lei
+                  - button " " [ref=e385] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e386]: 
+              - generic [ref=e388]:
+                - link [ref=e389] [cursor=pointer]:
+                  - /url: /switch-pokemon-shield-p458277
+                  - generic [ref=e390]:
+                    - img [ref=e391]
+                    - generic [ref=e392]: 7+
+                  - generic [ref=e393]:
+                    - heading "SWITCH Pokémon Shield" [level=2] [ref=e394]
+                    - generic [ref=e395]: "Noua generație de Pokémoni vine pe Nintendo Switch Începe-ți cariera de antrenor de Pokémoni alegând unul dintre cei trei noi ajutoare Pokémon: Grookey, Scorbunny sau Sobble. Te așteaptă regiunea Galar, unde va trebui să te confrunți cu răufăcătorii din echipa Yell și să descoperi secretele legendariilor Pokémoni Zacian și Zamazenta! Explorează Zona Sălbatică - o țară vastă, în care poți mișca liber camera. Conectează-te local sau online cu până la trei alți jucători în noile bătălii multiplayer Max Raid, unde jucătorii se confruntă împreună cu uriașii, super puternici Pokémoni cunoscuți sub numele de Pokémoni Dynamax. Pokémonii evoluați pot atinge forma Gigantamax, care le oferă un nou aspect și abilități puternice G-Max. Distracția nu se oprește însă la îmbunătățirea abilităților de luptă - vizitează magazinele din oraș și alege-ți haine noi sau lasă-te tuns. Astfel, vei fi exact antrenorul pe care vrei să-l fii. Pe parcursul aventurii tale, vei întâlni nu doar Pokémoni complet noi, ci și pe cei cunoscuți în noi forme galars! Pentru a-ți facilita creșterea nivelului Pokémonilor tăi, dă-le comenzi să îndeplinească așa-numitele Poké Jobs. Pentru distracție, există tabăra Pokémon, unde te poți juca cu Pokémonii tăi! Prinde, schimbă și luptă cu Pokémonii în expediția ta de aventură în Galar Alege dintre cei trei noi prieteni Pokémon și descoperă Pokémoni complet noi Descifrează misterul legendariilor Pokémoni Zacian și Zamazenta! Jucătorii pot mișca liber camera în vasta zonă sălbatică Alătură-te altor antrenori în bătăliile Max Raid! Luptă împotriva Pokémonilor Dynamax sălbatici în bătăliile Max Raid și încearcă să-i prinzi! Poke Ball Plus Folosește funcțiile controlerului Poké Ball Plus (vândut separat). Ia-ți Pokémonii la o plimbare în lumea reală! Dacă petreci suficient timp cu Pokémonii tăi preferați, se va întâmpla ceva uimitor!"
+                - generic [ref=e396]:
+                  - generic [ref=e397]:
+                    - generic [ref=e399]:
+                      - text: 3 - 7 zile
+                      - generic [ref=e400]: 
+                    - strong [ref=e402]: 236,05 lei
+                  - button " " [ref=e406] [cursor=pointer]:
+                    - text: 
+                    - generic [ref=e407]: 
+            - navigation [ref=e408]:
+              - generic [ref=e409]: 88 produse
+              - button "Afișați mai multe 12 " [ref=e410] [cursor=pointer]:
+                - text: Afișați mai multe 12
+                - generic [ref=e411]: 
+              - list [ref=e413]:
+                - listitem [ref=e414]:
+                  - link "1" [ref=e415] [cursor=pointer]:
+                    - /url: /vyhladavanie?search=pokemon+tcg
+                - listitem [ref=e416]:
+                  - link "2" [ref=e417] [cursor=pointer]:
+                    - /url: /vyhladavanie?search=pokemon+tcg&page=2
+                - listitem [ref=e418]:
+                  - link "3" [ref=e419] [cursor=pointer]:
+                    - /url: /vyhladavanie?search=pokemon+tcg&page=3
+                - listitem [ref=e420]:
+                  - link "4" [ref=e421] [cursor=pointer]:
+                    - /url: /vyhladavanie?search=pokemon+tcg&page=4
+                - listitem [ref=e422]: ...
+                - listitem [ref=e423]:
+                  - link "8" [ref=e424] [cursor=pointer]:
+                    - /url: /vyhladavanie?search=pokemon+tcg&page=8
+        - generic [ref=e426]:
+          - generic [ref=e427]:
+            - heading "Merită să vă jucați și să cumpărați la noi" [level=2] [ref=e428]
+            - text:  
+          - generic [ref=e431]:
+            - generic [ref=e433]:
+              - img "În medie, vă livrăm coletul în 3 zile lucrătoare" [ref=e435]
+              - generic [ref=e436]: În medie, vă livrăm coletul în 3 zile lucrătoare
+            - link "Avem peste 200.000 de produse în stoc pentru Dvs. Avem peste 200.000 de produse în stoc pentru Dvs." [ref=e437] [cursor=pointer]:
+              - /url: kategorie
+              - generic [ref=e438]:
+                - img "Avem peste 200.000 de produse în stoc pentru Dvs." [ref=e440]
+                - generic [ref=e441]: Avem peste 200.000 de produse în stoc pentru Dvs.
+            - link "Sistem de fidelitate, care vă răsplătește la fiecare achiziție Sistem de fidelitate, care vă răsplătește la fiecare achiziție" [ref=e442] [cursor=pointer]:
+              - /url: program-de-loialitate-a11
+              - generic [ref=e443]:
+                - img "Sistem de fidelitate, care vă răsplătește la fiecare achiziție" [ref=e445]
+                - generic [ref=e446]: Sistem de fidelitate, care vă răsplătește la fiecare achiziție
+        - generic [ref=e448]:
+          - generic [ref=e450]:
+            - generic [ref=e452]: Înscrieți-vă pentru newsletter
+            - generic [ref=e454]:
+              - generic [ref=e455]:
+                - textbox "Introduceți e-mailul Dvs." [ref=e458]
+                - button "la pachet" [ref=e460] [cursor=pointer]
+              - generic [ref=e464] [cursor=pointer]:
+                - text: Sunt de acord cu prelucrarea
+                - link "datelor personale" [ref=e465]:
+                  - /url: /ochrana-sukromia
+                - text: si primirea noutăților.
+          - img [ref=e466]
+    - contentinfo [ref=e467]:
+      - generic [ref=e468]:
+        - generic [ref=e471]:
+          - generic [ref=e473]:
+            - generic [ref=e475]:
+              - generic [ref=e476]:
+                - text: 
+                - generic [ref=e477]: Informații
+                - list [ref=e479]:
+                  - listitem [ref=e480]:
+                    - text: 
+                    - link "Termeni si conditii" [ref=e481] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/obchodne-podmienky-a3
+                  - listitem [ref=e482]:
+                    - text: 
+                    - link "Reclamatii" [ref=e483] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/reklamacny-poriadok-a5
+              - generic [ref=e484]:
+                - text: 
+                - generic [ref=e485]: Rai jucării
+                - list [ref=e487]:
+                  - listitem [ref=e488]:
+                    - text: 
+                    - link "Program de loialitate" [ref=e489] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/vernostny-program-a11
+                  - listitem [ref=e490]:
+                    - text: 
+                    - link "Cum comand produse?" [ref=e491] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/ako-objednat-tovar-a7
+                  - listitem [ref=e492]:
+                    - text: 
+                    - link "Producători" [ref=e493] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/vyrobcovia
+                  - listitem [ref=e494]:
+                    - text: 
+                    - link "Contact" [ref=e495] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/kontakt
+              - generic [ref=e496]:
+                - text: 
+                - generic [ref=e497]: Mod de plată
+                - list [ref=e499]:
+                  - listitem [ref=e500]:
+                    - text: 
+                    - link "Plata ramburs" [ref=e501] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/platba-na-dobierku-a23
+                  - listitem [ref=e502]:
+                    - text: 
+                    - link "Plata cu cardul" [ref=e503] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/platba-kartou-online-a29
+                  - listitem [ref=e504]:
+                    - text: 
+                    - link "Google Pay" [ref=e505] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/google-pay-a58
+                  - listitem [ref=e506]:
+                    - text: 
+                    - link "Apple Pay" [ref=e507] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/apple-pay-a61
+              - generic [ref=e508]:
+                - text: 
+                - generic [ref=e509]: Mod de transport
+                - list [ref=e511]:
+                  - listitem [ref=e512]:
+                    - text: 
+                    - link "Livrare prin GLS" [ref=e513] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/dorucenie-kurierom-dhl-a33
+                  - listitem [ref=e514]:
+                    - text: 
+                    - link "Livrare prin Curier Gebruder Weiss" [ref=e515] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/dorucenie-kurierom-geis-cargo-a35
+                  - listitem [ref=e516]:
+                    - text: 
+                    - link "GLS Parcelshop" [ref=e517] [cursor=pointer]:
+                      - /url: https://www.raijucarii.ro/gls-parcelshop-a69
+            - generic [ref=e519]:
+              - strong [ref=e521]: "Asistență telefonică: 09:00 – 15:00"
+              - link "+40373805526" [ref=e523] [cursor=pointer]:
+                - /url: tel:+40373805526
+              - generic [ref=e524]:
+                - generic [ref=e525]: Răspuns în 12 ore
+                - link "info@raijucarii.ro" [ref=e526] [cursor=pointer]:
+                  - /url: mailto:info@raijucarii.ro
+          - generic [ref=e527]:
+            - generic [ref=e528]: Vă mulțumim pentru sprijinul Dvs.
+            - generic [ref=e529]:
+              - generic [ref=e530]:
+                - link "2669 fani" [ref=e531] [cursor=pointer]:
+                  - /url: https://www.facebook.com/raijucarii.ro/
+                - paragraph [ref=e532]:
+                  - text: ne urmărește pe facebook.
+                  - link "alătură-te și tu" [ref=e533] [cursor=pointer]:
+                    - /url: https://www.facebook.com/raijucarii.ro/
+                  - text: .
+              - generic [ref=e534]:
+                - link "#raijucării.ro" [ref=e535] [cursor=pointer]:
+                  - /url: https://www.instagram.com/raijucarii/
+                - paragraph [ref=e536]:
+                  - text: Alăturați-vă și urmăriți-ne și pe
+                  - link "instagram" [ref=e537] [cursor=pointer]:
+                    - /url: https://www.instagram.com/raijucarii/
+        - generic [ref=e540]:
+          - generic [ref=e541]:
+            - text: Copyright © 2026 RaiJucării.ro
+            - generic [ref=e542]:
+              - text: Crearea magazinelor online puternice de la
+              - link "RIESENIA.com" [ref=e543] [cursor=pointer]:
+                - /url: http://www.riesenia.com/
+          - button "ro Romanian " [ref=e546] [cursor=pointer]:
+            - img "ro" [ref=e547]
+            - generic [ref=e548]: Romanian
+            - generic [ref=e549]: 
+  - text:                                                          

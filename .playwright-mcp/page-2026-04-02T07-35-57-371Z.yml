@@ -1,0 +1,625 @@
+- generic [active] [ref=e1]:
+  - link [ref=e2] [cursor=pointer]:
+    - /url: /transport-gratuit
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic: 
+          - text: 
+          - generic: 
+          - generic: 
+          - generic: 
+          - link [ref=e7] [cursor=pointer]:
+            - /url: https://www.tulli.ro/
+        - generic [ref=e8]:
+          - paragraph [ref=e9]:
+            - text: "Serviciu cu clienţii (luni-vineri 10-18):"
+            - strong [ref=e10]: 0359.780.019
+          - list [ref=e11]:
+            - listitem [ref=e12]:
+              - link "Pagina principală" [ref=e13] [cursor=pointer]:
+                - /url: https://www.tulli.ro/
+            - listitem [ref=e14]:
+              - generic [ref=e15]:
+                - button "Categorii" [ref=e16] [cursor=pointer]: Categorii 
+                - option "Alege o categorie de vârstă" [selected]
+                - option "sub 1 an"
+                - option "între 1 şi 2 ani"
+                - option "între 3 şi 4 ani"
+                - option "între 5 şi 7 ani"
+                - option "între 8 şi 12 ani"
+                - option "Adolescenţi"
+                - option "Veşnic tineri"
+                - option "Alege dintre categorii de sexe" [selected]
+                - option "Pentru fete şi băieţi, deopotrivă"
+                - option "Numai pentru fete"
+                - option "Numai pentru băieţi"
+                - option "Alege o categorie de preţ" [selected]
+                - option "Sub 30 lei"
+                - option "Între 30 şi 50 lei"
+                - option "Între 50 şi 100 lei"
+                - option "Între 100 şi 150 lei"
+                - option "Între 150 şi 200 lei"
+                - option "Peste 200 lei"
+            - listitem [ref=e17]:
+              - button "Mărci" [ref=e19] [cursor=pointer]: Mărci 
+            - listitem [ref=e20]:
+              - button "Personaje" [ref=e22] [cursor=pointer]: Personaje 
+            - listitem [ref=e23]:
+              - button "Ofertele actuale" [ref=e25] [cursor=pointer]
+            - listitem
+            - listitem [ref=e26]:
+              - link "Blog" [ref=e27] [cursor=pointer]:
+                - /url: https://www.tulli.ro/blog
+            - text: 
+            - listitem: 
+            - listitem: 
+          - generic [ref=e28]:
+            - button "Serviciu cu clienţii " [ref=e30] [cursor=pointer]:
+              - text: Serviciu cu clienţii
+              - generic [ref=e31]: 
+            - link "Lista mea de dorinţe " [ref=e33] [cursor=pointer]:
+              - /url: https://www.tulli.ro/lista-de-dorinte
+              - generic [ref=e34]: Lista mea de dorinţe
+              - generic [ref=e35]: 
+            - link "Coş " [ref=e37] [cursor=pointer]:
+              - /url: https://www.tulli.ro/cos
+              - generic [ref=e38]: Coş
+              - generic [ref=e39]: 
+            - generic [ref=e40]:
+              - button " " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: 
+              - generic [ref=e44]: Adataim
+          - generic [ref=e45]:
+            - button "" [ref=e46] [cursor=pointer]:
+              - generic [ref=e47]: 
+            - option "Pentru toate vârstele" [selected]
+            - option "între 1 şi 2 ani"
+            - option "între 3 şi 4 ani"
+            - option "între 5 şi 7 ani"
+            - option "între 8 şi 12 ani"
+            - option "Adolescenţi"
+            - option "Veşnic tineri"
+            - option "Ambele sexe" [selected]
+            - option "Băieţilor şi fetelor, deopotrivă"
+            - option "Numai fetelor"
+            - option "Numai băieţilor"
+            - option "Toate categoriile de preţ" [selected]
+            - option "jucării sub 30 lei"
+            - option "jucării 30 - 50 lei"
+            - option "jucării 50 - 100 lei"
+            - option "jucării 100 - 150 lei"
+            - option "jucării 150 - 200 lei"
+            - option "jucării peste 200 lei"
+          - search [ref=e48]:
+            - textbox "Scrie aici căutarea" [ref=e50]
+            - button "" [ref=e51] [cursor=pointer]:
+              - generic [ref=e52]: 
+        - text: 
+    - generic [ref=e53]:
+      - link "Comenzile plasate până la 29 martie pot fi livrate înainte de Paștele catolic." [ref=e56] [cursor=pointer]:
+        - /url: /promotie
+      - list [ref=e58]:
+        - listitem [ref=e59]:
+          - link "Pagina principală" [ref=e60] [cursor=pointer]:
+            - /url: https://www.tulli.ro/
+        - listitem [ref=e61]:
+          - text: /
+          - 'link "Căutare: pokemon tcg" [ref=e62] [cursor=pointer]':
+            - /url: https://www.tulli.ro/search?keyword=pokemon+tcg
+      - text: 
+      - generic [ref=e64]:
+        - navigation [ref=e66]:
+          - generic [ref=e68]:
+            - heading "Căutare avansată" [level=4] [ref=e69]
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - generic [ref=e72]: "9"
+                - text: Produse căutate
+              - generic [ref=e73]:
+                - combobox [ref=e74]:
+                  - option "Alege o categorie de vârstă" [selected]
+                  - option "între 5 şi 7 ani (9)"
+                  - option "Adolescenţi (9)"
+                  - option "între 8 şi 12 ani (9)"
+                  - option "Veşnic tineri (3)"
+                - combobox [ref=e75]:
+                  - option "Alege dintre categorii de sexe" [selected]
+                  - option "Fete şi băieţi, deopotrivă (9)"
+              - strong [ref=e76]: Preţ
+              - generic [ref=e77]:
+                - generic [ref=e79]:
+                  - slider [ref=e82]
+                  - slider [ref=e84]
+                - generic [ref=e86]:
+                  - spinbutton [ref=e87]: "32"
+                  - generic [ref=e88]: "-"
+                  - spinbutton [ref=e89]: "1074"
+                  - generic [ref=e90]: LEI
+                  - generic [ref=e91] [cursor=pointer]: OK 
+              - strong [ref=e92]: Arată numai asta
+              - list [ref=e93]:
+                - listitem [ref=e94]:
+                  - link "Livrăm din stoc (9)" [ref=e95] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_availability=in+stock
+                    - text: Livrăm din stoc (9) 
+                - listitem [ref=e96]:
+                  - link "Oferte speciale (1)" [ref=e97] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_akcios=true
+                    - text: Oferte speciale (1) 
+                - listitem [ref=e98]:
+                  - link "Noutăţi (2)" [ref=e99] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_ujdonsag=true
+                    - text: Noutăţi (2) 
+              - strong [ref=e100]: Categoria
+              - list [ref=e101]:
+                - listitem [ref=e102]:
+                  - link "Jocuri de societate, cărţi de joc (9)" [ref=e103] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_category=Jocuri+de+societate%2C+c%C4%83r%C5%A3i+de+joc%7C%7CJocuri+de+societate%2C+c%C4%83r%C5%A3i+de+joc%7CCartona%C8%99+colec%C8%9Bionabil
+                    - text: Jocuri de societate, cărţi de joc (9) 
+                - listitem [ref=e104]:
+                  - link "Cartonaș colecționabil (9)" [ref=e105] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_category=Jocuri+de+societate%2C+c%C4%83r%C5%A3i+de+joc%7CCartona%C8%99+colec%C8%9Bionabil
+                    - text: Cartonaș colecționabil (9) 
+              - strong [ref=e106]: Personaj
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - link "Pokémon (9)" [ref=e109] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_mesehos=Pok%C3%A9mon
+                    - text: Pokémon (9) 
+              - strong [ref=e110]: Producător
+              - list [ref=e111]:
+                - listitem [ref=e112]:
+                  - link "Asmodee (9)" [ref=e113] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_gyarto=Asmodee
+                    - text: Asmodee (9) 
+              - strong [ref=e114]: Câţi pot juca
+              - list [ref=e115]:
+                - listitem [ref=e116]:
+                  - link "Pentru 1 jucător (9)" [ref=e117] [cursor=pointer]:
+                    - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&filter_jatekosokSzama=Pentru+1+juc%C4%83tor
+                    - text: Pentru 1 jucător (9) 
+        - generic [ref=e118]:
+          - 'heading "Căutare: pokemon tcg" [level=1] [ref=e119]'
+          - group [ref=e120]:
+            - generic [ref=e121] [cursor=pointer]: Relevanță
+            - link "Cel mai popular" [ref=e122] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=fame
+            - link "Cel mai nou" [ref=e123] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=time
+            - link "Cel mai ieftin" [ref=e124] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=price
+            - link "Cel mai scump" [ref=e125] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=ecirp
+            - link "Alfabetic" [ref=e126] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=name
+            - link "Reducere" [ref=e127] [cursor=pointer]:
+              - /url: https://www.tulli.ro/search?keyword=pokemon+tcg&sort=spec
+            - text: 
+          - generic [ref=e128]:
+            - generic [ref=e130]:
+              - generic [ref=e131]:
+                - 'link "Pokémon TCG: Cutia Mega Latias ex" [ref=e132] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-cutia-mega-latias-ex-278999
+                  - generic [ref=e133]:
+                    - generic [ref=e134]: 
+                    - 'img "Pokémon TCG: Cutia Mega Latias ex" [ref=e137]'
+                - 'heading "Pokémon TCG: Cutia Mega Latias ex" [level=3] [ref=e138]':
+                  - 'link "Pokémon TCG: Cutia Mega Latias ex" [ref=e139] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-cutia-mega-latias-ex-278999
+                - paragraph [ref=e140]:
+                  - strong [ref=e141]: 159,90 LEI
+              - text: 
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - 'link "Pokémon TCG: Mega Charizard X ex - Ultra Colecție Premium" [ref=e145] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-mega-charizard-x-ex-ultra-colectie-premium-279800
+                  - generic [ref=e146]:
+                    - generic [ref=e147]: 
+                    - 'img "Pokémon TCG: Mega Charizard X ex - Ultra Colecție Premium" [ref=e150]'
+                - 'heading "Pokémon TCG: Mega Charizard X ex - Ultra Colecție Premium" [level=3] [ref=e151]':
+                  - 'link "Pokémon TCG: Mega Charizard X ex - Ultra Colecție Premium" [ref=e152] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-mega-charizard-x-ex-ultra-colectie-premium-279800
+                - paragraph [ref=e153]:
+                  - strong [ref=e154]: 1.073,90 LEI
+                - paragraph [ref=e155]:
+                  - img "Csillag" [ref=e156]
+                  - img "Csillag" [ref=e157]
+                  - img "Csillag" [ref=e158]
+                  - img "Csillag" [ref=e159]
+                  - img "Csillag" [ref=e160]
+                  - text: (1)
+              - text: 
+            - generic [ref=e162]:
+              - generic [ref=e163]:
+                - 'link "Pokémon TCG: Colecție Premium Mega Venusaur ex" [ref=e164] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-colectie-premium-mega-venusaur-ex-280481
+                  - generic [ref=e165]:
+                    - generic [ref=e166]: 
+                    - 'img "Pokémon TCG: Colecție Premium Mega Venusaur ex" [ref=e169]'
+                - 'heading "Pokémon TCG: Colecție Premium Mega Venusaur ex" [level=3] [ref=e170]':
+                  - 'link "Pokémon TCG: Colecție Premium Mega Venusaur ex" [ref=e171] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-colectie-premium-mega-venusaur-ex-280481
+                - paragraph [ref=e172]:
+                  - strong [ref=e173]: 409,90 LEI
+              - text: 
+            - generic [ref=e175]:
+              - generic [ref=e176]:
+                - 'link "Set Pokémon TCG: Enhanced 2-Pack Blister" [ref=e177] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/set-pokemon-tcg-enhanced-2-pack-blister-286523
+                  - generic [ref=e178]:
+                    - generic [ref=e179]: 
+                    - 'img "Set Pokémon TCG: Enhanced 2-Pack Blister" [ref=e182]'
+                - 'heading "Set Pokémon TCG: Enhanced 2-Pack Blister" [level=3] [ref=e183]':
+                  - 'link "Set Pokémon TCG: Enhanced 2-Pack Blister" [ref=e184] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/set-pokemon-tcg-enhanced-2-pack-blister-286523
+                - paragraph [ref=e185]:
+                  - strong [ref=e186]: 92,90 LEI
+              - text: 
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - 'link "Pokémon TCG: SV09 Journey Together - Booster - în engleză, diverse tipuri" [ref=e190] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-sv09-journey-together-booster-in-engleza-diverse-tipuri-274801
+                  - generic [ref=e191]:
+                    - generic [ref=e192]: 
+                    - 'img "Pokémon TCG: SV09 Journey Together - Booster - în engleză, diverse tipuri" [ref=e195]'
+                - 'heading "Pokémon TCG: SV09 Journey Together - Booster - în engleză, diverse tipuri" [level=3] [ref=e196]':
+                  - 'link "Pokémon TCG: SV09 Journey Together - Booster - în engleză, diverse tipuri" [ref=e197] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-sv09-journey-together-booster-in-engleza-diverse-tipuri-274801
+                - generic [ref=e198]:
+                  - paragraph [ref=e199]: "Ofertă specială:"
+                  - paragraph [ref=e200]: 31,90 LEI
+                  - paragraph
+              - text: 
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - 'link "Pokémon TCG: ME02.5 Eroi Înălțați - Colecție Poster Premium, mai multe modele" [ref=e204] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-me02-5-eroi-inaltati-colectie-poster-premium-mai-multe-modele-287042
+                  - generic [ref=e205]:
+                    - generic [ref=e206]: 
+                    - 'img "Pokémon TCG: ME02.5 Eroi Înălțați - Colecție Poster Premium, mai multe modele" [ref=e209]'
+                - 'heading "Pokémon TCG: ME02.5 Eroi Înălțați - Colecție Poster Premium, mai multe modele" [level=3] [ref=e210]':
+                  - 'link "Pokémon TCG: ME02.5 Eroi Înălțați - Colecție Poster Premium, mai multe modele" [ref=e211] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-me02-5-eroi-inaltati-colectie-poster-premium-mai-multe-modele-287042
+                - paragraph [ref=e212]:
+                  - strong [ref=e213]: 449,90 LEI
+              - text: 
+            - generic [ref=e215]:
+              - generic [ref=e216]:
+                - 'link "Pokémon TCG: ME02.5 Ascended Heroes - Autocolant tehnic, diverse modele" [ref=e217] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-me02-5-ascended-heroes-autocolant-tehnic-diverse-modele-283377
+                  - generic [ref=e218]:
+                    - generic [ref=e219]: 
+                    - 'img "Pokémon TCG: ME02.5 Ascended Heroes - Autocolant tehnic, diverse modele" [ref=e222]'
+                - 'heading "Pokémon TCG: ME02.5 Ascended Heroes - Autocolant tehnic, diverse modele" [level=3] [ref=e223]':
+                  - 'link "Pokémon TCG: ME02.5 Ascended Heroes - Autocolant tehnic, diverse modele" [ref=e224] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-me02-5-ascended-heroes-autocolant-tehnic-diverse-modele-283377
+                - paragraph [ref=e225]:
+                  - strong [ref=e226]: 209,90 LEI
+              - text: 
+            - generic [ref=e228]:
+              - generic [ref=e229]:
+                - 'link "Pokémon TCG: ME02.5 Ascended Heroes - Mini Tin, diferite tipuri" [ref=e230] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-me02-5-ascended-heroes-mini-tin-diferite-tipuri-284912
+                  - generic [ref=e231]:
+                    - generic [ref=e232]: 
+                    - 'img "Pokémon TCG: ME02.5 Ascended Heroes - Mini Tin, diferite tipuri" [ref=e235]'
+                - 'heading "Pokémon TCG: ME02.5 Ascended Heroes - Mini Tin, diferite tipuri" [level=3] [ref=e236]':
+                  - 'link "Pokémon TCG: ME02.5 Ascended Heroes - Mini Tin, diferite tipuri" [ref=e237] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-me02-5-ascended-heroes-mini-tin-diferite-tipuri-284912
+                - paragraph [ref=e238]:
+                  - strong [ref=e239]: 129,90 LEI
+              - text: 
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - 'link "Pokémon TCG: ME02.5 Eroi Ascendenți - Pachet Dublu Blister" [ref=e243] [cursor=pointer]':
+                  - /url: https://www.tulli.ro/pokemon-tcg-me02-5-eroi-ascendenti-pachet-dublu-blister-283386
+                  - generic [ref=e244]:
+                    - generic [ref=e245]: 
+                    - 'img "Pokémon TCG: ME02.5 Eroi Ascendenți - Pachet Dublu Blister" [ref=e248]'
+                - 'heading "Pokémon TCG: ME02.5 Eroi Ascendenți - Pachet Dublu Blister" [level=3] [ref=e249]':
+                  - 'link "Pokémon TCG: ME02.5 Eroi Ascendenți - Pachet Dublu Blister" [ref=e250] [cursor=pointer]':
+                    - /url: https://www.tulli.ro/pokemon-tcg-me02-5-eroi-ascendenti-pachet-dublu-blister-283386
+                - paragraph [ref=e251]:
+                  - strong [ref=e252]: 105,90 LEI
+              - text: 
+          - list [ref=e254]:
+            - listitem [ref=e255]: Pagina nr. 1
+      - text:         
+  - contentinfo [ref=e256]:
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - heading "Liste ale produselor de top" [level=2] [ref=e260]
+        - list [ref=e261]:
+          - listitem [ref=e262]:
+            - link "Ofertele actuale" [ref=e263] [cursor=pointer]:
+              - /url: https://www.tulli.ro/promotie
+          - listitem [ref=e264]:
+            - link "Noutăţi" [ref=e265] [cursor=pointer]:
+              - /url: https://www.tulli.ro/noutate
+          - listitem [ref=e266]:
+            - link "Ultimele bucăţi" [ref=e267] [cursor=pointer]:
+              - /url: https://www.tulli.ro/ultimele-bucati
+          - listitem [ref=e268]:
+            - link "Top 100 produse" [ref=e269] [cursor=pointer]:
+              - /url: https://www.tulli.ro/top100
+        - heading "Cui recomandăm" [level=2] [ref=e270]
+        - list [ref=e271]:
+          - listitem [ref=e272]:
+            - link "Băieţilor şi fetelor, deopotrivă" [ref=e273] [cursor=pointer]:
+              - /url: https://www.tulli.ro/pentru-baieti-si-fete
+          - listitem [ref=e274]:
+            - link "Numai fetelor" [ref=e275] [cursor=pointer]:
+              - /url: https://www.tulli.ro/pentru-fete
+          - listitem [ref=e276]:
+            - link "Numai băieţilor" [ref=e277] [cursor=pointer]:
+              - /url: https://www.tulli.ro/pentru-baieti
+      - generic [ref=e278]:
+        - heading "Mărci populare" [level=2] [ref=e279]
+        - list [ref=e280]:
+          - listitem [ref=e281]:
+            - link "Bitzee" [ref=e282] [cursor=pointer]:
+              - /url: /bitzee-marca
+          - listitem [ref=e283]:
+            - link "Crayola" [ref=e284] [cursor=pointer]:
+              - /url: /crayola-marca
+          - listitem [ref=e285]:
+            - link "Dress Your Puppy" [ref=e286] [cursor=pointer]:
+              - /url: /dress-your-puppy-marca
+          - listitem [ref=e287]:
+            - link "Fisher-Price" [ref=e288] [cursor=pointer]:
+              - /url: /fisher-price-marca
+          - listitem [ref=e289]:
+            - link "Hot Wheels" [ref=e290] [cursor=pointer]:
+              - /url: /hot-wheels-marca
+          - listitem [ref=e291]:
+            - link "Keller és Mayer" [ref=e292] [cursor=pointer]:
+              - /url: /keller-es-mayer-marca
+          - listitem [ref=e293]:
+            - link "LEGO ®" [ref=e294] [cursor=pointer]:
+              - /url: /lego-marca
+          - listitem [ref=e295]:
+            - link "Little Live Pets" [ref=e296] [cursor=pointer]:
+              - /url: /little-live-pets-marca
+          - listitem [ref=e297]:
+            - link "Pagony" [ref=e298] [cursor=pointer]:
+              - /url: /pagony-marca
+          - listitem [ref=e299]:
+            - link "Spartan" [ref=e300] [cursor=pointer]:
+              - /url: /spartan-marca
+      - generic [ref=e301]:
+        - heading "Personaje îndrăgite" [level=2] [ref=e302]
+        - list [ref=e303]:
+          - listitem [ref=e304]:
+            - link "Barbie" [ref=e305] [cursor=pointer]:
+              - /url: /barbie-personaj
+          - listitem [ref=e306]:
+            - link "Bing" [ref=e307] [cursor=pointer]:
+              - /url: /bing-personaj
+          - listitem [ref=e308]:
+            - link "Bluey" [ref=e309] [cursor=pointer]:
+              - /url: /bluey-personaj
+          - listitem [ref=e310]:
+            - link "Bogyó şi Babóca" [ref=e311] [cursor=pointer]:
+              - /url: /bogyo-si-baboca-personaj
+          - listitem [ref=e312]:
+            - link "Casa de păpuși a lui Gabi" [ref=e313] [cursor=pointer]:
+              - /url: /casa-de-papusi-a-lui-gabi-personaj
+          - listitem [ref=e314]:
+            - link "Jurassic World" [ref=e315] [cursor=pointer]:
+              - /url: /jurassic-world-personaj
+          - listitem [ref=e316]:
+            - link "Lilo&Stitch" [ref=e317] [cursor=pointer]:
+              - /url: /lilo-stitch-personaj
+          - listitem [ref=e318]:
+            - link "Paw Patrol" [ref=e319] [cursor=pointer]:
+              - /url: /paw-patrol-personaj
+          - listitem [ref=e320]:
+            - link "Pokémon" [ref=e321] [cursor=pointer]:
+              - /url: /pokemon-personaj
+          - listitem [ref=e322]:
+            - link "Unicorn Academy" [ref=e323] [cursor=pointer]:
+              - /url: /unicorn-academy-personaj
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - heading "Tulli.ro Magazin web - – Magazin de jucării şi magazin web de jucării, e o joacă de copii să cumperi!" [level=2] [ref=e328]
+        - list [ref=e329]:
+          - listitem [ref=e330]:
+            - link "Serviciu cu clienţii" [ref=e331] [cursor=pointer]:
+              - /url: https://www.tulli.ro/serviciu-cu-clientii
+          - listitem [ref=e332]:
+            - link "Informaţii legate de cumpărare" [ref=e333] [cursor=pointer]:
+              - /url: https://www.tulli.ro/informatie
+          - listitem [ref=e334]:
+            - link "Cine suntem" [ref=e335] [cursor=pointer]:
+              - /url: https://www.tulli.ro/cine-suntem
+          - listitem [ref=e336]:
+            - link "Blog" [ref=e337] [cursor=pointer]:
+              - /url: https://www.tulli.ro/blog
+          - listitem [ref=e338]:
+            - link "Newsletter" [ref=e339] [cursor=pointer]:
+              - /url: https://www.tulli.ro/newsletter-abonare
+          - listitem [ref=e340]:
+            - link "Harta magazinului" [ref=e341] [cursor=pointer]:
+              - /url: https://www.tulli.ro/sitemap
+          - listitem [ref=e342]:
+            - link "Conectare" [ref=e343] [cursor=pointer]:
+              - /url: https://www.tulli.ro/login
+          - listitem [ref=e344]:
+            - link "Înregistrare" [ref=e345] [cursor=pointer]:
+              - /url: https://www.tulli.ro/transmiterea-datelor
+        - list [ref=e346]:
+          - listitem [ref=e347]:
+            - link "Termeni şi condiţii" [ref=e348] [cursor=pointer]:
+              - /url: /termeni-si-conditii
+          - listitem [ref=e349]:
+            - link "Politica de confidenţialitate" [ref=e350] [cursor=pointer]:
+              - /url: /politica-de-confidentialitate
+          - listitem [ref=e351]:
+            - link "Regulament de returnare și restituire" [ref=e352] [cursor=pointer]:
+              - /url: /regulament-returnare-restituire
+        - list [ref=e353]:
+          - listitem [ref=e354]:
+            - generic [ref=e355]: 
+            - 'link "Adresa noastră: 1211 Budapest, Szikratávíró u. 12. C/3." [ref=e356] [cursor=pointer]':
+              - /url: https://www.tulli.ro/serviciu-cu-clientii
+              - generic [ref=e357]: "Adresa noastră:"
+              - text: 1211 Budapest, Szikratávíró u. 12. C/3.
+          - listitem [ref=e358]:
+            - generic [ref=e359]: 
+            - 'link "Contact: 0359.780.019" [ref=e360] [cursor=pointer]':
+              - /url: tel:0359.780.019
+              - generic [ref=e361]: "Contact:"
+              - text: 0359.780.019
+          - listitem [ref=e362]:
+            - generic [ref=e363]: ✉
+            - generic [ref=e364]: "Adresa noastră e-mail:"
+            - link "info@tulli.ro" [ref=e365] [cursor=pointer]:
+              - /url: mailto:info@tulli.ro
+      - generic [ref=e366]:
+        - heading "Alătură de noi în fiecare zi!" [level=2] [ref=e367]
+        - text: Afli printre primii despre promoţiile noastre!
+        - list [ref=e368]:
+          - listitem [ref=e369]:
+            - link [ref=e370] [cursor=pointer]:
+              - /url: //www.facebook.com/tulli.ro
+    - generic [ref=e373]:
+      - link "România" [ref=e375] [cursor=pointer]:
+        - /url: https://www.tulli.ro
+        - text: România
+      - link "Slovenija" [ref=e378] [cursor=pointer]:
+        - /url: https://www.tulli.si
+        - text: Slovenija
+      - link "Hrvatska" [ref=e381] [cursor=pointer]:
+        - /url: https://www.tulli.hr
+        - text: Hrvatska
+      - link "Slovensko" [ref=e384] [cursor=pointer]:
+        - /url: https://www.tullitoys.sk
+        - text: Slovensko
+      - link "Österreich" [ref=e387] [cursor=pointer]:
+        - /url: https://www.tulli.at
+        - text: Österreich
+      - link "Deutschland" [ref=e390] [cursor=pointer]:
+        - /url: https://www.tullitoys.de
+        - text: Deutschland
+      - link "Italia" [ref=e393] [cursor=pointer]:
+        - /url: https://www.tullitoys.it
+        - text: Italia
+      - link "España" [ref=e396] [cursor=pointer]:
+        - /url: https://www.tulli.es
+        - text: España
+      - link "Ελλάδα" [ref=e399] [cursor=pointer]:
+        - /url: https://www.tulli.gr
+        - text: Ελλάδα
+      - link "France" [ref=e402] [cursor=pointer]:
+        - /url: https://www.tullitoys.fr
+        - text: France
+      - link "Belgique" [ref=e405] [cursor=pointer]:
+        - /url: https://www.tullitoys.be
+        - text: Belgique
+      - link "Nederland" [ref=e408] [cursor=pointer]:
+        - /url: https://www.tullitoys.nl
+        - text: Nederland
+      - link "Česká republika" [ref=e411] [cursor=pointer]:
+        - /url: https://www.tullitoys.cz
+        - text: Česká republika
+      - link "Polska" [ref=e414] [cursor=pointer]:
+        - /url: https://www.tullitoys.pl
+        - text: Polska
+      - link "Danmark" [ref=e417] [cursor=pointer]:
+        - /url: https://www.tulli.dk
+        - text: Danmark
+      - link "Portugal" [ref=e420] [cursor=pointer]:
+        - /url: https://www.tulli.pt
+        - text: Portugal
+      - link "Lietuva" [ref=e423] [cursor=pointer]:
+        - /url: https://www.tulli.lt
+        - text: Lietuva
+      - link "Latvija" [ref=e426] [cursor=pointer]:
+        - /url: https://www.tulli.lv
+        - text: Latvija
+      - link "Eesti" [ref=e429] [cursor=pointer]:
+        - /url: https://www.tulli.ee
+        - text: Eesti
+      - link "България" [ref=e432] [cursor=pointer]:
+        - /url: https://tulli.bg
+        - text: България
+      - link "Magyarország" [ref=e435] [cursor=pointer]:
+        - /url: https://www.tulli.hu
+        - text: Magyarország
+    - generic [ref=e438]:
+      - paragraph [ref=e439]:
+        - text: Toate preţurile Tulli.ro Magazin web conţin TVA. Ne rezervăm dreptul de a modifica preţurile. Ofertele speciale sunt valabile în limita stocului, şi sunt destinate persoanelor fizice şi vânzării cu amănuntul. Ca regulă, pentru jucăriile care funcţionează cu baterii, conţin numai bateriile necesare pentru verificarea funcţionării. Toate informaţiile sub formă de text şi imagine care figurează pe web site sunt sub protecţia drepturilor de autor. Faceți
+        - link "click aici" [ref=e440] [cursor=pointer]:
+          - /url: /politica-de-confidentialitate
+        - text: pentru a accesa politica noastră de confidențialitate. Toate drepturile rezervate.© Copyright Tulli.ro Magazin web, 2005-2026
+      - link "Mastercard, Visa" [ref=e442] [cursor=pointer]:
+        - /url: https://www.tulli.ro/informacio#menu_bankkartya
+        - img "Mastercard, Visa" [ref=e443]
+      - link "BIG FISH Payment Gateway" [ref=e445] [cursor=pointer]:
+        - /url: https://www.paymentgateway.hu
+        - img "BIG FISH Payment Gateway" [ref=e446]
+      - link "Compari.ro - ghid autentic de shopping" [ref=e448] [cursor=pointer]:
+        - /url: https://www.compari.ro
+        - img "Compari.ro - ghid autentic de shopping" [ref=e449]
+  - text:     
+  - generic [ref=e451]:
+    - generic [ref=e452]: Avem câteva cookie-uri. Vrei unul?
+    - generic [ref=e453]:
+      - text: Ajută-ne munca acceptând cookie-uri de performanță, astfel încât să ne dezvoltăm, să facem site-ul mai convenabil și mai bun! Și cu ajutorul cookie-urilor noastre inteligente, puteți vedea în continuare recomandări de produse uimitoare și utile.
+      - link "Vreau informaţii" [ref=e454] [cursor=pointer]:
+        - /url: /politica-de-confidentialitate#:~:text=3.1.7.2.
+    - generic [ref=e455]:
+      - generic [ref=e456]:
+        - generic [ref=e457]:
+          - checkbox "Funcționalități de bază" [checked] [disabled] [ref=e458]
+          - generic [ref=e459]: Funcționalități de bază
+        - generic [ref=e460]:
+          - checkbox "Cookie-uri de performanță" [ref=e461]
+          - generic [ref=e462]: Cookie-uri de performanță
+        - generic [ref=e463]:
+          - checkbox "Recomandatori inteligenți" [ref=e464]
+          - generic [ref=e465]: Recomandatori inteligenți
+      - link "Acceptarea aleșilor" [ref=e466] [cursor=pointer]:
+        - /url: "#"
+      - link "Acceptând totul" [ref=e467] [cursor=pointer]:
+        - /url: "#"
+  - generic [ref=e468]:
+    - generic:
+      - generic [ref=e470] [cursor=pointer]:
+        - img [ref=e471]
+        - img [ref=e473]
+      - generic [ref=e475]:
+        - generic [ref=e476]:
+          - generic [ref=e477]:
+            - link "Tulli.ro Magazin web - parerile cumparatorilor, evaluari" [ref=e478] [cursor=pointer]:
+              - /url: https://www.compari.ro/stores/tulli-ro-magazin-web-s97743/#recenzii
+              - text: După 7178 păreri
+            - link "<Tulli.ro Magazin web> - parerile cumparatorilor, evaluari":
+              - /url: https://www.compari.ro/stores/tulli-ro-magazin-web-s97743/#recenzii
+              - img "Tulli.ro Magazin web" [ref=e479] [cursor=pointer]
+          - generic [ref=e480]:
+            - generic [ref=e481]: 94.65%
+            - generic [ref=e482]: dintre cumpărători ar recomanda magazinul.
+          - table [ref=e483]:
+            - rowgroup [ref=e484]:
+              - row "Rata de satisfacţie:" [ref=e485]:
+                - cell "Rata de satisfacţie:" [ref=e486]
+                - cell [ref=e487]
+              - row "Termen de livrare:" [ref=e489]:
+                - cell "Termen de livrare:" [ref=e490]
+                - cell [ref=e491]
+              - row "Uzabilitatea magazinului:" [ref=e493]:
+                - cell "Uzabilitatea magazinului:" [ref=e494]
+                - cell [ref=e495]
+              - row "Relaţii cu clienţi:" [ref=e497]:
+                - cell "Relaţii cu clienţi:" [ref=e498]
+                - cell [ref=e499]
+          - generic [ref=e501]:
+            - link "Program Magazin de încredere" [ref=e502] [cursor=pointer]:
+              - /url: https://www.compari.ro/static/magazin_de_incredere_utilizatori.html
+              - img [ref=e503]
+            - generic [ref=e505]: Magazinul Tulli.ro Magazin web a devenit Magazin de încredere după părerile cumpărătorilor reali. Program realizat de compari.ro
+        - generic [ref=e506]: © 2004-2026 compari.ro Toate drepturile rezervate.

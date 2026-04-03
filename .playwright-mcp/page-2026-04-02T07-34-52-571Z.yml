@@ -1,0 +1,178 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Transportul și taxa poștală" [ref=e9] [cursor=pointer]:
+              - /url: /transportul
+          - listitem [ref=e10]:
+            - link "Contact" [ref=e11] [cursor=pointer]:
+              - /url: /contact
+        - link "contact@lumea-jocurilor.ro" [ref=e13] [cursor=pointer]:
+          - /url: mailto:contact@lumea-jocurilor.ro
+        - generic [ref=e14]:
+          - link "www.herni-svet.cz" [ref=e15] [cursor=pointer]:
+            - /url: https://www.herni-svet.cz/vyhledavani
+            - img "www.herni-svet.cz" [ref=e16]
+          - link "www.hernysvet.sk" [ref=e17] [cursor=pointer]:
+            - /url: https://www.hernysvet.sk/vyhladavanie
+            - img "www.hernysvet.sk" [ref=e18]
+          - link "www.gamemarket.pl" [ref=e19] [cursor=pointer]:
+            - /url: https://www.gamemarket.pl/wyszukiwanie
+            - img "www.gamemarket.pl" [ref=e20]
+          - link "www.gamemarket.hu" [ref=e21] [cursor=pointer]:
+            - /url: https://www.gamemarket.hu/keres
+            - img "www.gamemarket.hu" [ref=e22]
+          - link "www.lumea-jocurilor.ro" [ref=e23] [cursor=pointer]:
+            - /url: https://www.lumea-jocurilor.ro/cautare
+            - img "www.lumea-jocurilor.ro" [ref=e24]
+          - link "www.gamemarket.hr" [ref=e25] [cursor=pointer]:
+            - /url: https://www.gamemarket.hr/pretrazivanje
+            - img "www.gamemarket.hr" [ref=e26]
+          - link "www.gamemarket.si" [ref=e27] [cursor=pointer]:
+            - /url: https://www.gamemarket.si/iskanje
+            - img "www.gamemarket.si" [ref=e28]
+      - generic [ref=e30]:
+        - link "logo":
+          - /url: /
+          - img "logo" [ref=e31] [cursor=pointer]
+        - link "Coș de cumpărături 0 Coșul este gol" [ref=e33] [cursor=pointer]:
+          - /url: /cos
+          - img "Coș de cumpărături" [ref=e34]
+          - generic [ref=e35]: "0"
+          - text: Coșul este gol
+        - img "Căutați" [ref=e38] [cursor=pointer]
+        - navigation [ref=e39]:
+          - list [ref=e40]:
+            - listitem [ref=e41]:
+              - link "Jocuri pentru consolă și PC ▼" [ref=e42] [cursor=pointer]:
+                - /url: /jocuri
+            - listitem [ref=e43]:
+              - link "Console de jocuri ▼" [ref=e44] [cursor=pointer]:
+                - /url: /console-de-jocuri
+            - listitem [ref=e45]:
+              - link "Accesorii pentru jocuri ▼" [ref=e46] [cursor=pointer]:
+                - /url: /accesorii-pentru-jocuri
+            - listitem [ref=e47]:
+              - link "Merchandise ▼" [ref=e48] [cursor=pointer]:
+                - /url: /merchandise
+            - listitem [ref=e49]:
+              - link "Jucării ▼" [ref=e50] [cursor=pointer]:
+                - /url: /jucarii
+          - generic [ref=e52] [cursor=pointer]: Další kategorie...
+    - generic [ref=e54]:
+      - heading "Căutați \"pokemon tcg\"" [level=1] [ref=e55]
+      - generic [ref=e56]:
+        - checkbox "În stoc pentru expediere imediată" [ref=e57]
+        - generic [ref=e58]: În stoc pentru expediere imediată
+        - text: "Ordonează după:"
+        - combobox [ref=e59]:
+          - option "Popularitate" [selected]
+          - option "Cel mai ieftin"
+          - option "Cel mai scump"
+          - option "Titlu A-Z"
+          - option "Nume Z-A"
+          - option "Vechime - de la cele mai noi"
+          - option "Vechime - de la cele mai vechi"
+      - separator [ref=e61]
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - generic:
+            - generic: NEW
+          - 'link "Pokémon TCG: Enhanced 2-Pack Blister" [ref=e65] [cursor=pointer]':
+            - /url: /pokemon-tcg-enhanced-2-pack-blister
+            - 'img "Pokémon TCG: Enhanced 2-Pack Blister" [ref=e67]'
+          - 'link "Pokémon TCG: Enhanced 2-Pack Blister" [ref=e68] [cursor=pointer]':
+            - /url: /pokemon-tcg-enhanced-2-pack-blister
+            - strong [ref=e69]: "Pokémon TCG: Enhanced 2-Pack Blister"
+          - generic [ref=e71]:
+            - generic "Pentru a specifica termenul de livrare, te rugăm să ne contactezi." [ref=e72]: În stoc 5 sau mai multe bucăți
+            - generic [ref=e73]: 77 Lei
+            - generic [ref=e75] [cursor=pointer]: Adaugă în coș
+        - generic [ref=e76]:
+          - 'link "Pokémon TCG: SV10 Destined Rivals - A5 album" [ref=e78] [cursor=pointer]':
+            - /url: /pokemon-tcg-sv10-destined-rivals-a5-album
+            - 'img "Pokémon TCG: SV10 Destined Rivals - A5 album" [ref=e80]'
+          - 'link "Pokémon TCG: SV10 Destined Rivals - A5 album" [ref=e81] [cursor=pointer]':
+            - /url: /pokemon-tcg-sv10-destined-rivals-a5-album
+            - strong [ref=e82]: "Pokémon TCG: SV10 Destined Rivals - A5 album"
+          - generic [ref=e84]:
+            - generic "Pentru a specifica termenul de livrare, te rugăm să ne contactezi." [ref=e85]: În stoc 5 sau mai multe bucăți
+            - generic [ref=e86]: 58 Lei
+            - generic [ref=e88] [cursor=pointer]: Adaugă în coș
+        - generic [ref=e89]:
+          - 'link "Pokémon TCG: SV03 Obsidian Flames - A5 Album" [ref=e91] [cursor=pointer]':
+            - /url: /pokemon-tcg-sv03-obsidian-flames-a5-album
+            - 'img "Pokémon TCG: SV03 Obsidian Flames - A5 Album" [ref=e93]'
+          - 'link "Pokémon TCG: SV03 Obsidian Flames - A5 Album" [ref=e94] [cursor=pointer]':
+            - /url: /pokemon-tcg-sv03-obsidian-flames-a5-album
+            - strong [ref=e95]: "Pokémon TCG: SV03 Obsidian Flames - A5 Album"
+          - generic [ref=e97]:
+            - generic "Pentru a specifica termenul de livrare, te rugăm să ne contactezi." [ref=e98]: În stoc la furnizor (3 zile lucrătoare)
+            - generic [ref=e99]: 60 Lei
+            - generic [ref=e101] [cursor=pointer]: Adaugă în coș
+      - generic [ref=e102]:
+        - generic [ref=e103]: "Mergi la pagina:"
+        - generic [ref=e105]: "Total produse: 3"
+    - contentinfo [ref=e106]:
+      - generic [ref=e108]:
+        - button "Previous" [disabled] [ref=e109] [cursor=pointer]: <
+        - listbox [ref=e111]:
+          - option "23000+ De bucăți de marfă pregătite pentru expediere" [ref=e112]:
+            - generic [ref=e113]: 23000+
+            - text: De bucăți de marfă pregătite pentru expediere
+          - option "10100+ Recenzii și evaluări independente" [ref=e114]:
+            - generic [ref=e115]: 10100+
+            - text: Recenzii și evaluări independente
+          - option "Vă vom cumpăra sau vinde jocurile pentru un cont de schimb" [ref=e116]
+          - option "Vindem și jocuri mai vechi care nu se găsesc în altă parte" [ref=e117]
+          - option [ref=e118]: Geeks domesticiți noștri vă vor sfătui profesional
+        - button "Next" [ref=e119] [cursor=pointer]: ">"
+      - generic [ref=e121]:
+        - generic [ref=e123]:
+          - heading "Despre cumpărare" [level=2] [ref=e124]
+          - list [ref=e125]:
+            - listitem [ref=e126]:
+              - link "Transportul și taxa poștală" [ref=e127] [cursor=pointer]:
+                - /url: /transportul
+            - listitem [ref=e128]:
+              - link "Returnarea produselor și reclamația" [ref=e129] [cursor=pointer]:
+                - /url: /vraceni-a-reklamace
+            - listitem [ref=e130]:
+              - link "Termeni și Condiții" [ref=e131] [cursor=pointer]:
+                - /url: /termeni-si-conditii-generale
+            - listitem [ref=e132]:
+              - link "Protecția datelor cu caracter personal" [ref=e133] [cursor=pointer]:
+                - /url: /principii-de-protectie-a-datelor-cu-caracter-personal
+        - generic [ref=e135]:
+          - generic [ref=e136]:
+            - link "Logo" [ref=e137] [cursor=pointer]:
+              - /url: /
+              - img "Logo" [ref=e138]
+            - table [ref=e139]:
+              - rowgroup [ref=e140]:
+                - row "contact@lumea-jocurilor.ro" [ref=e141]:
+                  - cell "contact@lumea-jocurilor.ro" [ref=e142]:
+                    - link "contact@lumea-jocurilor.ro" [ref=e143] [cursor=pointer]:
+                      - /url: mailto:contact@lumea-jocurilor.ro
+                - row "Contact »" [ref=e144]:
+                  - cell "Contact »" [ref=e145]:
+                    - link "Contact »" [ref=e146] [cursor=pointer]:
+                      - /url: /contact
+            - link "Cookie hozzájárulás szerkesztése" [ref=e147] [cursor=pointer]:
+              - /url: javascript:gdprShow();gdprToggle();
+          - img "Platba kartou" [ref=e149]
+  - generic [ref=e151]:
+    - heading "Consimțământ pentru prelucrarea datelor personale și utilizarea cookie-urilor" [level=1] [ref=e152]
+    - generic [ref=e153]: Pe acest site folosim cookie-uri standard care sunt necesare din punct de vedere tehnic pentru funcționarea site-ului, oferă o experiență mai confortabilă sau permit păstrarea de statistici și personalizarea marketingului pentru a reduce prețurile produselor oferite și a asigura livrarea mai rapidă a comenzilor. Pentru a accesa site-ul, vă rugăm să vă exprimați consimțământul pentru prelucrarea datelor personale și utilizarea cookie-urilor menționate mai sus, prin apăsarea butonului. Dacă nu sunteți de acord cu utilizarea tuturor tipurilor de cookie-uri, puteți alege ce grupuri doriți să permiteți făcând clic pe „Setări cookie-uri”.
+    - separator [ref=e154]
+    - generic [ref=e155]:
+      - link "Sunt de acord" [ref=e156] [cursor=pointer]:
+        - /url: ""
+      - link "Nu sunt de acord" [ref=e157] [cursor=pointer]:
+        - /url: ""
+      - link "Prelucrarea datelor personale" [ref=e158] [cursor=pointer]:
+        - /url: /protectia-datelor
+      - link "Setări cookie-uri" [ref=e159] [cursor=pointer]:
+        - /url: ""
