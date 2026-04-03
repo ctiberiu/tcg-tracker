@@ -829,6 +829,20 @@ async function scrapeTulli(page, store) {
 }
 
 /**
+ * Normalize a product URL to a canonical form for consistent upsert matching.
+ * Strips query parameters, fragments, trailing slashes, and lowercases.
+ */
+function normalizeProductUrl(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    return (parsed.origin + parsed.pathname).replace(/\/+$/, '').toLowerCase();
+  } catch {
+    return url.split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase();
+  }
+}
+
+/**
  * Returns true if the product title contains "TCG", "carti", or "cards" (case-insensitive).
  * Simple keyword filter to keep only relevant trading card game products.
  */
@@ -846,11 +860,12 @@ async function scrapeAll() {
 
   if (stores.length === 0) {
     console.log('No stores to scrape');
-    return [];
+    return { products: [], scrapedStoreIds: [] };
   }
 
   const browser = await chromium.launch({ headless: true });
   const allProducts = [];
+  const scrapedStoreIds = [];
 
   for (const store of stores) {
     const scrapeFn = SCRAPER_MAP[store.scraper_type];
@@ -876,6 +891,7 @@ async function scrapeAll() {
       const raw = await scrapeFn(page, store);
       const products = raw.filter((p) => isTcgProduct(p.title));
       allProducts.push(...products);
+      scrapedStoreIds.push(store.id);
 
       console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)`);
       await context.close();
@@ -887,7 +903,7 @@ async function scrapeAll() {
   await browser.close();
 
   console.log(`\nTotal: ${allProducts.length} products scraped`);
-  return allProducts;
+  return { products: allProducts, scrapedStoreIds };
 }
 
 /**
@@ -895,7 +911,7 @@ async function scrapeAll() {
  * Updates price, image_url, in_stock for existing products.
  * Returns { inserted, updated, insertedProducts } for alert use.
  */
-async function syncToSupabase(products) {
+async function syncToSupabase(products, scrapedStoreIds = []) {
   const supabase = initSupabase();
 
   // Fetch existing URLs to distinguish new vs updated
@@ -919,7 +935,7 @@ async function syncToSupabase(products) {
       store_id: p.store_id ?? null,
       title: p.title,
       price: p.price,
-      url: p.url,
+      url: normalizeProductUrl(p.url),
       image_url: p.image_url,
       in_stock: p.in_stock ?? true,
     }));
@@ -939,6 +955,63 @@ async function syncToSupabase(products) {
           updated++;
         }
       }
+    }
+  }
+
+  // Staleness sweep: mark products not seen in this scrape as out-of-stock
+  if (scrapedStoreIds.length > 0) {
+    console.log('\nRunning staleness sweep...');
+
+    // Group scraped product URLs by store_id (normalized for consistent matching)
+    const urlsByStore = new Map();
+    for (const p of products) {
+      if (!p.store_id) continue;
+      if (!urlsByStore.has(p.store_id)) urlsByStore.set(p.store_id, []);
+      urlsByStore.get(p.store_id).push(normalizeProductUrl(p.url));
+    }
+
+    let totalStale = 0;
+    for (const storeId of scrapedStoreIds) {
+      const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
+
+      // Fetch all currently in-stock products for this store
+      const { data: storeProducts, error: fetchErr } = await supabase
+        .from('products')
+        .select('id, url')
+        .eq('store_id', storeId)
+        .eq('in_stock', true);
+
+      if (fetchErr) {
+        console.error(`  Staleness sweep fetch error for store ${storeId}: ${fetchErr.message}`);
+        continue;
+      }
+
+      // Find products not seen in this scrape
+      const staleIds = storeProducts
+        .filter((p) => !scrapedUrlSet.has(normalizeProductUrl(p.url)))
+        .map((p) => p.id);
+
+      if (staleIds.length === 0) continue;
+
+      // Batch update stale products
+      for (let j = 0; j < staleIds.length; j += BATCH_SIZE) {
+        const idBatch = staleIds.slice(j, j + BATCH_SIZE);
+        const { error: staleError } = await supabase
+          .from('products')
+          .update({ in_stock: false })
+          .in('id', idBatch);
+
+        if (staleError) {
+          console.error(`  Staleness sweep update error for store ${storeId}: ${staleError.message}`);
+        }
+      }
+
+      totalStale += staleIds.length;
+      console.log(`  Store ${storeId}: ${staleIds.length} products marked stale (out-of-stock)`);
+    }
+
+    if (totalStale > 0) {
+      console.log(`  Total stale: ${totalStale} products marked out-of-stock`);
     }
   }
 
@@ -1075,10 +1148,10 @@ const runId = process.env.SCRAPE_RUN_ID;
 await updateScrapeRun(supabase, runId, { status: 'running' });
 
 try {
-  const products = await scrapeAll();
+  const { products, scrapedStoreIds } = await scrapeAll();
 
   console.log('\nSyncing to Supabase...');
-  const { inserted, updated, insertedProducts } = await syncToSupabase(products);
+  const { inserted, updated, insertedProducts } = await syncToSupabase(products, scrapedStoreIds);
   console.log(`  Inserted: ${inserted} new products`);
   console.log(`  Updated: ${updated} existing products`);
 
