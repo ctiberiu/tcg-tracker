@@ -38,6 +38,7 @@ const SCRAPER_MAP = {
   lumea_jocurilor: scrapeLumeaJocurilor,
   raijucarii: scrapeRaijucarii,
   tulli: scrapeTulli,
+  bebetei: scrapeBebetei,
 };
 
 /**
@@ -812,6 +813,77 @@ async function scrapeTulli(page, store) {
 
       const stockText = card.textContent ?? '';
       const in_stock = !stockText.includes('Indisponibil') && !stockText.includes('Stoc epuizat');
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * BebeTei.ro — custom e-commerce platform
+ * Products use .product-item.product-details containers.
+ */
+async function scrapeBebetei(page, store) {
+  try {
+    await page.waitForSelector('.product-item.product-details', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-item.product-details');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const linkEl = card.querySelector('.product-image-listing, .item-title');
+      if (!linkEl) continue;
+
+      const url = linkEl.href;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      const titleEl = card.querySelector('.item-title');
+      const title = titleEl?.textContent?.trim();
+      if (!title) continue;
+
+      let price = null;
+      const priceEl = card.querySelector('.regular-price .price, .price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+        }
+      }
+
+      const imgEl = card.querySelector('.product-image-listing img, picture img');
+      const imgSrc = imgEl?.src;
+
+      // Out-of-stock: check for btn-out-of-stock class or "Disponibil în locații" text
+      const outOfStockBtn = card.querySelector('.btn-out-of-stock');
+      const stockText = card.textContent ?? '';
+      const in_stock = !outOfStockBtn && !stockText.includes('Disponibil în locații');
 
       results.push({
         title,
