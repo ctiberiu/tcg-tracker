@@ -332,7 +332,13 @@ export function AdminPage() {
                     {store.scraper_type}
                   </span>
                 </div>
-                <p className="text-on-surface-variant text-xs truncate">{store.url}</p>
+                <a
+                  href={store.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-on-surface-variant text-xs truncate hover:text-primary transition-colors"
+                >{store.url}</a>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {/* Scrape result notification */}
