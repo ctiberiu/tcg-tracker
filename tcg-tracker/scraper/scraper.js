@@ -857,19 +857,20 @@ async function scrapeBebetei(page, store) {
     const seen = new Set();
 
     for (const card of cards) {
-      const linkEl = card.querySelector('.product-image-listing, .item-title');
-      if (!linkEl) continue;
+      const imgLink = card.querySelector('.product-image-listing');
+      if (!imgLink) continue;
 
-      const url = linkEl.href;
+      const url = imgLink.href;
       if (!url || seen.has(url)) continue;
       seen.add(url);
 
-      const titleEl = card.querySelector('.item-title');
-      const title = titleEl?.textContent?.trim();
+      // Use image alt for full title — .item-title text is CSS-truncated with ellipsis
+      const imgEl = card.querySelector('.product-image-listing img, picture img');
+      const title = imgEl?.alt?.trim() || card.querySelector('.item-title')?.textContent?.trim();
       if (!title) continue;
 
       let price = null;
-      const priceEl = card.querySelector('.regular-price .price, .price');
+      const priceEl = card.querySelector('.regular-price .price, .price-box');
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
         if (match) {
@@ -877,13 +878,12 @@ async function scrapeBebetei(page, store) {
         }
       }
 
-      const imgEl = card.querySelector('.product-image-listing img, picture img');
       const imgSrc = imgEl?.src;
 
-      // Out-of-stock: check for btn-out-of-stock class or "Disponibil în locații" text
+      // btn-out-of-stock is present on all cards; btn-primary = available in stores,
+      // btn-light = truly unavailable (Indisponibil)
       const outOfStockBtn = card.querySelector('.btn-out-of-stock');
-      const stockText = card.textContent ?? '';
-      const in_stock = !outOfStockBtn && !stockText.includes('Disponibil în locații');
+      const in_stock = outOfStockBtn ? outOfStockBtn.classList.contains('btn-primary') : true;
 
       results.push({
         title,

@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "mcp__devchain"
+      "mcp__devchain",
+      "Bash(node --check /Users/seomonitor/Projects/Test-devchain2/tcg-tracker/scraper/scraper.js)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "Bash(curl -s \"https://smyk.ro/search?limit=84&q=pokemon%20tcg\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\")"
     ],
     "deny": [],
     "ask": []

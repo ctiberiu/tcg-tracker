@@ -1,0 +1,697 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e7]:
+      - link "Informatii Utile" [ref=e9] [cursor=pointer]:
+        - /url: "#"
+        - text: Informatii Utile
+      - link "GDPR" [ref=e11] [cursor=pointer]:
+        - /url: "#"
+        - text: GDPR
+    - generic [ref=e15]:
+      - link "Bebe Tei" [ref=e16] [cursor=pointer]:
+        - /url: https://comenzi.bebetei.ro/
+        - img "Bebe Tei" [ref=e17]
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - combobox "Ce vrei sa cauti astazi?" [ref=e21]: pokemon tcg
+          - status [ref=e22]: Begin typing for results.
+        - button "Cauta" [ref=e23] [cursor=pointer]:
+          - img "Cauta" [ref=e24]
+      - generic [ref=e25]:
+        - link "Favorite" [ref=e27] [cursor=pointer]:
+          - /url: https://comenzi.bebetei.ro/dashboard/favorite
+        - link "Cos cumparaturi Cosul meu" [ref=e29] [cursor=pointer]:
+          - /url: "#"
+          - img "Cos cumparaturi" [ref=e30]
+          - text: Cosul meu
+        - link "Contul meu" [ref=e33] [cursor=pointer]:
+          - /url: https://comenzi.bebetei.ro/contul-meu
+          - img [ref=e34]
+          - generic [ref=e36]: Contul meu
+    - generic [ref=e40]:
+      - navigation "Navigare principală" [ref=e41]:
+        - list [ref=e42]:
+          - listitem [ref=e43]:
+            - link " Produse" [ref=e44] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e45]: 
+              - text: Produse
+          - listitem [ref=e46]:
+            - link "Noutăți" [ref=e47] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/noutati
+          - listitem [ref=e48]:
+            - link "Promoții" [ref=e49] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/campanii-promotionale
+          - listitem [ref=e50]:
+            - link "In Trend" [ref=e51] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/in-trend
+          - listitem [ref=e52]:
+            - link "Cariere" [ref=e53] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/cariere
+          - listitem [ref=e54]:
+            - link "Magazine" [ref=e55] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine
+          - listitem [ref=e56]:
+            - link "Blog Tei" [ref=e57] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/blog-tei
+          - listitem [ref=e58]:
+            - link "Evenimente" [ref=e59] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/evenimente-bebe-tei
+      - navigation "Meniu categorii produse" [ref=e61]:
+        - list [ref=e62]:
+          - listitem [ref=e63]:
+            - generic [ref=e64]:
+              - link " Ingrijire bebe si mama" [ref=e65] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/ingrijire-bebe-si-mama/
+                - generic [ref=e66]: 
+                - text: Ingrijire bebe si mama
+              - text: 
+            - text:          
+          - listitem [ref=e67]:
+            - generic [ref=e68]:
+              - link " Hrana Bebe si Copii" [ref=e69] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/hrana-bebe-si-copii/
+                - generic [ref=e70]: 
+                - text: Hrana Bebe si Copii
+              - text: 
+            - text:    
+          - listitem [ref=e71]:
+            - generic [ref=e72]:
+              - link " Dermato-Cosmetice" [ref=e73] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dermato-cosmetice/
+                - generic [ref=e74]: 
+                - text: Dermato-Cosmetice
+              - text: 
+            - text:            
+          - listitem [ref=e75]:
+            - link " Cosmetice Premium" [ref=e77] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/cosmetice-premium/
+              - generic [ref=e78]: 
+              - text: Cosmetice Premium
+          - listitem [ref=e79]:
+            - generic [ref=e80]:
+              - link " Ingrijire personala" [ref=e81] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/ingrijire-personala/
+                - generic [ref=e82]: 
+                - text: Ingrijire personala
+              - text: 
+            - text:                              
+          - listitem [ref=e83]:
+            - generic [ref=e84]:
+              - link " Transport bebe" [ref=e85] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/transport-bebe/
+                - generic [ref=e86]: 
+                - text: Transport bebe
+              - text: 
+            - text:      
+          - listitem [ref=e87]:
+            - generic [ref=e88]:
+              - link " Jocuri si jucarii" [ref=e89] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/
+                - generic [ref=e90]: 
+                - text: Jocuri si jucarii
+              - text: 
+            - text:          
+          - listitem [ref=e91]:
+            - generic [ref=e92]:
+              - link " Camera Bebelusului" [ref=e93] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/camera-bebelusului/
+                - generic [ref=e94]: 
+                - text: Camera Bebelusului
+              - text: 
+            - text:            
+          - listitem [ref=e95]:
+            - generic [ref=e96]:
+              - link " Puericultura mica" [ref=e97] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/puericultura-mica/
+                - generic [ref=e98]: 
+                - text: Puericultura mica
+              - text: 
+            - text:        
+          - listitem [ref=e99]:
+            - generic [ref=e100]:
+              - link " Alimentatie sanatoasa" [ref=e101] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/alimentatie-sanatoasa/
+                - generic [ref=e102]: 
+                - text: Alimentatie sanatoasa
+              - text: 
+            - text:    
+          - listitem [ref=e103]:
+            - generic [ref=e104]:
+              - link " Suplimente Alimentare si Produse Naturiste" [ref=e105] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/suplimente-alimentare-si-produse-naturiste/
+                - generic [ref=e106]: 
+                - text: Suplimente Alimentare si Produse Naturiste
+              - text: 
+            - text:        
+          - listitem [ref=e107]:
+            - generic [ref=e108]:
+              - link " Viata Intima" [ref=e109] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/viata-intima/
+                - generic [ref=e110]: 
+                - text: Viata Intima
+              - text: 
+            - text:    
+  - main [ref=e111]:
+    - generic [ref=e112]:
+      - list [ref=e117]:
+        - listitem [ref=e118]:
+          - link "Acasa" [ref=e119] [cursor=pointer]:
+            - /url: /
+          - img "Catre elementul urmator" [ref=e120]
+        - listitem [ref=e121]:
+          - generic [ref=e122]: Cautare
+          - img "Catre elementul urmator" [ref=e123]
+        - listitem [ref=e124]: Pokemon Tcg
+      - heading "Rezultate cautare POKEMON TCG" [level=1] [ref=e128]
+      - generic [ref=e129]:
+        - generic [ref=e132]:
+          - heading "Filtreaza produse" [level=2] [ref=e134]
+          - list [ref=e136]:
+            - listitem [ref=e137]:
+              - paragraph [ref=e138]: Categorie
+              - generic [ref=e140]:
+                - generic [ref=e142]:
+                  - checkbox "Jocuri de societate(10)" [ref=e143]
+                  - text: Jocuri de societate
+                  - generic [ref=e144]: (10)
+                - generic [ref=e146]:
+                  - checkbox "Jocuri educative(1)" [ref=e147]
+                  - text: Jocuri educative
+                  - generic [ref=e148]: (1)
+            - listitem [ref=e149]:
+              - paragraph [ref=e150]: Brand
+              - generic [ref=e154]:
+                - checkbox "Pokemon(11)" [ref=e155]
+                - text: Pokemon
+                - generic [ref=e156]: (11)
+            - listitem [ref=e157]:
+              - paragraph [ref=e158]: Stoc
+            - listitem [ref=e159]:
+              - paragraph [ref=e160]: Disponibil in magazinele Bebe Tei
+              - generic [ref=e162]:
+                - generic [ref=e164]:
+                  - checkbox "Biharia(3)" [ref=e165]
+                  - text: Biharia
+                  - generic [ref=e166]: (3)
+                - generic [ref=e168]:
+                  - checkbox "Brasov(3)" [ref=e169]
+                  - text: Brasov
+                  - generic [ref=e170]: (3)
+                - generic [ref=e172]:
+                  - checkbox "Craiova(2)" [ref=e173]
+                  - text: Craiova
+                  - generic [ref=e174]: (2)
+                - generic [ref=e176]:
+                  - checkbox "Pitesti(4)" [ref=e177]
+                  - text: Pitesti
+                  - generic [ref=e178]: (4)
+                - generic [ref=e180]:
+                  - checkbox "Plaza Romania(2)" [ref=e181]
+                  - text: Plaza Romania
+                  - generic [ref=e182]: (2)
+                - generic [ref=e184]:
+                  - checkbox "Ploiesti(4)" [ref=e185]
+                  - text: Ploiesti
+                  - generic [ref=e186]: (4)
+                - generic [ref=e188]:
+                  - checkbox "Rebreanu(2)" [ref=e189]
+                  - text: Rebreanu
+                  - generic [ref=e190]: (2)
+                - generic [ref=e192]:
+                  - checkbox "Sun Plaza(3)" [ref=e193]
+                  - text: Sun Plaza
+                  - generic [ref=e194]: (3)
+                - generic [ref=e196]:
+                  - checkbox "Vitan(3)" [ref=e197]
+                  - text: Vitan
+                  - generic [ref=e198]: (3)
+                - generic [ref=e200]:
+                  - checkbox "Vivo Constanta(4)" [ref=e201]
+                  - text: Vivo Constanta
+                  - generic [ref=e202]: (4)
+            - listitem [ref=e203]:
+              - paragraph [ref=e204]: Info produs
+              - generic [ref=e208]:
+                - checkbox "Eligibil ELITE(11)" [ref=e209]
+                - text: Eligibil ELITE
+                - generic [ref=e210]: (11)
+            - listitem [ref=e211]:
+              - paragraph [ref=e212]: Varsta
+              - generic [ref=e216]:
+                - checkbox "6 ani+(6)" [ref=e217]
+                - text: 6 ani+
+                - generic [ref=e218]: (6)
+            - listitem [ref=e219]:
+              - paragraph [ref=e220]: Dezvoltare abilitati
+              - generic [ref=e222]:
+                - generic [ref=e224]:
+                  - checkbox "Atentie(2)" [ref=e225]
+                  - text: Atentie
+                  - generic [ref=e226]: (2)
+                - generic [ref=e228]:
+                  - checkbox "Comunicare(3)" [ref=e229]
+                  - text: Comunicare
+                  - generic [ref=e230]: (3)
+                - generic [ref=e232]:
+                  - checkbox "Concentrare(3)" [ref=e233]
+                  - text: Concentrare
+                  - generic [ref=e234]: (3)
+                - generic [ref=e236]:
+                  - checkbox "Coordonare mana-ochi(1)" [ref=e237]
+                  - text: Coordonare mana-ochi
+                  - generic [ref=e238]: (1)
+            - listitem [ref=e239]:
+              - paragraph [ref=e240]: Numar jucatori
+              - generic [ref=e242]:
+                - generic [ref=e244]:
+                  - checkbox "1-2(1)" [ref=e245]
+                  - text: 1-2
+                  - generic [ref=e246]: (1)
+                - generic [ref=e248]:
+                  - checkbox "2-4(1)" [ref=e249]
+                  - text: 2-4
+                  - generic [ref=e250]: (1)
+        - generic [ref=e251]:
+          - generic:
+            - generic:
+              - generic: 
+          - generic [ref=e252]:
+            - generic [ref=e253]:
+              - link "Adauga in lista de produse favorite" [ref=e254] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e255]
+              - link "Logo Elite" [ref=e257] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e258]
+              - text: 
+              - link "Colectia March 2026 Expansion 3 Blister Booster, 6 ani+, Pokemon TCG" [ref=e259] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/colectia-march-2026-expansion-3-blister-booster-6-ani-pokemon-tcg-p474111
+                - img "Colectia March 2026 Expansion 3 Blister Booster, 6 ani+, Pokemon TCG" [ref=e261]
+              - link "Colectia March 2026 Expansion 3 Blister Booster, 6..." [ref=e262] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/colectia-march-2026-expansion-3-blister-booster-6-ani-pokemon-tcg-p474111
+              - generic [ref=e263]:
+                - link "POKEMON" [ref=e265] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e266]:
+                  - generic [ref=e268]:
+                    - text: Disponibil
+                    - text: în locații
+                  - button "Vezi produsul Colectia March 2026 Expansion 3 Blister Booster, 6 ani+, Pokemon TCG" [ref=e269] [cursor=pointer]:
+                    - generic [ref=e270]: 
+            - generic [ref=e271]:
+              - link "Adauga in lista de produse favorite" [ref=e272] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e273]
+              - link "Logo Elite" [ref=e275] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e276]
+              - text: 
+              - 'link "Set cartonase Pokemon TCG: January Special Collection, 6 ani+, Pokemon" [ref=e277] [cursor=pointer]':
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-cartonase-pokemon-tcg-january-special-collection-6-ani-pokemon-p474117
+                - 'img "Set cartonase Pokemon TCG: January Special Collection, 6 ani+, Pokemon" [ref=e279]'
+              - 'link "Set cartonase Pokemon TCG: January Special Collection,..." [ref=e280] [cursor=pointer]':
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-cartonase-pokemon-tcg-january-special-collection-6-ani-pokemon-p474117
+              - generic [ref=e281]:
+                - link "POKEMON" [ref=e283] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e284]:
+                  - generic [ref=e286]:
+                    - text: Disponibil
+                    - text: în locații
+                  - 'button "Vezi produsul Set cartonase Pokemon TCG: January Special Collection, 6 ani+, Pokemon" [ref=e287] [cursor=pointer]':
+                    - generic [ref=e288]: 
+            - generic [ref=e289]:
+              - link "Adauga in lista de produse favorite" [ref=e290] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e291]
+              - link "Logo Elite" [ref=e293] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e294]
+              - text: 
+              - link "Joc carti March 2026 Expansion Boosters, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e295] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/joc-carti-march-2026-expansion-boosters-diverse-modele-6-ani-pokemon-tcg-p474115
+                - img "Joc carti March 2026 Expansion Boosters, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e297]
+              - link "Joc carti March 2026 Expansion Boosters, Diverse Modele,..." [ref=e298] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/joc-carti-march-2026-expansion-boosters-diverse-modele-6-ani-pokemon-tcg-p474115
+              - generic [ref=e299]:
+                - link "POKEMON" [ref=e301] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e302]:
+                  - generic [ref=e304]:
+                    - text: Disponibil
+                    - text: în locații
+                  - button "Vezi produsul Joc carti March 2026 Expansion Boosters, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e305] [cursor=pointer]:
+                    - generic [ref=e306]: 
+            - generic [ref=e307]:
+              - link "Adauga in lista de produse favorite" [ref=e308] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e309]
+              - link "Logo Elite" [ref=e311] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e312]
+              - text: 
+              - link "Joc March 2026 Expansion Elite Trainer Box, 6 ani+, Pokemon TCG" [ref=e313] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-educative/joc-march-2026-expansion-elite-trainer-box-6-ani-pokemon-tcg-p474112
+                - img "Joc March 2026 Expansion Elite Trainer Box, 6 ani+, Pokemon TCG" [ref=e315]
+              - link "Joc March 2026 Expansion Elite Trainer Box, 6 ani+,..." [ref=e316] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-educative/joc-march-2026-expansion-elite-trainer-box-6-ani-pokemon-tcg-p474112
+              - generic [ref=e317]:
+                - link "POKEMON" [ref=e319] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e320]:
+                  - generic [ref=e322]:
+                    - text: Disponibil
+                    - text: în locații
+                  - button "Vezi produsul Joc March 2026 Expansion Elite Trainer Box, 6 ani+, Pokemon TCG" [ref=e323] [cursor=pointer]:
+                    - generic [ref=e324]: 
+            - generic [ref=e325]:
+              - link "Adauga in lista de produse favorite" [ref=e326] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e327]
+              - link "Logo Elite" [ref=e329] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e330]
+              - text: 
+              - link "Cutie metalica Mega Evolution Mini Tin, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e331] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/cutie-metalica-mega-evolution-mini-tin-diverse-modele-6-ani-pokemon-tcg-p474105
+                - img "Cutie metalica Mega Evolution Mini Tin, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e333]
+              - link "Cutie metalica Mega Evolution Mini Tin, Diverse Modele,..." [ref=e334] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/cutie-metalica-mega-evolution-mini-tin-diverse-modele-6-ani-pokemon-tcg-p474105
+              - generic [ref=e335]:
+                - link "POKEMON" [ref=e337] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e338]:
+                  - generic [ref=e340]: Indisponibil
+                  - button "Vezi produsul Cutie metalica Mega Evolution Mini Tin, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e341] [cursor=pointer]:
+                    - generic [ref=e342]: 
+            - generic [ref=e343]:
+              - link "Adauga in lista de produse favorite" [ref=e344] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e345]
+              - link "Logo Elite" [ref=e347] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e348]
+              - text: 
+              - link "Mini portofoliu pentru depozitarea cartilor + 1 pachet booster, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e349] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/mini-portofoliu-pentru-depozitarea-cartilor-1-pachet-booster-diverse-modele-6-ani-pokemon-tcg-p474110
+                - img "Mini portofoliu pentru depozitarea cartilor + 1 pachet booster, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e351]
+              - link "Mini portofoliu pentru depozitarea cartilor + 1 pachet..." [ref=e352] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/mini-portofoliu-pentru-depozitarea-cartilor-1-pachet-booster-diverse-modele-6-ani-pokemon-tcg-p474110
+              - generic [ref=e353]:
+                - link "POKEMON" [ref=e355] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e356]:
+                  - generic [ref=e358]:
+                    - text: Disponibil
+                    - text: în locații
+                  - button "Vezi produsul Mini portofoliu pentru depozitarea cartilor + 1 pachet booster, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e359] [cursor=pointer]:
+                    - generic [ref=e360]: 
+            - generic [ref=e361]:
+              - link "Adauga in lista de produse favorite" [ref=e362] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e363]
+              - link "Logo Elite" [ref=e365] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e366]
+              - text: 
+              - link "Set de carti, Q1 Premium Poster Collection, 6 ani+, Pokemon TCG" [ref=e367] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-de-carti-q1-premium-poster-collection-6-ani-pokemon-tcg-p474116
+                - img "Set de carti, Q1 Premium Poster Collection, 6 ani+, Pokemon TCG" [ref=e369]
+              - link "Set de carti, Q1 Premium Poster Collection, 6 ani+,..." [ref=e370] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-de-carti-q1-premium-poster-collection-6-ani-pokemon-tcg-p474116
+              - generic [ref=e371]:
+                - link "POKEMON" [ref=e373] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e374]:
+                  - generic [ref=e376]: Indisponibil
+                  - button "Vezi produsul Set de carti, Q1 Premium Poster Collection, 6 ani+, Pokemon TCG" [ref=e377] [cursor=pointer]:
+                    - generic [ref=e378]: 
+            - generic [ref=e379]:
+              - link "Adauga in lista de produse favorite" [ref=e380] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e381]
+              - link "Logo Elite" [ref=e383] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e384]
+              - text: 
+              - link "Joc carti First Partner Booster Collection, 6 ani+, Pokemon TCG" [ref=e385] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/joc-carti-first-partner-booster-collection-6-ani-pokemon-tcg-p474107
+                - img "Joc carti First Partner Booster Collection, 6 ani+, Pokemon TCG" [ref=e387]
+              - link "Joc carti First Partner Booster Collection, 6 ani+,..." [ref=e388] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/joc-carti-first-partner-booster-collection-6-ani-pokemon-tcg-p474107
+              - generic [ref=e389]:
+                - link "POKEMON" [ref=e391] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e392]:
+                  - generic [ref=e394]: Indisponibil
+                  - button "Vezi produsul Joc carti First Partner Booster Collection, 6 ani+, Pokemon TCG" [ref=e395] [cursor=pointer]:
+                    - generic [ref=e396]: 
+            - generic [ref=e397]:
+              - link "Adauga in lista de produse favorite" [ref=e398] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e399]
+              - link "Logo Elite" [ref=e401] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e402]
+              - text: 
+              - link "Mega Dragonite ex Trading Card Game, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e403] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/mega-dragonite-ex-trading-card-game-diverse-modele-6-ani-pokemon-tcg-p474114
+                - img "Mega Dragonite ex Trading Card Game, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e405]
+              - link "Mega Dragonite ex Trading Card Game, Diverse Modele,..." [ref=e406] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/mega-dragonite-ex-trading-card-game-diverse-modele-6-ani-pokemon-tcg-p474114
+              - generic [ref=e407]:
+                - link "POKEMON" [ref=e409] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e410]:
+                  - generic [ref=e412]: Indisponibil
+                  - button "Vezi produsul Mega Dragonite ex Trading Card Game, Diverse Modele, 6 ani+, Pokemon TCG" [ref=e413] [cursor=pointer]:
+                    - generic [ref=e414]: 
+            - generic [ref=e415]:
+              - link "Adauga in lista de produse favorite" [ref=e416] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e417]
+              - link "Logo Elite" [ref=e419] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e420]
+              - text: 
+              - link "Extensie de carti, SV09 Journey Together Booster, Diverse modele, 6 ani+, Pokemon TCG" [ref=e421] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/extensie-de-carti-sv09-journey-together-booster-diverse-modele-6-ani-pokemon-tcg-p474109
+                - img "Extensie de carti, SV09 Journey Together Booster, Diverse modele, 6 ani+, Pokemon TCG" [ref=e423]
+              - link "Extensie de carti, SV09 Journey Together Booster,..." [ref=e424] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/extensie-de-carti-sv09-journey-together-booster-diverse-modele-6-ani-pokemon-tcg-p474109
+              - generic [ref=e425]:
+                - link "POKEMON" [ref=e427] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e428]:
+                  - generic [ref=e430]:
+                    - text: Disponibil
+                    - text: în locații
+                  - button "Vezi produsul Extensie de carti, SV09 Journey Together Booster, Diverse modele, 6 ani+, Pokemon TCG" [ref=e431] [cursor=pointer]:
+                    - generic [ref=e432]: 
+            - generic [ref=e433]:
+              - link "Adauga in lista de produse favorite" [ref=e434] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/dashboard/favorite
+                - img "Adauga in lista de produse favorite" [ref=e435]
+              - link "Logo Elite" [ref=e437] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/campania-elite
+                - img "Logo Elite" [ref=e438]
+              - text: 
+              - 'link "Set Mega Evolution - Ascended Heroes Trainer Blister: Larry, 6 ani+, Pokemon" [ref=e439] [cursor=pointer]':
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-mega-evolution-ascended-heroes-trainer-blister-larry-6-ani-pokemon-p474113
+                - 'img "Set Mega Evolution - Ascended Heroes Trainer Blister: Larry, 6 ani+, Pokemon" [ref=e441]'
+              - link "Set Mega Evolution - Ascended Heroes Trainer Blister:..." [ref=e442] [cursor=pointer]:
+                - /url: https://comenzi.bebetei.ro/jocuri-si-jucarii/jocuri/jocuri-de-societate/set-mega-evolution-ascended-heroes-trainer-blister-larry-6-ani-pokemon-p474113
+              - generic [ref=e443]:
+                - link "POKEMON" [ref=e445] [cursor=pointer]:
+                  - /url: https://comenzi.bebetei.ro/brand/pokemon
+                - generic [ref=e446]:
+                  - generic [ref=e448]:
+                    - text: Disponibil
+                    - text: în locații
+                  - 'button "Vezi produsul Set Mega Evolution - Ascended Heroes Trainer Blister: Larry, 6 ani+, Pokemon" [ref=e449] [cursor=pointer]':
+                    - generic [ref=e450]: 
+    - generic [ref=e455]:
+      - img "Portrait lovely man woman holding silver laptop" [ref=e456]
+      - generic [ref=e457]:
+        - paragraph [ref=e458]: Te-ai abonat la NEWSLETTER-ul nostru?
+        - generic [ref=e459]:
+          - checkbox "Prin abonarea la newsletter confirm că am peste 16 ani." [ref=e460]
+          - generic [ref=e461]: Prin abonarea la newsletter confirm că am peste 16 ani.
+        - paragraph [ref=e462]:
+          - link "Vezi Politica confidentialitate date personale" [ref=e463] [cursor=pointer]:
+            - /url: https://comenzi.bebetei.ro/politica-de-confidentialitate
+        - generic [ref=e464]:
+          - textbox "Adresa email" [ref=e466]
+          - button "MĂ ABONEZ" [ref=e467] [cursor=pointer]
+  - contentinfo [ref=e469]:
+    - generic [ref=e471]:
+      - generic [ref=e472]:
+        - heading "Informatii Clienti" [level=4] [ref=e473]
+        - list [ref=e474]:
+          - listitem [ref=e475]:
+            - link "Termeni si Conditii de Utilizare" [ref=e476] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/termeni-si-conditii
+          - listitem [ref=e477]:
+            - link "Cum Comand" [ref=e478] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/cum-comand
+          - listitem [ref=e479]:
+            - link "Transport & Plata" [ref=e480] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/transport-si-plata
+          - listitem [ref=e481]:
+            - link "Returnare & Garantie" [ref=e482] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/returnare-si-garantie
+          - listitem [ref=e483]:
+            - link "Intrebari Frecvente" [ref=e484] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/intrebari-frecvente
+          - listitem [ref=e485]:
+            - link "Brand-uri" [ref=e486] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/index-branduri
+          - listitem [ref=e487]:
+            - link "Rechemare produse" [ref=e488] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/rechemare-produse
+          - listitem [ref=e489]:
+            - link "Contactati-ne" [ref=e490] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/contact-us
+      - generic [ref=e491]:
+        - heading "Informatii Generale" [level=4] [ref=e492]
+        - list [ref=e493]:
+          - listitem [ref=e494]:
+            - link "Despre Noi" [ref=e495] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/despre-noi
+          - listitem [ref=e496]:
+            - link "Cariere" [ref=e497] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/cariere
+          - listitem [ref=e498]:
+            - link "Politica utilizare Cookie" [ref=e499] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/politica-de-utilizare-cookie
+          - listitem [ref=e500]:
+            - link "Politica confidentialitate date personale" [ref=e501] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/politica-de-confidentialitate
+          - listitem [ref=e502]:
+            - link "Avertizori de integritate" [ref=e503] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/avertizori-de-integritate
+          - listitem [ref=e504]:
+            - link "T&C voucher cadou magazine fizice" [ref=e505] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/t-c-voucher-cadou-magazine-fizice-bebe-tei
+          - listitem [ref=e506]:
+            - link "ANPC - Protectia consumatorilor" [ref=e507] [cursor=pointer]:
+              - /url: http://www.anpc.gov.ro/
+          - listitem [ref=e508]:
+            - text: "Platforma SOL:"
+            - link "formular online" [ref=e509] [cursor=pointer]:
+              - /url: https://webgate.ec.europa.eu/odr/main/index.cfm?event=main.home.show&lng=RO
+      - generic [ref=e510]:
+        - heading "Magazine" [level=4] [ref=e511]
+        - list [ref=e512]:
+          - listitem [ref=e513]:
+            - link " Magazin Bebe Tei Biharia" [ref=e514] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-biharia
+              - generic [ref=e515]: 
+              - text: Magazin Bebe Tei Biharia
+          - listitem [ref=e516]:
+            - link " Magazin Bebe Tei Brasov" [ref=e517] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-brasov
+              - generic [ref=e518]: 
+              - text: Magazin Bebe Tei Brasov
+          - listitem [ref=e519]:
+            - link " Magazin Bebe Tei Craiova" [ref=e520] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-craiova
+              - generic [ref=e521]: 
+              - text: Magazin Bebe Tei Craiova
+          - listitem [ref=e522]:
+            - link " Magazin Vila Bebe Tei" [ref=e523] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-vila-bebe-tei
+              - generic [ref=e524]: 
+              - text: Magazin Vila Bebe Tei
+          - listitem [ref=e525]:
+            - link " Magazin Bebe Tei Pitesti Gavana" [ref=e526] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-pitesti-gavana
+              - generic [ref=e527]: 
+              - text: Magazin Bebe Tei Pitesti Gavana
+          - listitem [ref=e528]:
+            - link " Magazin Bebe Tei Plaza" [ref=e529] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-plaza
+              - generic [ref=e530]: 
+              - text: Magazin Bebe Tei Plaza
+          - listitem [ref=e531]:
+            - link " Magazin Bebe Tei Rebreanu" [ref=e532] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-rebreanu
+              - generic [ref=e533]: 
+              - text: Magazin Bebe Tei Rebreanu
+          - listitem [ref=e534]:
+            - link " Magazin Bebe Tei Sun Plaza" [ref=e535] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-sun-plaza
+              - generic [ref=e536]: 
+              - text: Magazin Bebe Tei Sun Plaza
+          - listitem [ref=e537]:
+            - link " Magazin Bebe Tei Vitan" [ref=e538] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-vitan
+              - generic [ref=e539]: 
+              - text: Magazin Bebe Tei Vitan
+          - listitem [ref=e540]:
+            - link " Magazin Bebe Tei ViVo Constanta" [ref=e541] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-vivo-constanta
+              - generic [ref=e542]: 
+              - text: Magazin Bebe Tei ViVo Constanta
+          - listitem [ref=e543]:
+            - link " Magazin Bebe Tei Blejoi (Ploiesti)" [ref=e544] [cursor=pointer]:
+              - /url: https://comenzi.bebetei.ro/retea-magazine#magazin-bebe-tei-(blejoi)-ploiesti
+              - generic [ref=e545]: 
+              - text: Magazin Bebe Tei Blejoi (Ploiesti)
+      - generic [ref=e546]:
+        - heading "Contact" [level=4] [ref=e547]
+        - generic [ref=e548]:
+          - generic [ref=e550]: 
+          - generic [ref=e551]:
+            - text: "Luni - Vineri: 08:00 - 20:00"
+            - text: "Sambata: 08:00 - 14:00"
+        - generic [ref=e552]:
+          - generic [ref=e554]: 
+          - link "comenzi@bebetei.ro" [ref=e555] [cursor=pointer]:
+            - /url: mailto:comenzi@bebetei.ro
+        - generic [ref=e556]:
+          - link "ANPC Soluționarea Alternativă a Litigiilor (SAL)" [ref=e557] [cursor=pointer]:
+            - /url: https://anpc.ro/ce-este-sal/
+            - img "ANPC Soluționarea Alternativă a Litigiilor (SAL)" [ref=e558]
+          - link "Solutionarea online a litigiilor" [ref=e559] [cursor=pointer]:
+            - /url: https://ec.europa.eu/consumers/odr/main/?event=main.home2.show
+            - img "Solutionarea online a litigiilor" [ref=e560]
+    - generic [ref=e562]:
+      - generic [ref=e565]: Bebetei Investments Group SRL | ©2026 toate drepturile rezervate
+      - generic [ref=e567]:
+        - generic [ref=e568]:
+          - link "Facebook" [ref=e569] [cursor=pointer]:
+            - /url: https://www.facebook.com/BEBETEI
+            - generic [ref=e570]: 
+          - link "Messenger" [ref=e571] [cursor=pointer]:
+            - /url: https://www.messenger.com/t/BEBETEI
+            - generic [ref=e572]: 
+          - link "Instagram" [ref=e573] [cursor=pointer]:
+            - /url: https://www.instagram.com/bebetei.ro
+            - img "Instagram" [ref=e574]
+          - link "Youtube" [ref=e575] [cursor=pointer]:
+            - /url: https://youtube.com/c/BebeTEI1
+            - img "Youtube" [ref=e576]
+        - generic [ref=e577]:
+          - link "Plati Online" [ref=e578] [cursor=pointer]:
+            - /url: https://plati.online
+            - img "Plati Online" [ref=e579]
+          - img "Alpha Bank" [ref=e580]
+      - generic [ref=e583]:
+        - strong [ref=e584]: "Sediu social:"
+        - text: Str. Col. Constantin Blaremberg nr. 3, parter, Sector 1, București |
+        - strong [ref=e585]: "CUI:"
+        - text: RO 32742199 |
+        - strong [ref=e586]: "Reg. Com.:"
+        - text: J2014001218407 |
+        - strong [ref=e587]: "Obiect de activitate:"
+        - text: Comerţ cu amănuntul al produselor alimentare și nealimentare în magazine fizice și online |
+        - strong [ref=e588]: Punct lucru magazin online
+        - text: (https://comenzi.bebetei.ro/) |
+        - strong [ref=e589]: "Adresa:"
+        - text: Str. Biharia nr. 67-77, corp II, sector 1, București |
+        - strong [ref=e590]: Autorizație de funcționare
+        - text: "punct de lucru vânzări online: Certificat ORCTB din 13.05.2022"
+  - iframe [ref=e592]:
+    
