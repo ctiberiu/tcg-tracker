@@ -920,7 +920,8 @@ function normalizeProductUrl(url) {
  */
 function isTcgProduct(title) {
   if (!title) return false;
-  return /tcg|carti|cards/i.test(title);
+  if (/binder|sleeve|alcove/i.test(title)) return false;
+  return /tcg|carti|cards|booster|blister|trainer/i.test(title);
 }
 
 /**
