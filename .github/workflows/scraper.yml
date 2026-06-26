@@ -2,7 +2,7 @@ name: Run TCG Scraper
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       store_id:
@@ -13,6 +13,10 @@ on:
         description: 'Scrape run ID for status tracking'
         required: false
         type: string
+
+concurrency:
+  group: scraper
+  cancel-in-progress: false
 
 jobs:
   scrape:
