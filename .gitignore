@@ -12,3 +12,4 @@ poke-tracker-spec.md
 # Migration helper (not part of app)
 tcg-tracker/scraper/run-migrations.js
 .devchain/
+pokemonia-products.md
