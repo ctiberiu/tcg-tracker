@@ -1136,16 +1136,35 @@ function sanitizeUrl(url) {
  * Send batched email alert for newly inserted products via Resend API.
  * Updates is_notified=true for each product after successful send.
  */
+/**
+ * Resolve the list of recipient emails for alerts.
+ * Prefers active rows in the `subscribers` table; falls back to the
+ * comma-separated ALERT_EMAIL_TO env var for backward compatibility.
+ */
+async function getRecipients(supabase) {
+  const { data, error } = await supabase
+    .from('subscribers')
+    .select('email')
+    .eq('is_active', true);
+
+  if (error) {
+    console.error(`  Failed to load subscribers: ${error.message}`);
+  } else if (data && data.length > 0) {
+    return data.map((r) => r.email.trim()).filter(Boolean);
+  }
+
+  const fallback = process.env.ALERT_EMAIL_TO;
+  if (fallback) {
+    return fallback.split(',').map((e) => e.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 async function sendAlerts(insertedProducts) {
   const apiKey = process.env.RESEND_API_KEY;
-  const alertTo = process.env.ALERT_EMAIL_TO;
 
   if (!apiKey) {
     console.log('  RESEND_API_KEY not set — skipping email alerts');
-    return;
-  }
-  if (!alertTo) {
-    console.log('  ALERT_EMAIL_TO not set — skipping email alerts');
     return;
   }
   if (insertedProducts.length === 0) {
@@ -1154,6 +1173,12 @@ async function sendAlerts(insertedProducts) {
 
   const resend = new Resend(apiKey);
   const supabase = initSupabase();
+
+  const recipients = await getRecipients(supabase);
+  if (recipients.length === 0) {
+    console.log('  No active subscribers — skipping email alerts');
+    return;
+  }
 
   const productRows = insertedProducts
     .map(
@@ -1186,19 +1211,30 @@ async function sendAlerts(insertedProducts) {
     </table>
   `;
 
-  const { error: sendError } = await resend.emails.send({
-    from: 'TCG Tracker <onboarding@resend.dev>',
-    to: [alertTo],
-    subject: `TCG Tracker: ${insertedProducts.length} new product${insertedProducts.length > 1 ? 's' : ''} detected`,
-    html,
-  });
+  const subject = `TCG Tracker: ${insertedProducts.length} new product${insertedProducts.length > 1 ? 's' : ''} detected`;
 
-  if (sendError) {
-    console.error(`  Email send failed: ${sendError.message}`);
+  // Send one email per recipient so addresses stay private (no shared To: line).
+  let sentCount = 0;
+  for (const email of recipients) {
+    const { error: sendError } = await resend.emails.send({
+      from: 'TCG Tracker <onboarding@resend.dev>',
+      to: [email],
+      subject,
+      html,
+    });
+    if (sendError) {
+      console.error(`  Email send to ${email} failed: ${sendError.message}`);
+    } else {
+      sentCount++;
+    }
+  }
+
+  if (sentCount === 0) {
+    console.error('  All email sends failed — not marking products as notified');
     return;
   }
 
-  console.log(`  Alert email sent to ${alertTo}`);
+  console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s)`);
 
   const ids = insertedProducts.map((p) => p.id);
   const { error: updateError } = await supabase
