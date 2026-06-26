@@ -46,7 +46,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
           SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
           SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}

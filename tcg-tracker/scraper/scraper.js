@@ -1,7 +1,7 @@
 import { chromium } from 'playwright-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 chromium.use(StealthPlugin());
 
@@ -1133,8 +1133,8 @@ function sanitizeUrl(url) {
 }
 
 /**
- * Send batched email alert for newly inserted products via Resend API.
- * Updates is_notified=true for each product after successful send.
+ * Send email alerts for newly inserted products via Gmail SMTP (nodemailer).
+ * Sends one message per recipient, then updates is_notified=true on success.
  */
 /**
  * Resolve the list of recipient emails for alerts.
@@ -1161,17 +1161,21 @@ async function getRecipients(supabase) {
 }
 
 async function sendAlerts(insertedProducts) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
-  if (!apiKey) {
-    console.log('  RESEND_API_KEY not set — skipping email alerts');
+  if (!gmailUser || !gmailPass) {
+    console.log('  GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping email alerts');
     return;
   }
   if (insertedProducts.length === 0) {
     return;
   }
 
-  const resend = new Resend(apiKey);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: gmailUser, pass: gmailPass },
+  });
   const supabase = initSupabase();
 
   const recipients = await getRecipients(supabase);
@@ -1216,16 +1220,16 @@ async function sendAlerts(insertedProducts) {
   // Send one email per recipient so addresses stay private (no shared To: line).
   let sentCount = 0;
   for (const email of recipients) {
-    const { error: sendError } = await resend.emails.send({
-      from: 'TCG Tracker <onboarding@resend.dev>',
-      to: [email],
-      subject,
-      html,
-    });
-    if (sendError) {
-      console.error(`  Email send to ${email} failed: ${sendError.message}`);
-    } else {
+    try {
+      await transporter.sendMail({
+        from: `TCG Tracker <${gmailUser}>`,
+        to: email,
+        subject,
+        html,
+      });
       sentCount++;
+    } catch (sendError) {
+      console.error(`  Email send to ${email} failed: ${sendError.message}`);
     }
   }
 
