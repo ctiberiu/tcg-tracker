@@ -1,0 +1,4 @@
+# Ignore EVERYTHING in this folder (SSH keys, .env files, credentials)...
+*
+# ...except this .gitignore itself, so the folder stays in the repo.
+!.gitignore
