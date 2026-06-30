@@ -1197,17 +1197,21 @@ async function scrapeAll() {
 async function syncToSupabase(products, scrapedStoreIds = []) {
   const supabase = initSupabase();
 
-  // Fetch existing URLs to distinguish new vs updated
+  // Fetch existing URLs + prior stock state to distinguish new/updated and
+  // to detect out-of-stock -> in-stock restock transitions.
   const { data: existing, error: fetchError } = await supabase
     .from('products')
-    .select('url');
+    .select('url, in_stock');
 
   if (fetchError) {
     throw new Error(`Failed to fetch existing products: ${fetchError.message}`);
   }
 
   const existingUrls = new Set(existing.map((row) => row.url));
+  const prevStock = new Map(existing.map((row) => [row.url, row.in_stock]));
   const insertedProducts = [];
+  // Products to alert on: newly-listed AND in stock, or restocked (out -> in).
+  const alertProducts = [];
   let updated = 0;
 
   // Process in batches of 50
@@ -1234,8 +1238,14 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       for (const row of data) {
         if (!existingUrls.has(row.url)) {
           insertedProducts.push(row);
+          // New listing: alert only if it's actually in stock
+          if (row.in_stock) alertProducts.push(row);
         } else {
           updated++;
+          // Restock: was out of stock, now back in stock
+          if (row.in_stock && prevStock.get(row.url) === false) {
+            alertProducts.push(row);
+          }
         }
       }
     }
@@ -1298,7 +1308,7 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
     }
   }
 
-  return { inserted: insertedProducts.length, updated, insertedProducts };
+  return { inserted: insertedProducts.length, updated, insertedProducts, alertProducts };
 }
 
 /**
@@ -1410,7 +1420,7 @@ async function sendAlerts(insertedProducts) {
     .join('\n');
 
   const html = `
-    <h2 style="font-family:sans-serif;color:#333">🃏 TCG Tracker — ${insertedProducts.length} New Product${insertedProducts.length > 1 ? 's' : ''} Found</h2>
+    <h2 style="font-family:sans-serif;color:#333">🃏 TCG Tracker — ${insertedProducts.length} Product${insertedProducts.length > 1 ? 's' : ''} In Stock</h2>
     <table style="border-collapse:collapse;width:100%;font-family:sans-serif;font-size:14px">
       <thead>
         <tr style="background:#f5f5f5">
@@ -1425,7 +1435,7 @@ async function sendAlerts(insertedProducts) {
     </table>
   `;
 
-  const subject = `TCG Tracker: ${insertedProducts.length} new product${insertedProducts.length > 1 ? 's' : ''} detected`;
+  const subject = `TCG Tracker: ${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
 
   // Send one email per recipient so addresses stay private (no shared To: line).
   let sentCount = 0;
@@ -1474,9 +1484,10 @@ try {
   const { products, scrapedStoreIds } = await scrapeAll();
 
   console.log('\nSyncing to Supabase...');
-  const { inserted, updated, insertedProducts } = await syncToSupabase(products, scrapedStoreIds);
+  const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds);
   console.log(`  Inserted: ${inserted} new products`);
   console.log(`  Updated: ${updated} existing products`);
+  console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
 
   // Update scrape run with results
   await updateScrapeRun(supabase, runId, {
@@ -1486,9 +1497,9 @@ try {
     completed_at: new Date().toISOString(),
   });
 
-  if (insertedProducts.length > 0) {
+  if (alertProducts.length > 0) {
     console.log('\nSending email alerts...');
-    await sendAlerts(insertedProducts);
+    await sendAlerts(alertProducts);
   }
 } catch (err) {
   console.error(`  Scraper failed: ${err.message}`);
