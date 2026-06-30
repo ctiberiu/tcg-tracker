@@ -39,6 +39,7 @@ const SCRAPER_MAP = {
   raijucarii: scrapeRaijucarii,
   tulli: scrapeTulli,
   bebetei: scrapeBebetei,
+  carturesti: scrapeCarturesti,
 };
 
 /**
@@ -884,6 +885,84 @@ async function scrapeBebetei(page, store) {
       // btn-light = truly unavailable (Indisponibil)
       const outOfStockBtn = card.querySelector('.btn-out-of-stock');
       const in_stock = outOfStockBtn ? outOfStockBtn.classList.contains('btn-primary') : true;
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Carturesti.ro — AngularJS SPA (.cartu-grid-tile cards).
+ * The Pokemon search returns general books too, so we keep only titles
+ * containing "Pokemon TCG:". In stock when the stock label reads
+ * "În stoc" or "Doar în librărie".
+ */
+async function scrapeCarturesti(page, store) {
+  try {
+    await page.waitForSelector('.cartu-grid-tile prod-grid-box', { timeout: 20000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const IN_STOCK_LABELS = ['în stoc', 'doar în librărie'];
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.cartu-grid-tile');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const title = card.querySelector('h5.md-title')?.textContent?.trim();
+      if (!title) continue;
+
+      // The "tcg" search lists every brand's TCG products; keep only Pokemon
+      // ones. Matches both "Pokemon TCG:" and "Pokemon TCG -" naming.
+      if (!title.toLowerCase().includes('pokemon tcg')) continue;
+
+      const linkEl = card.querySelector('a.select-item-event[href], a.clean-a[href]');
+      let url = linkEl?.getAttribute('href') ?? null;
+      if (url && url.startsWith('/')) url = baseUrl + url;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      // Price: the .suma span carries a clean `content` attribute (e.g. "71.00")
+      const sumaEl = card.querySelector('.productPrice .suma');
+      let price = null;
+      const priceContent = sumaEl?.getAttribute('content');
+      if (priceContent) {
+        price = parseFloat(priceContent);
+      } else if (sumaEl) {
+        const t = sumaEl.textContent.replace(/[^\d.,]/g, '').replace(',', '.');
+        price = t ? parseFloat(t) : null;
+      }
+
+      const imgEl = card.querySelector('.productImageContainer img');
+      const imgSrc = imgEl?.getAttribute('src') ?? imgEl?.getAttribute('data-ng-src');
+
+      // Stock: read the visible label text inside .productStock
+      const stockEl = card.querySelector('.productStock span[data-ng-bind-html]');
+      const stockLabel = stockEl?.textContent?.trim().toLowerCase() ?? '';
+      const in_stock = IN_STOCK_LABELS.includes(stockLabel);
 
       results.push({
         title,
