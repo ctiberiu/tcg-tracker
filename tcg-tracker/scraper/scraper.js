@@ -766,16 +766,32 @@ async function scrapeRaijucarii(page, store) {
 }
 
 /**
- * Tulli.ro — custom toy store platform
- * Products use .product-box .item containers.
+ * Tulli.ro — Hungarian-built toy store (netjatek platform).
+ * Search results are <a class="product-name"> links; the price lives in a
+ * nearby ".price" within the same card. Results are lazy-loaded on scroll.
  */
 async function scrapeTulli(page, store) {
+  for (const label of ['Acceptă', 'Accept', 'Sunt de acord', 'De acord', 'OK']) {
+    try {
+      await page.getByRole('button', { name: label }).click({ timeout: 2000 });
+      break;
+    } catch { /* try next */ }
+  }
+
   try {
-    await page.waitForSelector('.product-box', { timeout: 15000 });
+    await page.waitForSelector('a.product-name', { timeout: 15000 });
   } catch {
     console.log(`  ${store.name}: No products found or page timed out`);
     return [];
   }
+
+  // Results lazy-load on scroll
+  await page.evaluate(async () => {
+    for (let i = 0; i < 4; i++) {
+      window.scrollBy(0, 1500);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  });
 
   return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
@@ -788,34 +804,35 @@ async function scrapeTulli(page, store) {
       return base + '/' + src;
     }
     const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('.product-box');
+    const anchors = document.querySelectorAll('a.product-name');
     const results = [];
     const seen = new Set();
 
-    for (const card of cards) {
-      const titleEl = card.querySelector('a.product-name, h3, .product-name a, a[class*="name"]');
-      if (!titleEl) continue;
-
-      const title = titleEl.textContent?.trim();
-      const linkEl = titleEl.tagName === 'A' ? titleEl : card.querySelector('a[href]');
-      const url = linkEl?.href;
-      if (!title || !url || seen.has(url)) continue;
+    for (const a of anchors) {
+      const title = a.textContent?.trim();
+      let url = a.getAttribute('href');
+      if (!title || !url) continue;
+      if (url.startsWith('/')) url = baseUrl + url;
+      if (seen.has(url)) continue;
       seen.add(url);
 
-      let price = null;
-      const priceEl = card.querySelector('.price, [class*="price"]');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
-        if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-        }
+      // Climb to the nearest ancestor that holds the price
+      let card = a;
+      for (let i = 0; i < 5 && card.parentElement; i++) {
+        card = card.parentElement;
+        if (card.querySelector('.price')) break;
       }
 
-      const imgEl = card.querySelector('img[data-src], img');
-      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.src;
+      const priceText = card.querySelector('.price')?.textContent ?? '';
+      const m = priceText.replace(/\s/g, '').match(/([\d.,]+)/);
+      let price = null;
+      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
 
-      const stockText = card.textContent ?? '';
-      const in_stock = !stockText.includes('Indisponibil') && !stockText.includes('Stoc epuizat');
+      const imgEl = card.querySelector('img');
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
+
+      const cardText = (card.textContent ?? '').toLowerCase();
+      const in_stock = !/indisponibil|stoc epuizat|nu este disponibil/.test(cardText);
 
       results.push({
         title,
