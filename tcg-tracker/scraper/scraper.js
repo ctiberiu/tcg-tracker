@@ -40,6 +40,7 @@ const SCRAPER_MAP = {
   tulli: scrapeTulli,
   bebetei: scrapeBebetei,
   carturesti: scrapeCarturesti,
+  foon: scrapeFoon,
 };
 
 /**
@@ -975,6 +976,88 @@ async function scrapeCarturesti(page, store) {
       });
     }
 
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
+ * Foon.ro — Slovak-built e-shop (.k-i product cards inside #data).
+ * Products render ONLY after the cookie consent is accepted, so we click it
+ * first. Price is .k-i-c (current/discounted), stock text is in .k-i-c-d.
+ */
+async function scrapeFoon(page, store) {
+  // Accept cookie consent — the product grid does not render until it's gone.
+  for (const label of ['Acceptă', 'Acceptă tot', 'Accept', 'Sunt de acord']) {
+    try {
+      await page.getByRole('button', { name: label }).click({ timeout: 2500 });
+      break;
+    } catch { /* try next label */ }
+  }
+
+  try {
+    await page.waitForSelector('#data .k-i', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  // Nudge lazy-loaded images/content
+  await page.evaluate(async () => {
+    for (let i = 0; i < 4; i++) {
+      window.scrollBy(0, 1500);
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  });
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('#data .k-i');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const linkEl = card.querySelector('.k-i-t a[href]') ?? card.querySelector('a.thumbnail[href]');
+      const title = card.querySelector('.k-i-t a')?.textContent?.trim();
+      if (!title || !linkEl) continue;
+
+      let url = linkEl.getAttribute('href');
+      if (url && url.startsWith('/')) url = baseUrl + url;
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+
+      // .k-i-c is the current (possibly discounted) price; .k-i-c-s is the old one
+      const priceText = (card.querySelector('.k-i-c') ?? card.querySelector('.k-i-c-s'))?.textContent ?? '';
+      const m = priceText.replace(/\s/g, '').match(/([\d.,]+)/);
+      let price = null;
+      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+
+      const imgEl = card.querySelector('img');
+      const imgSrc = imgEl?.getAttribute('src') ?? imgEl?.getAttribute('data-src');
+
+      const stockText = (card.querySelector('.k-i-c-d')?.textContent ?? '').toLowerCase();
+      const in_stock =
+        /(în stoc|in stoc|disponibil)/.test(stockText) &&
+        !/(indisponibil|epuizat|la comand)/.test(stockText);
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+      });
+    }
     return results;
   }, { storeName: store.name, storeId: store.id });
 }
