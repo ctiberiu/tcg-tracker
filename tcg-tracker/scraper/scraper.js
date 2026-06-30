@@ -27,6 +27,7 @@ function initSupabase() {
  */
 const SCRAPER_MAP = {
   pokemonia: scrapePokemonia,
+  gomag: scrapePokemonia, // alias — Gomag platform (CardXTCG, RamCards, etc.)
   shopify: scrapeShopify,
   hobby_planet: scrapeHobbyPlanet,
   regatul_jocurilor: scrapeRegatulJocurilor,
