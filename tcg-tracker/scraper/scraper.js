@@ -97,11 +97,16 @@ async function scrapePokemonia(page, store) {
 
       const imgSrc = imgEl?.getAttribute('data-lazy-src') ?? imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
-      // Out-of-stock: Gomag uses .stock-status.unavailable or "Stoc epuizat" text
-      const unavailable = el.querySelector('.stock-status.unavailable');
-      const epuizat = Array.from(el.querySelectorAll('span, div')).some(
-        (s) => s.textContent?.trim() === 'Stoc epuizat' || s.textContent?.trim() === 'Indisponibil'
+      // Out-of-stock on Gomag is shown as: .stock-status.unavailable, an
+      // "Indisponibil"/out-of-stock button, OR (when sold out) a stock-alert
+      // button ("Alerta stoc", class *stockAlert*) replacing add-to-cart.
+      const unavailable = el.querySelector(
+        '.stock-status.unavailable, .btn-outOfStock, [class*="stockAlert"]'
       );
+      const epuizat = Array.from(el.querySelectorAll('span, div, button, a')).some((s) => {
+        const t = s.textContent?.trim();
+        return t === 'Stoc epuizat' || t === 'Indisponibil' || t === 'Alerta stoc';
+      });
       const in_stock = !unavailable && !epuizat;
 
       return {
@@ -769,10 +774,11 @@ async function scrapeRaijucarii(page, store) {
       const imgEl = card.querySelector('img');
       const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
+      // ".sc-text" reads e.g. "În stoc > 5 buc" or "Momentan nu este disponibil".
+      // Careful: "nu este disponibil" contains "disponibil", so check negatives.
       const stockText = (card.querySelector('.sc-text')?.textContent ?? card.textContent ?? '').toLowerCase();
-      const in_stock =
-        /(în stoc|in stoc|disponibil)/.test(stockText) &&
-        !/(indisponibil|epuizat|vypredan)/.test(stockText);
+      const oos = /momentan nu|nu este disponibil|indisponibil|epuizat|vypredan|sold ?out/.test(stockText);
+      const in_stock = /(în stoc|in stoc|disponibil)/.test(stockText) && !oos;
 
       results.push({
         title,
