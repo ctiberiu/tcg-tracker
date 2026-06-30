@@ -4,7 +4,7 @@ import { useStores } from '../hooks/useStores'
 import { AppSidebar } from '../components/AppSidebar'
 import type { ProductFilters } from '../hooks/useProducts'
 
-export function DashboardPage() {
+export function DashboardPage({ isPublic = false }: { isPublic?: boolean }) {
   const { stores } = useStores()
 
   // Filter state
@@ -36,13 +36,31 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <AppSidebar activePage="dashboard" />
+      {isPublic ? (
+        <aside className="w-[72px] min-h-screen bg-surface-low flex flex-col items-center py-6 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+            <span className="text-primary text-lg font-bold">T</span>
+          </div>
+        </aside>
+      ) : (
+        <AppSidebar activePage="dashboard" />
+      )}
 
       {/* Main content */}
       <div className="flex-1 p-8">
-        <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight mb-8">
-          TCG Tracker
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight">
+            TCG Tracker
+          </h1>
+          {isPublic && (
+            <a
+              href="/login"
+              className="text-on-surface-variant text-xs uppercase tracking-wider hover:text-primary transition-colors"
+            >
+              Sign in
+            </a>
+          )}
+        </div>
         <h2 className="font-headline text-2xl font-bold text-on-surface mb-4">
           Recently Detected
         </h2>

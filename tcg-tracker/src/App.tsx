@@ -9,6 +9,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        {/* Public, read-only view — no login required */}
+        <Route path="/view" element={<DashboardPage isPublic />} />
         <Route
           path="/dashboard"
           element={
