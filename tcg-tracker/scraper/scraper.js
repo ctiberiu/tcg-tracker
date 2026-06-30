@@ -229,8 +229,15 @@ async function scrapeHobbyPlanet(page, store) {
  * Filters to Pokemon TCG products only (excludes backpacks, toys, etc.).
  */
 async function scrapeRegatulJocurilor(page, store) {
+  for (const label of ['Acceptă', 'Accept', 'Sunt de acord', 'De acord', 'OK']) {
+    try {
+      await page.getByRole('button', { name: label }).click({ timeout: 2000 });
+      break;
+    } catch { /* try next */ }
+  }
+
   try {
-    await page.waitForSelector('li.product_item', { timeout: 15000 });
+    await page.waitForSelector('.product-miniature', { timeout: 15000 });
   } catch {
     console.log(`  ${store.name}: No products found or page timed out`);
     return [];
@@ -247,40 +254,35 @@ async function scrapeRegatulJocurilor(page, store) {
       return base + '/' + src;
     }
     const baseUrl = 'https://regatuljocurilor.ro';
-    // Use li.product_item to scope to actual search results only (excludes featured sections)
-    const items = document.querySelectorAll('li.product_item');
+    const items = document.querySelectorAll('.product-miniature');
     const results = [];
     const seen = new Set();
 
     for (const item of items) {
-      const titleEl = item.querySelector('.product-title a, h3 a, h2 a, h1 a');
-      if (!titleEl) continue;
+      const titleEl = item.querySelector('.product-title a, h2 a, h3 a');
+      const linkEl = titleEl ?? item.querySelector('a.thumbnail, a.product-thumbnail');
+      const title = titleEl?.textContent?.trim();
+      if (!title || !linkEl) continue;
 
-      const title = titleEl.textContent?.trim();
-      if (!title) continue;
-
-      const url = titleEl.href?.startsWith('/') ? baseUrl + titleEl.href : titleEl.href;
-      if (seen.has(url)) continue;
+      let url = linkEl.getAttribute('href');
+      if (url && url.startsWith('/')) url = baseUrl + url;
+      if (!url || seen.has(url)) continue;
       seen.add(url);
 
-      // Price
       let price = null;
-      const priceEl = item.querySelector('.product-price .price, [class*="price"] .price, [class*="price"]');
+      const priceEl = item.querySelector('.product-price-and-shipping .price, .price, [class*="price"]');
       if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei)/i);
+        const match = priceEl.textContent?.match(/([\d.]*,?\d+)\s*(RON|lei)/i);
         if (match) {
           price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
         }
       }
 
-      // Image
-      const imgEl = item.querySelector('img[data-src], img[src*="img/p/"], img');
+      const imgEl = item.querySelector('img[data-src], img');
       const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
-      // In-stock: div.stock text — "Nu este momentan in stoc" = out of stock
-      const stockEl = item.querySelector('div.stock');
-      const stockText = stockEl?.textContent?.trim() ?? '';
-      const in_stock = !stockText.includes('Nu este momentan');
+      const cardText = (item.textContent ?? '').toLowerCase();
+      const in_stock = !/indisponibil|nu este momentan|stoc epuizat|epuizat/.test(cardText);
 
       results.push({
         title,
@@ -563,11 +565,19 @@ async function scrapeOzone(page, store) {
  */
 async function scrapeWooCommerce(page, store) {
   try {
-    await page.waitForSelector('a[href*="/product/"]', { timeout: 15000 });
+    await page.waitForSelector('li.product, ul.products li.product', { timeout: 15000 });
   } catch {
     console.log(`  ${store.name}: No products found or page timed out`);
     return [];
   }
+
+  // Products are lazy-loaded on scroll
+  await page.evaluate(async () => {
+    for (let i = 0; i < 4; i++) {
+      window.scrollBy(0, 1500);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  });
 
   return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
@@ -699,12 +709,26 @@ async function scrapeLumeaJocurilor(page, store) {
  * Products use a.products__block__item__link as card elements.
  */
 async function scrapeRaijucarii(page, store) {
+  for (const label of ['Acceptă', 'Accept', 'Sunt de acord', 'De acord', 'OK']) {
+    try {
+      await page.getByRole('button', { name: label }).click({ timeout: 2000 });
+      break;
+    } catch { /* try next */ }
+  }
+
   try {
-    await page.waitForSelector('.products__block__item', { timeout: 15000 });
+    await page.waitForSelector('.c-product-thumb', { timeout: 15000 });
   } catch {
     console.log(`  ${store.name}: No products found or page timed out`);
     return [];
   }
+
+  await page.evaluate(async () => {
+    for (let i = 0; i < 4; i++) {
+      window.scrollBy(0, 1500);
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  });
 
   return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
@@ -717,38 +741,38 @@ async function scrapeRaijucarii(page, store) {
       return base + '/' + src;
     }
     const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('.products__block__item');
+    const cards = document.querySelectorAll('.c-product-thumb');
     const results = [];
     const seen = new Set();
 
     for (const card of cards) {
-      const linkEl = card.querySelector('a.products__block__item__link');
+      const linkEl = card.querySelector('a.c-product-thumb__img[href], a[href]');
       if (!linkEl) continue;
 
-      const url = linkEl.href;
+      let url = linkEl.getAttribute('href');
+      if (url && url.startsWith('/')) url = baseUrl + url;
       if (!url || seen.has(url)) continue;
       seen.add(url);
 
-      const title = card.querySelector('h2.products__block__item__title, h2')?.textContent?.trim();
+      // Title from the link's title attr / img alt; collapse a doubled prefix
+      let title = (linkEl.getAttribute('title') || card.querySelector('img')?.getAttribute('alt') || '').trim();
+      title = title.replace(/^(.+?:\s+)\1+/i, '$1');
       if (!title) continue;
 
+      // Price: integer + ".is-small" decimals share a "*price*" container
       let price = null;
-      const priceEl = card.querySelector('.products__block__item__price, [class*="price"]');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
-        if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-        }
-      }
+      const priceEl = card.querySelector('[class*="price"]') ?? card.querySelector('.is-small')?.parentElement;
+      const priceText = (priceEl?.textContent ?? '').replace(/\s/g, '');
+      const m = priceText.match(/(\d[\d.]*,\d{2}|\d[\d.]+)/);
+      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
 
       const imgEl = card.querySelector('img');
-      const imgSrc = imgEl?.src;
+      const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
 
-      // RaiJucarii listing cards don't show explicit stock status;
-      // check for unavailability flags/badges in the card
-      const cardText = card.textContent ?? '';
-      const unavailable = !!card.querySelector('[class*="unavailable"], [class*="sold-out"]')
-        || /indisponibil|stoc epuizat|vypredané/i.test(cardText);
+      const stockText = (card.querySelector('.sc-text')?.textContent ?? card.textContent ?? '').toLowerCase();
+      const in_stock =
+        /(în stoc|in stoc|disponibil)/.test(stockText) &&
+        !/(indisponibil|epuizat|vypredan)/.test(stockText);
 
       results.push({
         title,
@@ -757,7 +781,7 @@ async function scrapeRaijucarii(page, store) {
         image_url: normalizeImageUrl(imgSrc, baseUrl),
         store_name: storeName,
         store_id: storeId,
-        in_stock: !unavailable,
+        in_stock,
       });
     }
 
