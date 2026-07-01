@@ -11,6 +11,13 @@ export interface Product {
   first_seen: string
 }
 
+export interface Subscriber {
+  id: string
+  email: string
+  is_active: boolean
+  created_at: string
+}
+
 export type ScraperType = 'pokemonia' | 'shopify' | 'hobby_planet' | 'regatul_jocurilor'
 
 export interface Store {

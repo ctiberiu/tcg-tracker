@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useStores } from '../hooks/useStores'
 import { supabase } from '../lib/supabase'
 import { AppSidebar } from '../components/AppSidebar'
+import { ManageEmails } from '../components/ManageEmails'
 import type { Store, ScraperType, Product, ScrapeRun } from '../lib/types'
 
 const SCRAPER_TYPES: { value: ScraperType; label: string }[] = [
@@ -202,6 +203,10 @@ export function AdminPage() {
         <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight mb-8">
           TCG Tracker
         </h1>
+
+        {/* Manage Emails — recipients of stock alerts */}
+        <ManageEmails />
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-headline text-2xl font-bold text-on-surface">
             Manage Stores
