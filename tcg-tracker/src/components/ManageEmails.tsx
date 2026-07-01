@@ -10,6 +10,30 @@ export function ManageEmails() {
   const [newEmail, setNewEmail] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [testingId, setTestingId] = useState<string | null>(null)
+  const [testMsg, setTestMsg] = useState<{ id: string; text: string; ok: boolean } | null>(null)
+
+  const handleTest = async (id: string, email: string) => {
+    setTestingId(id)
+    setTestMsg(null)
+    try {
+      const res = await fetch('/api/send-test-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to send')
+      setTestMsg({ id, text: `Sent — ${data.count} products`, ok: true })
+    } catch (err) {
+      setTestMsg({ id, text: err instanceof Error ? err.message : 'Failed to send', ok: false })
+    } finally {
+      setTestingId(null)
+    }
+  }
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,15 +122,29 @@ export function ManageEmails() {
                     </span>
                   )}
                   {!s.is_active && <span className="ml-2 text-error text-xs">inactive</span>}
+                  {testMsg?.id === s.id && (
+                    <span className={`ml-2 text-xs ${testMsg.ok ? 'text-primary' : 'text-error'}`}>
+                      {testMsg.text}
+                    </span>
+                  )}
                 </span>
-                {!isMine && (
+                <div className="flex items-center gap-3 shrink-0 ml-3">
                   <button
-                    onClick={() => handleRemove(s.id, s.email)}
-                    className="text-on-surface-variant hover:text-error text-sm transition-colors shrink-0 ml-3"
+                    onClick={() => handleTest(s.id, s.email)}
+                    disabled={testingId === s.id}
+                    className="text-on-surface-variant hover:text-primary text-sm transition-colors disabled:opacity-50"
                   >
-                    Remove
+                    {testingId === s.id ? 'Sending...' : 'Test'}
                   </button>
-                )}
+                  {!isMine && (
+                    <button
+                      onClick={() => handleRemove(s.id, s.email)}
+                      className="text-on-surface-variant hover:text-error text-sm transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </li>
             )
           })}
