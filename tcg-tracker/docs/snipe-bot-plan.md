@@ -1,8 +1,8 @@
 # Snipe — Auto-Purchase Bot (Plan / Draft Epic)
 
-> Status: **Plan finalized** — all open questions resolved with the user.
-> Entering SubBSM validation. Prepared for the Brainstormer (architect) →
-> Coder (implementation) → Code Reviewer (final review) pipeline.
+> Status: **Validated by SubBSM, ready for the Coder.** Prepared for the
+> Brainstormer (architect) → Coder (implementation) → Code Reviewer (final
+> review) pipeline.
 > Naming: **Snipe** (the bot = "the Sniper"). It watches for a restock and
 > finalizes an order.
 
@@ -25,7 +25,7 @@ purchase limit**. The limit is read **best-effort from the product page**
 (when Krit displays it there) and used as `min(desiredQty, detectedLimit)`;
 when it isn't shown, or the page value doesn't match reality, the checkout
 flow's cart/checkout-step error detection acts as a **safety net** — see
-§3.3 and §6.
+§3 guardrail 3 and §6.
 
 ## 2. The defining constraint (why it's a browser extension)
 
@@ -74,6 +74,12 @@ different Krit account, each with the extension. No shared/stored credentials.
 5. **ToS awareness.** Automating checkout — and especially using multiple
    accounts to exceed per-person limits — may violate krit.ro's terms and risk
    account/order cancellation. This is the user's decision; documented in the UI.
+6. **Trigger command integrity.** The dashboard→extension trigger
+   (`window.postMessage`, §5) can arm a real purchase with real money/cards.
+   The content script relaying dashboard messages to the background worker
+   MUST validate `event.origin` (and `event.source === window`) against the
+   known dashboard origin before forwarding — otherwise a compromised/XSS'd
+   dashboard page, or any other tab, could message the extension.
 
 ## 4. Configuration model (per-store "flow" + "task")
 
@@ -119,10 +125,11 @@ The scraper already knows Krit's **listing** DOM (scraper_type `krit`:
 product page add-to-cart, cart, checkout steps, shipping-method + address
 selection, payment-method selection (ramburs vs card), and the final
 place-order button. Also map: where/whether the product page displays a
-per-person purchase limit (best-effort read), and what a quantity-rejected
-error looks like at cart/checkout (the safety-net path when the limit isn't
-shown or is exceeded). Deliverable: a documented Krit flow spec with
-selectors.
+per-person purchase limit (best-effort read), what a quantity-rejected error
+looks like at cart/checkout (the safety-net path when the limit isn't shown
+or is exceeded), and how to detect **login state** on krit.ro (so the
+extension can confirm the user is authenticated before attempting add-to-cart
+or checkout). Deliverable: a documented Krit flow spec with selectors.
 
 ## 7. Phased breakdown
 
@@ -130,15 +137,22 @@ selectors.
   the selector/step spec. (No code shipped; unblocks everything.)
 - **Phase 1 — Extension skeleton:** manifest (host permissions limited to
   krit.ro + dashboard origin), background service worker, krit.ro content
-  script, dashboard-origin messaging content script. Prove: dashboard sends a
-  task → extension receives it → extension reads a Krit product page's stock and
-  can add-to-cart on command (single item, manual trigger).
+  script, dashboard-origin messaging content script (with origin validation
+  per guardrail 6). Prove: dashboard sends a task → extension receives it →
+  extension reads a Krit product page's stock and can add-to-cart on command
+  (single item, manual trigger). Since the real dashboard Play/Stop UI and
+  Supabase task storage don't exist until Phase 4, Phases 1-3 drive tasks via
+  a manual/dev-stub trigger (hardcoded task or an extension popup form); this
+  stub is replaced by the real `postMessage` + Supabase wiring in Phase 4.
 - **Phase 2 — Mode A (watch link) + checkout:** poll the URL (~10s + jitter);
   on in-stock → read per-person limit from product page (best-effort) → add to
   cart with `min(desiredQty, detectedLimit)` → if cart/checkout rejects the
   quantity, detect the error and retry with the accepted amount instead of
   failing → checkout → shipping/address → payment: **card = pause + notify**,
-  **ramburs = auto place**. One account.
+  **ramburs = auto place**. One account. On repeated poll errors or a Krit
+  block/error page, back off exponentially and surface a **failed** status
+  rather than retrying at the fixed interval (ties to guardrail 5, ToS
+  awareness).
 - **Phase 3 — Mode B (keyword search):** search Krit, match all keywords, then
   reuse the Phase 2 buy pipeline.
 - **Phase 4 — Dashboard Snipe page:** flow + task builders, Play/Stop, live
