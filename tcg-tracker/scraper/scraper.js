@@ -11,6 +11,7 @@ import {
   applyFailureOutcome,
 } from './block-detection.js';
 import { isStoreDue } from './schedule.js';
+import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
 
 chromium.use(StealthPlugin());
 
@@ -470,18 +471,50 @@ async function scrapeKrit(page, store) {
 }
 
 /**
- * Smyk.ro — custom React platform
- * Products use a.complex-product__link-wrapper as card elements.
+ * Smyk — custom React platform. The site migrated smyk.ro -> www.smyk.com (the old
+ * URL 301-redirects; markup is unchanged). Each product is a `.complex-product`
+ * container that holds TWO `a.complex-product__link-wrapper` anchors (image + info),
+ * so we iterate the container — not the anchors — to read name, price and image
+ * (which live in different anchors) as one unit.
+ *
+ * Returns { products, confirmedEmpty }: `confirmedEmpty` is true when smyk.com
+ * positively reports a legitimately empty search (its dedicated /search-empty
+ * route, title "Niciun rezultat"), so classifyOutcome can treat it as 'success'
+ * instead of a rawCount===0 'block'. A genuine failure (block/challenge/timeout,
+ * layout change) leaves confirmedEmpty false so it still classifies as a block.
  */
 async function scrapeSmyk(page, store) {
-  try {
-    await page.waitForSelector('a.complex-product__link-wrapper', { timeout: 15000 });
-  } catch {
-    console.log(`  ${store.name}: No products found or page timed out`);
-    return [];
+  // Positively detect smyk.com's own "no results" state up front. Two live markers:
+  // the SSR body carries "Niciun rezultat" at the /search URL, and the client JS
+  // then redirects to a dedicated /search-empty route — accept EITHER. Require the
+  // product grid to be absent too, so a results page that happens to contain the
+  // phrase can never be misread as empty. A confirmed-empty search is a normal
+  // outcome (classifyOutcome → 'success'), not a failure that counts toward disable.
+  const confirmedEmpty = await page.evaluate(() => {
+    const noGrid = document.querySelectorAll('.complex-product').length === 0;
+    const emptyRoute = /\/search-empty(\/|$)/.test(location.pathname);
+    // textContent (not innerText) + title: the "Niciun rezultat" marker sits in a
+    // node that's only made visible / promoted to the page title once the client JS
+    // runs, but it is present in the SSR DOM immediately either way.
+    const haystack = `${document.title ?? ''} ${document.body?.textContent ?? ''}`;
+    const emptyMsg = /niciun rezultat|nu am g[ăa]sit|no results found/i.test(haystack);
+    return noGrid && (emptyRoute || emptyMsg);
+  }).catch(() => false);
+  if (confirmedEmpty) {
+    console.log(`  ${store.name}: confirmed empty search (no results) — healthy, not a failure`);
+    return { products: [], confirmedEmpty: true };
   }
 
-  return page.evaluate(({ storeName, storeId }) => {
+  try {
+    await page.waitForSelector('.complex-product', { timeout: 15000 });
+  } catch {
+    // No grid and no confirmed-empty marker → a genuine failure (block/challenge/
+    // layout change/timeout). Leave confirmedEmpty false so it classifies as a block.
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return { products: [], confirmedEmpty: false };
+  }
+
+  const products = await page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -492,7 +525,7 @@ async function scrapeSmyk(page, store) {
       return base + '/' + src;
     }
     const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('a.complex-product__link-wrapper');
+    const cards = document.querySelectorAll('.complex-product');
     const results = [];
     const seen = new Set();
 
@@ -500,7 +533,14 @@ async function scrapeSmyk(page, store) {
       const title = card.querySelector('.complex-product__name')?.textContent?.trim();
       if (!title) continue;
 
-      const url = card.href?.startsWith('/') ? baseUrl + card.href : card.href;
+      // Prefer the product-page anchor (/…/p/…) — some cards lead with a shared
+      // promo/category link that would collide across products under dedup. A
+      // comma selector returns first-in-DOM-order, not by priority, so query in
+      // explicit fallback order.
+      const linkEl = card.querySelector('a[href*="/p/"]')
+        || card.querySelector('a.complex-product__link-wrapper[href]')
+        || card.querySelector('a[href]');
+      const url = linkEl?.href;
       if (!url || seen.has(url)) continue;
       seen.add(url);
 
@@ -514,7 +554,10 @@ async function scrapeSmyk(page, store) {
       }
 
       const imgEl = card.querySelector('img[data-testid="image"], img');
-      const imgSrc = imgEl?.src;
+      // Product images are lazy-loaded: the real URL sits in data-src while `src`
+      // holds a shared "/images/product-cover.jpeg" placeholder until the lazyload
+      // script fires. A headless scrape never scrolls, so prefer data-src.
+      const imgSrc = imgEl?.getAttribute('data-src') || imgEl?.getAttribute('src');
 
       // Smyk search results include both available and unavailable products;
       // check for unavailability indicators in the card
@@ -535,64 +578,68 @@ async function scrapeSmyk(page, store) {
 
     return results;
   }, { storeName: store.name, storeId: store.id });
+
+  return { products, confirmedEmpty: false };
 }
 
 /**
- * Ozone.ro — Magento with FastSimon search overlay
- * Products use .product-card with schema.org structured data.
+ * Ozone.ro — search is a client-side FastSimon / InstantSearch+ widget.
+ *
+ * The `/instantsearchplus/result/` page returns ~938KB of HTML with ZERO product
+ * markup — every `.product-card` is injected by JS after an async call to
+ * api.fastsimon.com. The old DOM scrape (`waitForSelector('.product-card')`)
+ * raced that render and intermittently extracted 0 products, tripping the
+ * auto-disable. We now hit the same JSON API the page uses directly — no page
+ * load, no render race — exactly like scrapeShopify's /products.json fetch. Like
+ * scrapeShopify this takes no Playwright page and reports the fetch's OWN status +
+ * challenge signal so block-detection still works: an HTTP status the server
+ * actually returned (403/429) is exactly what classifyOutcome needs to flag a
+ * block, so it is returned — NOT thrown. Only a network-level failure (the fetch
+ * itself throwing — DNS/connection refused/AbortSignal timeout) propagates, which
+ * the caller classifies as a transient failure.
  */
-async function scrapeOzone(page, store) {
+async function scrapeOzone(_page, store) {
+  let q = '';
   try {
-    await page.waitForSelector('.product-card', { timeout: 15000 });
+    q = new URL(store.url).searchParams.get('q') ?? '';
   } catch {
-    console.log(`  ${store.name}: No products found or page timed out`);
-    return [];
+    // store.url not a valid URL — fall through with an empty query.
   }
 
-  return page.evaluate(({ storeName, storeId }) => {
-    function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('.product-card');
-    const results = [];
-    const seen = new Set();
+  const apiUrl = buildFastSimonSearchUrl({
+    uuid: OZONE_FASTSIMON.uuid,
+    storeId: OZONE_FASTSIMON.storeId,
+    q,
+    perPage: 50,
+  });
 
-    for (const card of cards) {
-      const nameMeta = card.querySelector('meta[itemprop="name"]');
-      const urlMeta = card.querySelector('meta[itemprop="url"]');
-      const priceMeta = card.querySelector('meta[itemprop="price"]');
-      const availMeta = card.querySelector('meta[itemprop="availability"]');
-      const imgEl = card.querySelector('img');
+  const res = await fetch(apiUrl, {
+    headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+    signal: AbortSignal.timeout(30000),
+  });
+  const status = res.status;
+  const text = await res.text();
+  const challenged = detectChallengeText(text);
 
-      const title = nameMeta?.content || imgEl?.alt;
-      const url = urlMeta?.content || card.querySelector('a[href*="/product"]')?.href;
-      if (!title || !url || seen.has(url)) continue;
-      seen.add(url);
+  if (!res.ok) {
+    // A status the server actually sent (e.g. 403/429) is the block signal, not a
+    // "hiccup" — return it so classifyOutcome({status}) → 'block' and the existing
+    // auto-disable path fires. (Matches scrapeShopify.)
+    console.log(`  ${store.name}: FastSimon API HTTP ${status}`);
+    return { products: [], status, challenged };
+  }
 
-      const price = priceMeta?.content ? parseFloat(priceMeta.content) : null;
-      const imgSrc = imgEl?.src;
-      const in_stock = availMeta?.content?.includes('InStock') ?? true;
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    // 200 but not JSON → an interstitial/challenge in front of the API.
+    console.log(`  ${store.name}: FastSimon API returned non-JSON (likely a block/interstitial)`);
+    return { products: [], status, challenged: true };
+  }
 
-      results.push({
-        title,
-        price,
-        url,
-        image_url: normalizeImageUrl(imgSrc, baseUrl),
-        store_name: storeName,
-        store_id: storeId,
-        in_stock,
-      });
-    }
-
-    return results;
-  }, { storeName: store.name, storeId: store.id });
+  const products = parseFastSimonResponse(json, { storeName: store.name, storeId: store.id });
+  return { products, status, challenged };
 }
 
 /**
@@ -1198,11 +1245,16 @@ async function updateStoreFailureState(supabase, store, outcome) {
 async function notifyStoreDisabled(store, count) {
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
-  if (!gmailUser || !gmailPass) return; // no email creds — the log line above is the notification
+  // Admin-only OPERATIONAL alert — goes only to the operator's own address(es)
+  // (ALERT_EMAIL_TO), NEVER to `getRecipients()`/the subscribers table (that's
+  // the product-restock audience). If ALERT_EMAIL_TO is unset, skip the email —
+  // the console log line above is the fallback notification.
+  const recipients = (process.env.ALERT_EMAIL_TO ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!gmailUser || !gmailPass || recipients.length === 0) return;
   try {
-    const supabase = initSupabase();
-    const recipients = await getRecipients(supabase);
-    if (recipients.length === 0) return;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
     await transporter.sendMail({
       from: `TCG Tracker <${gmailUser}>`,
@@ -1215,7 +1267,7 @@ async function notifyStoreDisabled(store, count) {
         `structure found).</p><p>This usually means the store is blocking the scraper. Investigate, then ` +
         `re-enable it manually in the dashboard once resolved.</p>`,
     });
-    console.log(`  ${store.name}: disable notification emailed to ${recipients.length} recipient(s)`);
+    console.log(`  ${store.name}: disable notification emailed to admin (${recipients.length} address(es))`);
   } catch (e) {
     console.error(`  ${store.name}: disable notification email failed — ${e.message}`);
   }
@@ -1229,12 +1281,19 @@ async function notifyStoreDisabled(store, count) {
  * Playwright page load entirely (scrapeShopify does its own JSON fetch and never
  * touches the page) and report their own HTTP status/challenge signal so
  * block-detection still gets real inputs.
- * @returns {Promise<{ raw: object[], status: number, challenged: boolean }>}
+ * @returns {Promise<{ raw: object[], status: number, challenged: boolean, confirmedEmpty: boolean }>}
+ *   confirmedEmpty — the scraper positively confirmed the site's own "no results"
+ *   state (opt-in; a legit empty search, not a failure). Default false.
  */
 async function fetchStoreData(store, browser) {
   if (store.scraper_type === 'shopify') {
     const r = await scrapeShopify(null, store); // { products, status, challenged } — no page load
-    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true };
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: r.confirmedEmpty === true };
+  }
+
+  if (store.scraper_type === 'ozone') {
+    const r = await scrapeOzone(null, store); // FastSimon JSON API — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: r.confirmedEmpty === true };
   }
 
   const scrapeFn = SCRAPER_MAP[store.scraper_type];
@@ -1256,8 +1315,12 @@ async function fetchStoreData(store, browser) {
         .then((el) => el != null)
         .catch(() => false));
 
-    const raw = await scrapeFn(page, store);
-    return { raw, status, challenged };
+    // Scrapers return either a plain products array or, if they opt into the
+    // confirmed-empty signal (e.g. scrapeSmyk), { products, confirmedEmpty }.
+    const result = await scrapeFn(page, store);
+    const raw = Array.isArray(result) ? result : (result?.products ?? []);
+    const confirmedEmpty = Array.isArray(result) ? false : result?.confirmedEmpty === true;
+    return { raw, status, challenged, confirmedEmpty };
   } finally {
     await context.close();
   }
@@ -1280,19 +1343,23 @@ async function scrapeAll() {
     return { products: [], scrapedStoreIds: [] };
   }
 
-  // Only spin up Playwright if a non-Shopify store is actually due.
-  const needsBrowser = stores.some((s) => s.scraper_type !== 'shopify');
+  // Only spin up Playwright if a store that actually needs a browser is due.
+  // shopify + ozone are JSON-API scrapers (no page load), so a due-set of only
+  // those skips launching Chromium entirely.
+  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone']);
+  const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
   const scrapedStoreIds = [];
 
-  const commit = (store, raw, status, challenged) => {
+  const commit = (store, raw, status, challenged, confirmedEmpty = false) => {
     const products = raw.filter((p) => isTcgProduct(p.title));
-    const outcome = classifyOutcome({ status, challenged, rawCount: raw.length });
+    const outcome = classifyOutcome({ status, challenged, rawCount: raw.length, confirmedEmpty });
     if (outcome === 'success') {
       allProducts.push(...products);
       scrapedStoreIds.push(store.id);
-      console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)`);
+      const emptyNote = confirmedEmpty && raw.length === 0 ? ' — confirmed empty search (healthy, no matches)' : '';
+      console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)${emptyNote}`);
     } else {
       console.warn(`  ${store.name}: block-like failure (HTTP ${status}${challenged ? ', challenge page' : ''}, ${raw.length} products)`);
     }
@@ -1309,8 +1376,8 @@ async function scrapeAll() {
     let outcome = 'transient';
     try {
       console.log(`Scraping ${store.name}...`);
-      const { raw, status, challenged } = await fetchStoreData(store, browser);
-      outcome = commit(store, raw, status, challenged);
+      const { raw, status, challenged, confirmedEmpty } = await fetchStoreData(store, browser);
+      outcome = commit(store, raw, status, challenged, confirmedEmpty);
     } catch (err) {
       outcome = 'transient'; // one-off nav/network error — does NOT count toward auto-disable
       console.error(`  ${store.name}: ERROR — ${err.message}`);
@@ -1653,4 +1720,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
