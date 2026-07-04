@@ -41,6 +41,11 @@ Description=Run TCG scraper every 15 minutes
 
 [Timer]
 OnCalendar=*:0/15
+# Randomized jitter (up to 3 min) so runs don't hit the exact same clock tick
+# every time — a perfectly regular interval from one fixed IP is itself a
+# detectable pattern. AccuracySec=1s keeps the delay from being coalesced away.
+RandomizedDelaySec=180
+AccuracySec=1s
 Persistent=true
 
 [Install]

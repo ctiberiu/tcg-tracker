@@ -2,6 +2,15 @@ import { chromium } from 'playwright-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
+import { fileURLToPath } from 'node:url';
+import {
+  BROWSER_UA,
+  BLOCK_DISABLE_THRESHOLD,
+  detectChallengeText,
+  classifyOutcome,
+  applyFailureOutcome,
+} from './block-detection.js';
+import { isStoreDue } from './schedule.js';
 
 chromium.use(StealthPlugin());
 
@@ -49,17 +58,24 @@ const SCRAPER_MAP = {
  */
 async function fetchStores(supabase) {
   const storeId = process.env.SCRAPE_STORE_ID;
-  let query = supabase.from('stores').select('*');
 
+  // A single-store manual trigger always runs regardless of timing.
   if (storeId) {
-    query = query.eq('id', storeId);
-  } else {
-    query = query.eq('is_enabled', true);
+    const { data, error } = await supabase.from('stores').select('*').eq('id', storeId);
+    if (error) throw new Error(`Failed to fetch stores: ${error.message}`);
+    return data ?? [];
   }
 
-  const { data, error } = await query;
+  const { data, error } = await supabase.from('stores').select('*').eq('is_enabled', true);
   if (error) throw new Error(`Failed to fetch stores: ${error.message}`);
-  return data;
+
+  // Due-based scheduling: only scrape stores that are actually due (never scraped,
+  // or past their own check_interval_minutes). Filtered client-side — the store
+  // count is small and an interval SQL expression is awkward in the JS builder.
+  const now = Date.now();
+  const due = (data ?? []).filter((s) => isStoreDue(s, now));
+  console.log(`Stores: ${data?.length ?? 0} enabled, ${due.length} due this run`);
+  return due;
 }
 
 /**
@@ -130,27 +146,42 @@ async function scrapeShopify(_page, store) {
   const baseUrl = new URL(store.url).origin;
   const jsonUrl = store.url.replace(/\?.*$/, '').replace(/\/$/, '') + '/products.json?limit=250';
 
-  try {
-    const res = await fetch(jsonUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TCGTracker/1.0)' },
-      signal: AbortSignal.timeout(30000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+  // No Playwright page — the scraper skips the wasted page load for Shopify and
+  // does its own JSON fetch. Report the fetch's OWN status + challenge signal so
+  // block-detection still works. A network/timeout error is left to throw → the
+  // caller classifies it as a transient failure (not a block).
+  const res = await fetch(jsonUrl, {
+    headers: { 'User-Agent': BROWSER_UA },
+    signal: AbortSignal.timeout(30000),
+  });
+  const status = res.status;
+  const text = await res.text();
+  const challenged = detectChallengeText(text);
 
-    return data.products.map((product) => ({
-      title: product.title,
-      price: product.variants?.[0]?.price ? parseFloat(product.variants[0].price) : null,
-      url: baseUrl + '/products/' + product.handle,
-      image_url: product.images?.[0]?.src ?? null,
-      store_name: store.name,
-      store_id: store.id,
-      in_stock: product.variants?.some((v) => v.available) ?? false,
-    }));
-  } catch (err) {
-    console.log(`  ${store.name}: Shopify JSON API failed (${err.message})`);
-    return [];
+  if (!res.ok) {
+    console.log(`  ${store.name}: Shopify JSON API HTTP ${status}`);
+    return { products: [], status, challenged };
   }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // 200 but not JSON → an HTML interstitial/challenge sitting in front of the API.
+    console.log(`  ${store.name}: Shopify JSON API returned non-JSON (likely a block/interstitial)`);
+    return { products: [], status, challenged: true };
+  }
+
+  const products = (data.products ?? []).map((product) => ({
+    title: product.title,
+    price: product.variants?.[0]?.price ? parseFloat(product.variants[0].price) : null,
+    url: baseUrl + '/products/' + product.handle,
+    image_url: product.images?.[0]?.src ?? null,
+    store_name: store.name,
+    store_id: store.id,
+    in_stock: product.variants?.some((v) => v.available) ?? false,
+  }));
+  return { products, status, challenged };
 }
 
 /**
@@ -1135,55 +1166,160 @@ function isTcgProduct(title) {
 }
 
 /**
+ * Persist a store's consecutive block-like failure streak and AUTO-DISABLE it
+ * once the streak hits the threshold (so the scraper doesn't keep hammering a
+ * store that's actively blocking it). Never auto-re-enables — that stays a
+ * manual decision after investigating. A transient (one-off) error leaves the
+ * streak untouched; a success resets it to 0. Also stamps `last_scraped_at` for
+ * EVERY attempt (regardless of outcome) — that drives the due-based scheduling.
+ */
+async function updateStoreFailureState(supabase, store, outcome) {
+  const prev = store.consecutive_failures ?? 0;
+  const { consecutiveFailures, disable } = applyFailureOutcome(prev, outcome);
+
+  // Always record the attempt time so due-based scheduling advances even on a
+  // failure/block; also carry the (possibly unchanged) failure streak.
+  const update = { consecutive_failures: consecutiveFailures, last_scraped_at: new Date().toISOString() };
+  if (disable) update.is_enabled = false;
+  const { error } = await supabase.from('stores').update(update).eq('id', store.id);
+  if (error) {
+    console.error(`  ${store.name}: could not update failure/schedule state — ${error.message}`);
+    return;
+  }
+  if (disable) {
+    console.error(
+      `  🚫 ${store.name}: AUTO-DISABLED after ${consecutiveFailures} consecutive block-like failures — likely being blocked. Investigate, then re-enable manually.`,
+    );
+    await notifyStoreDisabled(store, consecutiveFailures);
+  }
+}
+
+/** Best-effort email alert when a store is auto-disabled (log line is emitted regardless). */
+async function notifyStoreDisabled(store, count) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) return; // no email creds — the log line above is the notification
+  try {
+    const supabase = initSupabase();
+    const recipients = await getRecipients(supabase);
+    if (recipients.length === 0) return;
+    const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
+    await transporter.sendMail({
+      from: `TCG Tracker <${gmailUser}>`,
+      to: recipients.join(', '),
+      subject: `⚠️ Scraper auto-disabled: ${store.name}`,
+      html:
+        `<p>The scraper for <strong>${escapeHtml(store.name)}</strong> ` +
+        `(<a href="${sanitizeUrl(store.url)}">${escapeHtml(store.url)}</a>) was <strong>auto-disabled</strong> ` +
+        `after ${count} consecutive block-like failures (HTTP 403/429, a CAPTCHA/challenge page, or no product ` +
+        `structure found).</p><p>This usually means the store is blocking the scraper. Investigate, then ` +
+        `re-enable it manually in the dashboard once resolved.</p>`,
+    });
+    console.log(`  ${store.name}: disable notification emailed to ${recipients.length} recipient(s)`);
+  } catch (e) {
+    console.error(`  ${store.name}: disable notification email failed — ${e.message}`);
+  }
+}
+
+/**
  * Main scraper — fetches stores from DB, iterates, collects products.
  */
+/**
+ * Fetch a store's raw products + block signals. Shopify stores SKIP the wasted
+ * Playwright page load entirely (scrapeShopify does its own JSON fetch and never
+ * touches the page) and report their own HTTP status/challenge signal so
+ * block-detection still gets real inputs.
+ * @returns {Promise<{ raw: object[], status: number, challenged: boolean }>}
+ */
+async function fetchStoreData(store, browser) {
+  if (store.scraper_type === 'shopify') {
+    const r = await scrapeShopify(null, store); // { products, status, challenged } — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true };
+  }
+
+  const scrapeFn = SCRAPER_MAP[store.scraper_type];
+  const context = await browser.newContext({
+    userAgent: BROWSER_UA,
+    viewport: { width: 1280, height: 800 },
+  });
+  try {
+    const page = await context.newPage();
+    const response = await page.goto(store.url, { waitUntil: 'load', timeout: 30000 });
+    const status = response?.status() ?? 0;
+
+    // Block signals observable without DOM-injection: HTTP status + challenge markers.
+    const bodyText = await page.evaluate(() => document.body?.innerText?.slice(0, 4000) ?? '').catch(() => '');
+    const challenged =
+      detectChallengeText(bodyText) ||
+      (await page
+        .$('iframe[src*="challenges.cloudflare"], .cf-turnstile, .g-recaptcha, .h-captcha, #challenge-form')
+        .then((el) => el != null)
+        .catch(() => false));
+
+    const raw = await scrapeFn(page, store);
+    return { raw, status, challenged };
+  } finally {
+    await context.close();
+  }
+}
+
 async function scrapeAll() {
+  // Startup jitter (0–20s): runs triggered close together (GitHub's native cron +
+  // an external cron-job.org dispatch) then don't check due stores in lockstep.
+  const jitterMs = Math.floor(Math.random() * 20_000);
+  if (jitterMs > 0) {
+    console.log(`Startup jitter: ${(jitterMs / 1000).toFixed(1)}s`);
+    await new Promise((resolve) => setTimeout(resolve, jitterMs));
+  }
+
   const supabase = initSupabase();
   const stores = await fetchStores(supabase);
 
   if (stores.length === 0) {
-    console.log('No stores to scrape');
+    console.log('No stores due to scrape');
     return { products: [], scrapedStoreIds: [] };
   }
 
-  const browser = await chromium.launch({ headless: true });
+  // Only spin up Playwright if a non-Shopify store is actually due.
+  const needsBrowser = stores.some((s) => s.scraper_type !== 'shopify');
+  const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
   const scrapedStoreIds = [];
 
+  const commit = (store, raw, status, challenged) => {
+    const products = raw.filter((p) => isTcgProduct(p.title));
+    const outcome = classifyOutcome({ status, challenged, rawCount: raw.length });
+    if (outcome === 'success') {
+      allProducts.push(...products);
+      scrapedStoreIds.push(store.id);
+      console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)`);
+    } else {
+      console.warn(`  ${store.name}: block-like failure (HTTP ${status}${challenged ? ', challenge page' : ''}, ${raw.length} products)`);
+    }
+    return outcome;
+  };
+
   for (const store of stores) {
-    const scrapeFn = SCRAPER_MAP[store.scraper_type];
-    if (!scrapeFn) {
+    if (!SCRAPER_MAP[store.scraper_type]) {
       console.error(`  ${store.name}: Unknown scraper type "${store.scraper_type}"`);
+      await updateStoreFailureState(supabase, store, 'transient'); // still mark attempted (advances scheduling)
       continue;
     }
 
+    let outcome = 'transient';
     try {
       console.log(`Scraping ${store.name}...`);
-      const context = await browser.newContext({
-        userAgent:
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        viewport: { width: 1280, height: 800 },
-      });
-      const page = await context.newPage();
-
-      await page.goto(store.url, {
-        waitUntil: 'load',
-        timeout: 30000,
-      });
-
-      const raw = await scrapeFn(page, store);
-      const products = raw.filter((p) => isTcgProduct(p.title));
-      allProducts.push(...products);
-      scrapedStoreIds.push(store.id);
-
-      console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)`);
-      await context.close();
+      const { raw, status, challenged } = await fetchStoreData(store, browser);
+      outcome = commit(store, raw, status, challenged);
     } catch (err) {
+      outcome = 'transient'; // one-off nav/network error — does NOT count toward auto-disable
       console.error(`  ${store.name}: ERROR — ${err.message}`);
     }
+
+    await updateStoreFailureState(supabase, store, outcome);
   }
 
-  await browser.close();
+  await browser?.close();
 
   console.log(`\nTotal: ${allProducts.length} products scraped`);
   return { products: allProducts, scrapedStoreIds };
@@ -1473,42 +1609,48 @@ async function sendAlerts(insertedProducts) {
   }
 }
 
-// Main entry point
-const supabase = initSupabase();
-const runId = process.env.SCRAPE_RUN_ID;
+// Main entry point (only when run directly, not when imported for tests).
+async function main() {
+  const supabase = initSupabase();
+  const runId = process.env.SCRAPE_RUN_ID;
 
-// Mark scrape run as running
-await updateScrapeRun(supabase, runId, { status: 'running' });
+  // Mark scrape run as running
+  await updateScrapeRun(supabase, runId, { status: 'running' });
 
-try {
-  const { products, scrapedStoreIds } = await scrapeAll();
+  try {
+    const { products, scrapedStoreIds } = await scrapeAll();
 
-  console.log('\nSyncing to Supabase...');
-  const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds);
-  console.log(`  Inserted: ${inserted} new products`);
-  console.log(`  Updated: ${updated} existing products`);
-  console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
+    console.log('\nSyncing to Supabase...');
+    const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds);
+    console.log(`  Inserted: ${inserted} new products`);
+    console.log(`  Updated: ${updated} existing products`);
+    console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
 
-  // Update scrape run with results
-  await updateScrapeRun(supabase, runId, {
-    status: 'completed',
-    products_found: products.length,
-    products_new: inserted,
-    completed_at: new Date().toISOString(),
-  });
+    // Update scrape run with results
+    await updateScrapeRun(supabase, runId, {
+      status: 'completed',
+      products_found: products.length,
+      products_new: inserted,
+      completed_at: new Date().toISOString(),
+    });
 
-  if (alertProducts.length > 0) {
-    console.log('\nSending email alerts...');
-    await sendAlerts(alertProducts);
+    if (alertProducts.length > 0) {
+      console.log('\nSending email alerts...');
+      await sendAlerts(alertProducts);
+    }
+  } catch (err) {
+    console.error(`  Scraper failed: ${err.message}`);
+    await updateScrapeRun(supabase, runId, {
+      status: 'failed',
+      error_message: err.message,
+      completed_at: new Date().toISOString(),
+    });
+    process.exit(1);
   }
-} catch (err) {
-  console.error(`  Scraper failed: ${err.message}`);
-  await updateScrapeRun(supabase, runId, {
-    status: 'failed',
-    error_message: err.message,
-    completed_at: new Date().toISOString(),
-  });
-  process.exit(1);
 }
 
-export { scrapeAll, syncToSupabase, sendAlerts };
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await main();
+}
+
+export { scrapeAll, scrapeShopify, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };

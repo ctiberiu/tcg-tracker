@@ -2,7 +2,10 @@ name: Run TCG Scraper
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    # Every ~2 min. Cheap because the scraper's due-filter (per-store
+    # check_interval_minutes) means most runs find 0–3 stores actually due and
+    # finish fast — NOT a 15x load increase over the old */15 cadence.
+    - cron: '*/2 * * * *'
   workflow_dispatch:
     inputs:
       store_id:
@@ -39,8 +42,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      # Cache the Playwright browser binaries between runs so the ~2-min cadence
+      # doesn't re-download chromium (~30-60s) on every run — most runs find 0
+      # stores due and should finish fast. Keyed on the resolved deps so a
+      # Playwright version bump busts the cache. Browsers install to
+      # ~/.cache/ms-playwright on the Linux runner.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('tcg-tracker/scraper/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # Cache MISS → full download + OS deps. Cache HIT → only the (fast, per-run)
+      # OS deps; the browser binary is restored from cache.
+      - name: Install Playwright browser + OS deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS deps (browser restored from cache)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - name: Run scraper
         env:

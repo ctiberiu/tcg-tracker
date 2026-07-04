@@ -1,0 +1,62 @@
+// Pure, side-effect-free helpers for scraper hardening (unit-testable without a
+// live scrape). Used by scraper.js. Kept separate so importing them in tests
+// doesn't run the scraper's top-level entrypoint.
+
+/**
+ * Standard, NON-identifying browser User-Agent. Never put the tool name/version
+ * in request headers — that is trivial for a site owner to block. Used for both
+ * the Shopify JSON fetch and the Playwright browser context so they're consistent.
+ */
+export const BROWSER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+/** Auto-disable a store after this many CONSECUTIVE block-like failures. */
+export const BLOCK_DISABLE_THRESHOLD = 5;
+
+/** Anti-bot / access-denied text markers on a page body (a block, not a normal store page). */
+const CHALLENGE_RE =
+  /nu sunt robot|verificare de securitate|verifică că ești om|cloudflare|captcha|access denied|attention required|are you a human|ddos-guard|just a moment\.\.\./i;
+
+/** True if page text looks like a CAPTCHA / anti-bot challenge / block wall. */
+export function detectChallengeText(text) {
+  return CHALLENGE_RE.test(String(text ?? ''));
+}
+
+/**
+ * Classify a store's scrape outcome from observable, non-DOM-injection signals.
+ * @param {{ status?: number, challenged?: boolean, rawCount?: number }} sig
+ *   status    HTTP status of the store's page/API (0/undefined if unknown)
+ *   challenged CAPTCHA/anti-bot markers seen on the page
+ *   rawCount  number of products the scraper extracted BEFORE TCG filtering
+ * @returns {"block" | "success"}
+ *   "block" = 403/429, a challenge wall, or a total failure to find ANY product
+ *             structure (page shape gone — likely a block/redirect, not "0 TCG").
+ */
+export function classifyOutcome({ status = 0, challenged = false, rawCount = 0 } = {}) {
+  if (status === 403 || status === 429) return 'block';
+  if (challenged) return 'block';
+  if (!(rawCount > 0)) return 'block'; // found no products at all → page structure missing
+  return 'success';
+}
+
+/**
+ * Fold a per-store outcome into the persisted consecutive-failure counter.
+ * @param {number} prevFailures the store's current consecutive_failures
+ * @param {"block"|"success"|"transient"} outcome
+ * @param {number} [threshold]
+ * @returns {{ consecutiveFailures: number, disable: boolean }}
+ *   - block   → increment; disable once the streak reaches the threshold.
+ *   - success → reset to 0 (never disable).
+ *   - transient (one-off network/nav error) → unchanged; NEVER disables on its own.
+ */
+export function applyFailureOutcome(prevFailures, outcome, threshold = BLOCK_DISABLE_THRESHOLD) {
+  const prev = Number.isFinite(prevFailures) ? prevFailures : 0;
+  if (outcome === 'success') return { consecutiveFailures: 0, disable: false };
+  if (outcome === 'block') {
+    const next = prev + 1;
+    return { consecutiveFailures: next, disable: next >= threshold };
+  }
+  // transient: leave the streak untouched — a network blip neither disables a
+  // store nor resets a genuine ongoing block streak.
+  return { consecutiveFailures: prev, disable: false };
+}
