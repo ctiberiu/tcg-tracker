@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Snipe — TCG Auto-Purchase (krit.ro)",
+  "version": "0.1.0",
+  "description": "Watches krit.ro for a restock and drives the user's own logged-in checkout. Phase 1 skeleton: manifest + validated messaging bridge only.",
+  "minimum_chrome_version": "110",
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "permissions": ["notifications"],
+  "host_permissions": [
+    "https://krit.ro/*",
+    "https://www.krit.ro/*",
+    "https://tcg-tracker-kappa.vercel.app/*",
+    "https://www.tcg-tracker-kappa.vercel.app/*",
+    "http://localhost:5173/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://krit.ro/*", "https://www.krit.ro/*"],
+      "js": ["krit-dom.js", "krit-checkout.js", "content-krit.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://tcg-tracker-kappa.vercel.app/*", "https://www.tcg-tracker-kappa.vercel.app/*", "http://localhost:5173/*"],
+      "js": ["config.js", "content-dashboard.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

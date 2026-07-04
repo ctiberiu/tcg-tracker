@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AdminPage } from './pages/AdminPage'
+import { SnipePage } from './pages/SnipePage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -24,6 +25,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/snipe"
+          element={
+            <ProtectedRoute>
+              <SnipePage />
             </ProtectedRoute>
           }
         />

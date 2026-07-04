@@ -41,3 +41,42 @@ export interface ScrapeRun {
   started_at: string
   completed_at: string | null
 }
+
+// ── Snipe auto-purchase (Phase 4) ──
+export type SnipePaymentMethod = 'ramburs' | 'card'
+export type SnipeMode = 'link' | 'keywords'
+export type SnipeTaskStatus =
+  | 'idle'
+  | 'running'
+  | 'grabbed'
+  | 'awaiting_payment'
+  | 'ordered'
+  | 'failed'
+
+export interface SnipeFlow {
+  id: string
+  user_id: string
+  site: string
+  payment_method: SnipePaymentMethod
+  shipping_method: string | null
+  address: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SnipeTask {
+  id: string
+  user_id: string
+  flow_id: string
+  mode: SnipeMode
+  url: string | null
+  keywords: string[] | null
+  desired_qty: number
+  respect_limit: boolean
+  max_price: number | null
+  watch_until_stopped: boolean
+  status: SnipeTaskStatus
+  check_interval: number
+  created_at: string
+  updated_at: string
+}

@@ -56,18 +56,37 @@ Krit goes product → `/comanda`; there is no separate `/cos` page in the flow.
 - **Cart summary:** `.cart-summary` (e.g. "2 produse / Total 43.99 Lei"),
   `.cart-delivery-date` ("Livrare intre 6 - 7 Iulie").
 - **Billing / address:** inputs `name="billingName"`, `name="billingPhoneNumber"`,
-  `name="billingAddress"` (pre-filled from saved account). A saved-address picker
-  is a react-select ("Selectează o adresă de mai jos, sau adaugă…"). `name="isCompany"`
+  `name="billingAddress"` (pre-filled from saved account). `name="isCompany"`
   checkbox toggles company billing.
+  - **Saved-address picker is a react-select combobox** (NOT a native `<select>`) —
+    **live-confirmed 2026-07**. Emotion classes (`css-<hash>-control/-menu/-singleValue/-container`)
+    rotate per build; anchor instead on react-select's stable **id patterns**:
+    the listbox `[id$="-listbox"]`, options `[id*="-option-"]`. Option `…-option-0`
+    is always **"Adresă nouă"** (create-new — skip it); real saved addresses are
+    option 1+ (e.g. `…-option-1` = "Alex vlase - Sectorul 1, BUCURESTI, Pajura").
+    To drive it: **mousedown** the control (react-select opens on mousedown, not
+    click) → poll for the listbox → mousedown the first non-"Adresă nouă" option
+    (or the one matching a requested address string).
 - **Delivery method** ("Livrare"): two options —
   - **Livrare prin Curier** (home delivery 24–48h)
   - **Livrare la Easybox Sameday** (pickup). Selected point shown on a button
     with **"Schimba"** (change) — e.g. "Sectorul 1, Bucuresti - easybox Penny…".
-- **Payment method** ("Alege modalitatea de plata:"): options captured were —
-  - **Card** — "Plata online cu cardul bancar" (online card payment)
-  - **Transfer Bancar** — "Integral prin transfer bancar"
-  - ⚠️ **Ramburs (cash on delivery) was NOT present** in this checkout (used
-    Easybox delivery). See §5 — needs confirmation.
+  - (Delivery-option DOM not yet live-confirmed; matched best-effort by text.)
+- **Payment method** — **live-confirmed 2026-07**. Container is `.payment-methods`
+  (repeated **plural**, once per option), each option is `.method`, and the
+  matchable label is `.method-text .title` (with a `.subtitle` below). Match on
+  the **title** by trimmed exact text (so "Card" ≠ "Card la Easybox"):
+  - **Card** — title `Card`, subtitle "Plata online cu cardul bancar" (plain
+    online card → the **pause** path).
+  - **Transfer Bancar** — title `Transfer Bancar` (not a supported task method yet).
+  - **Card la Easybox** — title `Card la Easybox`, subtitle "Plata cu cardul
+    direct la Easybox" (pay by card **in person** at pickup — no online card entry).
+  - ✅ **There is no plain "ramburs" option.** The functional pay-in-person
+    equivalent is **"Card la Easybox"**; per user decision the `ramburs` task
+    enum maps to it as the **auto-place** path (guardrail 2's concern — the bot
+    submitting an unsupervised online card charge — doesn't apply, since no card
+    details are ever entered on the site). The DB/task enum value stays `ramburs`;
+    only the DOM target changed. **(Resolves backlog `22822043`.)**
 - **Terms:** `name="agreement"` checkbox — must be checked before submit.
 - **Place order (final submit):** `<button type="submit">` with text
   **`TRIMITE COMANDA`** (stable-text anchor; ignore its `jsx-… orange` class).
@@ -84,14 +103,18 @@ Krit goes product → `/comanda`; there is no separate `/cos` page in the flow.
 4. Verify/select address (pre-filled), select delivery method, select payment
    method per the flow's config.
 5. Check `agreement`.
-6. **Payment branch:** `card` → **pause + notify user** (they complete
-   card/3-DS and click TRIMITE COMANDA); `ramburs`/COD-style → auto-click
-   TRIMITE COMANDA (only if such an option exists — see §5).
+6. **Payment branch:** `card` (title **"Card"**) → **pause + notify user** (they
+   complete card/3-DS and click TRIMITE COMANDA); `ramburs` (title **"Card la
+   Easybox"**, pay-by-card at pickup) → auto-click TRIMITE COMANDA. Select the
+   address (react-select) **before** payment and let the payment section settle.
 
 ## 5. Gaps to confirm (small, don't block Phase 1)
 
-1. **Ramburs / cash-on-delivery:** not shown with Easybox delivery — only Card +
-   Transfer Bancar appeared. Confirm whether Krit offers ramburs at all, and if
-   so whether it's **Courier-delivery-only**. (Affects the "auto-place" branch.)
+1. ~~**Ramburs / cash-on-delivery:**~~ ✅ **Resolved (2026-07):** no plain ramburs
+   option exists; the `ramburs` task enum maps to **"Card la Easybox"** (pay by
+   card at pickup, auto-place). See §3. Backlog `22822043` closed by this finding.
 2. **Quantity >1 mechanism** on the product page (repeat-click vs stepper).
 3. **Exact stable header selector** for logged-in detection (pin in Phase 1).
+4. **`/comanda` cart line-price selector** for the ramburs pre-place price
+   re-check (backlog `514ef758`) — same page as the now-confirmed payment/address
+   DOM; still needs the exact per-line price element captured.
