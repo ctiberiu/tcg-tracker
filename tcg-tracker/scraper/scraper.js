@@ -38,6 +38,7 @@ function initSupabase() {
 const SCRAPER_MAP = {
   pokemonia: scrapePokemonia,
   gomag: scrapePokemonia, // alias — Gomag platform (CardXTCG, RamCards, etc.)
+  pokemania: scrapePokemania, // pokemania.ro — distinct cdnmp.net platform (NOT Gomag)
   shopify: scrapeShopify,
   hobby_planet: scrapeHobbyPlanet,
   regatul_jocurilor: scrapeRegatulJocurilor,
@@ -137,6 +138,135 @@ async function scrapePokemonia(page, store) {
       };
     }).filter((p) => p.title && p.url);
   }, { storeName: store.name, storeId: store.id });
+}
+
+/** Pagination safety ceiling + pacing for pokemania.ro (same values as the other
+ *  paginated scrapers; kept local so this scraper is self-contained). */
+const POKEMANIA_MAX_PAGES = 30;
+const POKEMANIA_PAGE_DELAY_MS = 500;
+
+/**
+ * Pokemania.ro — NOT Gomag (that's scrapePokemonia). A distinct platform (cdnmp.net
+ * CDN) whose listing cards are `.product.product--grid`, with the title/URL in
+ * `.product__name`, RO-format price in `.product__info--price-gross`, and a
+ * lazy-loaded image whose real URL is in `data-src` (`src` is a no_image.svg
+ * placeholder until scrolled into view). Listings paginate via `/pN` URLs; we walk
+ * every page by following the `.pagination__arrow--next` link (disabled/absent on
+ * the last page), deduping by product URL — same pattern as scrapeWooCommerce.
+ *
+ * The store row was misconfigured as scraper_type 'pokemonia' (Gomag), whose
+ * `[data-product-id]` marker never appears here — and scrapePokemonia has no
+ * try/catch, so it threw uncaught → 'transient' → silent failure every run. This
+ * function wraps the initial wait in try/catch so it can never fail silently again.
+ */
+async function scrapePokemania(page, store) {
+  async function extractCurrentPage() {
+    try {
+      await page.waitForSelector('.product.product--grid', { timeout: 15000 });
+    } catch {
+      return null;
+    }
+
+    // Images/products are lazy-loaded on scroll (data-src → src as they enter view).
+    await page.evaluate(async () => {
+      for (let i = 0; i < 4; i++) {
+        window.scrollBy(0, 1500);
+        await new Promise((r) => setTimeout(r, 400));
+      }
+    });
+
+    return page.evaluate(({ storeName, storeId }) => {
+      const cards = document.querySelectorAll('.product.product--grid');
+      const results = [];
+      const seen = new Set();
+
+      for (const card of cards) {
+        const nameEl = card.querySelector('.product__name');
+        const title = nameEl?.textContent?.trim();
+        const url = nameEl?.href;
+        if (!title || !url || seen.has(url)) continue;
+        seen.add(url);
+
+        let price = null;
+        const priceEl = card.querySelector('.product__info--price-gross, [class*="price-gross"]');
+        if (priceEl) {
+          // RO format: thousands dot, decimal comma — "1.599,90 RON" → 1599.90
+          const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei|LEI)/i);
+          if (match) {
+            price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          }
+        }
+
+        // Lazy-loaded: real URL is in data-src; `src` holds a no_image.svg placeholder.
+        const imgEl = card.querySelector('.grid-image__image, img');
+        const rawImg = imgEl?.getAttribute('data-src') || imgEl?.getAttribute('src') || '';
+        const image_url = rawImg && !/no_image/i.test(rawImg) ? rawImg : null;
+
+        // No explicit out-of-stock signal was found on the listing (OOS items appear
+        // to be omitted). Default to in-stock, but honor an explicit OOS marker if
+        // one ever appears — matching the "no signal → assume in stock" convention.
+        const outOfStock = card.classList.contains('product--out-of-stock')
+          || card.querySelector('[class*="out-of-stock"], [class*="sold-out"], [class*="epuizat"]') !== null;
+
+        results.push({
+          title,
+          price,
+          url,
+          image_url,
+          store_name: storeName,
+          store_id: storeId,
+          in_stock: !outOfStock,
+        });
+      }
+
+      return results;
+    }, { storeName: store.name, storeId: store.id });
+  }
+
+  // The actual "next page" href — null when the arrow is disabled/absent (last page).
+  function readNextHref() {
+    return page.evaluate(() => {
+      const link = document.querySelector('.pagination__arrow--next a[href]');
+      return link ? link.href : null;
+    });
+  }
+
+  const firstPage = await extractCurrentPage();
+  if (firstPage === null) {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  const results = [];
+  const seen = new Set();
+  const merge = (products) => {
+    for (const p of products) {
+      if (seen.has(p.url)) continue;
+      seen.add(p.url);
+      results.push(p);
+    }
+  };
+  merge(firstPage);
+
+  let nextHref = await readNextHref();
+  let pagesVisited = 1;
+  while (nextHref && pagesVisited < POKEMANIA_MAX_PAGES) {
+    await new Promise((r) => setTimeout(r, POKEMANIA_PAGE_DELAY_MS));
+    await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
+    const pageProducts = await extractCurrentPage();
+    pagesVisited++;
+    if (pageProducts === null) break;
+    merge(pageProducts);
+    nextHref = await readNextHref();
+  }
+
+  if (pagesVisited >= POKEMANIA_MAX_PAGES && nextHref) {
+    console.warn(`  ${store.name}: hit the ${POKEMANIA_MAX_PAGES}-page cap — stopping pagination`);
+  }
+  if (pagesVisited > 1) {
+    console.log(`  ${store.name}: scraped ${pagesVisited} page(s), ${results.length} unique products`);
+  }
+  return results;
 }
 
 /**
@@ -642,81 +772,152 @@ async function scrapeOzone(_page, store) {
   return { products, status, challenged };
 }
 
+/** Hard ceiling on category pages fetched, so a pagination-detection bug or a
+ *  runaway category can never cause unbounded scraping. */
+const WOOCOMMERCE_MAX_PAGES = 30;
+/** Pacing between page navigations (matches the ~400-500ms delays elsewhere). */
+const WOOCOMMERCE_PAGE_DELAY_MS = 500;
+
 /**
- * DexHit.ro — WooCommerce platform
- * Products use article or div elements with .outofstock class for stock.
+ * DexHit.ro — WooCommerce platform (generic; any `woocommerce` store can reuse it).
+ * Products use article/li.product elements with an `.outofstock` class for stock.
+ *
+ * Follows WooCommerce pagination: DexHit's category has no "in stock only" filter,
+ * so in-stock items are scattered across pages — page 1 alone misses most of the
+ * catalog. We walk every page via the pagination's real "next" href (never a
+ * templated /page/N/ URL — WooCommerce truncates the middle pages behind a "…"
+ * dots span, so they aren't directly linked from page 1), deduping by product URL.
  */
 async function scrapeWooCommerce(page, store) {
-  try {
-    await page.waitForSelector('li.product, ul.products li.product', { timeout: 15000 });
-  } catch {
+  // Extract one already-loaded category page (wait for the grid, lazy-load scroll,
+  // then read cards). Returns null if this page has no product grid at all.
+  async function extractCurrentPage() {
+    try {
+      await page.waitForSelector('li.product, ul.products li.product', { timeout: 15000 });
+    } catch {
+      return null;
+    }
+
+    // Products are lazy-loaded on scroll
+    await page.evaluate(async () => {
+      for (let i = 0; i < 4; i++) {
+        window.scrollBy(0, 1500);
+        await new Promise((r) => setTimeout(r, 400));
+      }
+    });
+
+    return page.evaluate(({ storeName, storeId }) => {
+      function normalizeImageUrl(src, base) {
+        if (!src) return null;
+        src = src.trim();
+        if (src.startsWith('data:')) return null;
+        if (src.startsWith('//')) return 'https:' + src;
+        if (src.startsWith('/')) return base + src;
+        if (src.startsWith('http')) return src;
+        return base + '/' + src;
+      }
+      const baseUrl = window.location.origin;
+      const cards = document.querySelectorAll('article, li.product, .type-product');
+      const results = [];
+      const seen = new Set();
+
+      for (const card of cards) {
+        const linkEl = card.querySelector('a[href*="/product/"]');
+        if (!linkEl) continue;
+
+        const url = linkEl.href;
+        if (seen.has(url)) continue;
+        seen.add(url);
+
+        const titleEl = card.querySelector('.woocommerce-loop-product__title, h2, h3');
+        const title = titleEl?.textContent?.trim();
+        if (!title) continue;
+
+        let price = null;
+        const priceEl = card.querySelector('ins .woocommerce-Price-amount, .price .woocommerce-Price-amount, .price');
+        if (priceEl) {
+          const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+          if (match) {
+            price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          }
+        }
+
+        const imgEl = card.querySelector('img');
+        const imgSrc = imgEl?.src;
+
+        const outOfStock = card.classList.contains('outofstock')
+          || card.querySelector('[class*="out-of-stock"]') !== null;
+
+        results.push({
+          title,
+          price,
+          url,
+          image_url: normalizeImageUrl(imgSrc, baseUrl),
+          store_name: storeName,
+          store_id: storeId,
+          in_stock: !outOfStock,
+        });
+      }
+
+      return results;
+    }, { storeName: store.name, storeId: store.id });
+  }
+
+  // Read pagination on the current page: the highest page number present (WooCommerce
+  // always includes the true last page even when it truncates the middle with "…"),
+  // and the actual "next page" href to follow.
+  function readPagination() {
+    return page.evaluate(() => {
+      const nav = document.querySelector('nav.woocommerce-pagination, ul.page-numbers');
+      if (!nav) return { maxPage: 1, nextHref: null };
+      let maxPage = 1;
+      for (const el of nav.querySelectorAll('a.page-numbers, span.page-numbers')) {
+        const n = parseInt(el.textContent.trim(), 10);
+        if (Number.isFinite(n) && n > maxPage) maxPage = n;
+      }
+      const nextEl = nav.querySelector('a.next.page-numbers, a.page-numbers.next');
+      return { maxPage, nextHref: nextEl ? nextEl.href : null };
+    });
+  }
+
+  // Page 1 is already loaded (fetchStoreData navigated to store.url).
+  const firstPage = await extractCurrentPage();
+  if (firstPage === null) {
     console.log(`  ${store.name}: No products found or page timed out`);
     return [];
   }
 
-  // Products are lazy-loaded on scroll
-  await page.evaluate(async () => {
-    for (let i = 0; i < 4; i++) {
-      window.scrollBy(0, 1500);
-      await new Promise((r) => setTimeout(r, 400));
+  const results = [];
+  const seen = new Set();
+  const merge = (products) => {
+    for (const p of products) {
+      if (seen.has(p.url)) continue;
+      seen.add(p.url);
+      results.push(p);
     }
-  });
+  };
+  merge(firstPage);
 
-  return page.evaluate(({ storeName, storeId }) => {
-    function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('article, li.product, .type-product');
-    const results = [];
-    const seen = new Set();
+  let { maxPage, nextHref } = await readPagination();
+  if (maxPage > WOOCOMMERCE_MAX_PAGES) {
+    console.warn(`  ${store.name}: pagination reports ${maxPage} pages — capping at ${WOOCOMMERCE_MAX_PAGES}`);
+  }
 
-    for (const card of cards) {
-      const linkEl = card.querySelector('a[href*="/product/"]');
-      if (!linkEl) continue;
+  let pagesVisited = 1;
+  while (nextHref && pagesVisited < WOOCOMMERCE_MAX_PAGES) {
+    await new Promise((r) => setTimeout(r, WOOCOMMERCE_PAGE_DELAY_MS));
+    await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
+    const pageProducts = await extractCurrentPage();
+    pagesVisited++;
+    if (pageProducts === null) break; // ran past the last page / empty page — stop
+    merge(pageProducts);
+    ({ nextHref } = await readPagination());
+  }
 
-      const url = linkEl.href;
-      if (seen.has(url)) continue;
-      seen.add(url);
-
-      const titleEl = card.querySelector('.woocommerce-loop-product__title, h2, h3');
-      const title = titleEl?.textContent?.trim();
-      if (!title) continue;
-
-      let price = null;
-      const priceEl = card.querySelector('ins .woocommerce-Price-amount, .price .woocommerce-Price-amount, .price');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
-        if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-        }
-      }
-
-      const imgEl = card.querySelector('img');
-      const imgSrc = imgEl?.src;
-
-      const outOfStock = card.classList.contains('outofstock')
-        || card.querySelector('[class*="out-of-stock"]') !== null;
-
-      results.push({
-        title,
-        price,
-        url,
-        image_url: normalizeImageUrl(imgSrc, baseUrl),
-        store_name: storeName,
-        store_id: storeId,
-        in_stock: !outOfStock,
-      });
-    }
-
-    return results;
-  }, { storeName: store.name, storeId: store.id });
+  if (pagesVisited > 1) {
+    console.log(`  ${store.name}: scraped ${pagesVisited} page(s), ${results.length} unique products`);
+  }
+  return results;
 }
 
 /**
@@ -1203,12 +1404,17 @@ function normalizeProductUrl(url) {
 }
 
 /**
- * Returns true if the product title contains "TCG", "carti", or "cards" (case-insensitive).
- * Simple keyword filter to keep only relevant trading card game products.
+ * Returns true if the product title looks like a Pokémon TCG product. Every store
+ * this scraper covers is Pokémon-only, but broad-marketplace searches (Ozone's
+ * FastSimon search, etc.) return other card games too — Weiss Schwarz, Disney
+ * Lorcana, Genshin Impact, Sorcery, Altered, Naruto Mythos — since their titles
+ * also contain "TCG"/"booster"/"cards". Requiring "pokemon"/"pokémon" in the
+ * title as well keeps this a Pokémon tracker, not a general-TCG one.
  */
 function isTcgProduct(title) {
   if (!title) return false;
   if (/binder|sleeve|alcove/i.test(title)) return false;
+  if (!/pok[eé]mon/i.test(title)) return false;
   return /tcg|carti|cards|booster|blister|trainer/i.test(title);
 }
 
@@ -1366,7 +1572,17 @@ async function scrapeAll() {
     return outcome;
   };
 
-  for (const store of stores) {
+  for (const [i, store] of stores.entries()) {
+    // Pace requests across stores (2-5s jitter, skipped before the first): several
+    // unrelated stores auto-disabled within the same short window on 2026-07-04
+    // (different platforms, different HTTP statuses — 403/418/202/empty-200), which
+    // isn't consistent with each site independently breaking. A shared WAF/CDN bot
+    // score reacting to a burst of automated page loads from the same runner IP in
+    // a few seconds is the more likely trigger, so spread the requests out.
+    if (i > 0) {
+      await new Promise((r) => setTimeout(r, 2000 + Math.floor(Math.random() * 3000)));
+    }
+
     if (!SCRAPER_MAP[store.scraper_type]) {
       console.error(`  ${store.name}: Unknown scraper type "${store.scraper_type}"`);
       await updateStoreFailureState(supabase, store, 'transient'); // still mark attempted (advances scheduling)
@@ -1720,4 +1936,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
