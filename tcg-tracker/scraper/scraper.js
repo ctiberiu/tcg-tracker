@@ -85,7 +85,17 @@ async function fetchStores(supabase) {
  * Products use [data-product-id] containers.
  */
 async function scrapePokemonia(page, store) {
-  await page.waitForSelector('[data-product-id]', { timeout: 15000 });
+  try {
+    await page.waitForSelector('[data-product-id]', { timeout: 15000 });
+  } catch {
+    // Was uncaught before, which threw all the way up to scrapeAll's per-store
+    // try/catch → 'transient' outcome → never counts toward auto-disable. That
+    // let a persistently-blocked store (e.g. a Cloudflare challenge) sit at
+    // 0 products forever while still showing as "healthy". Returning [] here
+    // instead makes it classify as a real block, like every other scraper.
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
 
   return page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
@@ -110,7 +120,12 @@ async function scrapePokemonia(page, store) {
       const priceMatch = priceText.match(/([\d.,]+)\s*(RON|lei)/i);
       let price = null;
       if (priceMatch) {
-        price = parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.'));
+        // Locale-agnostic: whichever separator appears LAST is the decimal point.
+        price = parseFloat(
+          priceMatch[1].lastIndexOf(',') > priceMatch[1].lastIndexOf('.')
+            ? priceMatch[1].replace(/\./g, '').replace(',', '.')
+            : priceMatch[1].replace(/,/g, ''),
+        );
       }
 
       const imgSrc = imgEl?.getAttribute('data-lazy-src') ?? imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
@@ -193,7 +208,14 @@ async function scrapePokemania(page, store) {
           // RO format: thousands dot, decimal comma — "1.599,90 RON" → 1599.90
           const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(RON|lei|LEI)/i);
           if (match) {
-            price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+            // Locale-agnostic: whichever separator appears LAST is the decimal
+            // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+            // fixed "dot=thousands" assumption silently produced 10158).
+            price = parseFloat(
+              match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+                ? match[1].replace(/\./g, '').replace(',', '.')
+                : match[1].replace(/,/g, ''),
+            );
           }
         }
 
@@ -253,9 +275,24 @@ async function scrapePokemania(page, store) {
   while (nextHref && pagesVisited < POKEMANIA_MAX_PAGES) {
     await new Promise((r) => setTimeout(r, POKEMANIA_PAGE_DELAY_MS));
     await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
-    const pageProducts = await extractCurrentPage();
+    let pageProducts = await extractCurrentPage();
+    if (pageProducts === null) {
+      // A link we followed FROM the previous page (proof this page exists)
+      // failed to render — not "we reached the end". Silently treating this
+      // the same as a real last page used to return a partial catalog (e.g.
+      // page 1-2 of 3) as if it were the whole thing; the staleness sweep
+      // then marked the missing page's products out-of-stock, and the next
+      // run that DID get all pages "restocked" them — a false restock alert
+      // for ~half the catalog, repeatedly. One retry, then fail the whole
+      // store attempt (→ transient, no stock corruption) rather than lie.
+      await new Promise((r) => setTimeout(r, POKEMANIA_PAGE_DELAY_MS));
+      await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
+      pageProducts = await extractCurrentPage();
+    }
     pagesVisited++;
-    if (pageProducts === null) break;
+    if (pageProducts === null) {
+      throw new Error(`page ${pagesVisited} failed to render after a retry — aborting instead of returning a partial catalog`);
+    }
     merge(pageProducts);
     nextHref = await readNextHref();
   }
@@ -362,7 +399,14 @@ async function scrapeHobbyPlanet(page, store) {
       if (priceContainer) {
         const match = priceContainer.textContent?.trim()?.match(/([\d.,]+)\s*RON/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -441,7 +485,14 @@ async function scrapeRegatulJocurilor(page, store) {
       if (priceEl) {
         const match = priceEl.textContent?.match(/([\d.]*,?\d+)\s*(RON|lei)/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -508,7 +559,14 @@ async function scrapeMagento(page, store) {
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -679,7 +737,14 @@ async function scrapeSmyk(page, store) {
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -838,7 +903,14 @@ async function scrapeWooCommerce(page, store) {
         if (priceEl) {
           const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
           if (match) {
-            price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+            // Locale-agnostic: whichever separator appears LAST is the decimal
+            // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+            // fixed "dot=thousands" assumption silently produced 10158).
+            price = parseFloat(
+              match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+                ? match[1].replace(/\./g, '').replace(',', '.')
+                : match[1].replace(/,/g, ''),
+            );
           }
         }
 
@@ -907,9 +979,24 @@ async function scrapeWooCommerce(page, store) {
   while (nextHref && pagesVisited < WOOCOMMERCE_MAX_PAGES) {
     await new Promise((r) => setTimeout(r, WOOCOMMERCE_PAGE_DELAY_MS));
     await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
-    const pageProducts = await extractCurrentPage();
+    let pageProducts = await extractCurrentPage();
+    if (pageProducts === null) {
+      // A link we followed FROM the previous page (proof this page exists)
+      // failed to render — not "we reached the end". Silently treating this
+      // the same as a real last page used to return a partial catalog; the
+      // staleness sweep then marked the missing page's products out-of-stock,
+      // and a later fully-successful run "restocked" them — a false restock
+      // alert for the missing chunk (this is what caused Pokemania's repeated
+      // 59-product restock emails; same bug pattern here). One retry, then
+      // fail the whole store attempt (→ transient, no stock corruption).
+      await new Promise((r) => setTimeout(r, WOOCOMMERCE_PAGE_DELAY_MS));
+      await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
+      pageProducts = await extractCurrentPage();
+    }
     pagesVisited++;
-    if (pageProducts === null) break; // ran past the last page / empty page — stop
+    if (pageProducts === null) {
+      throw new Error(`page ${pagesVisited} failed to render after a retry — aborting instead of returning a partial catalog`);
+    }
     merge(pageProducts);
     ({ nextHref } = await readPagination());
   }
@@ -961,7 +1048,14 @@ async function scrapeLumeaJocurilor(page, store) {
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -1048,7 +1142,12 @@ async function scrapeRaijucarii(page, store) {
       const priceEl = card.querySelector('[class*="price"]') ?? card.querySelector('.is-small')?.parentElement;
       const priceText = (priceEl?.textContent ?? '').replace(/\s/g, '');
       const m = priceText.match(/(\d[\d.]*,\d{2}|\d[\d.]+)/);
-      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+      // Locale-agnostic: whichever separator appears LAST is the decimal point.
+      if (m) {
+        price = parseFloat(
+          m[1].lastIndexOf(',') > m[1].lastIndexOf('.') ? m[1].replace(/\./g, '').replace(',', '.') : m[1].replace(/,/g, ''),
+        );
+      }
 
       const imgEl = card.querySelector('img');
       const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
@@ -1135,7 +1234,12 @@ async function scrapeTulli(page, store) {
       const priceText = card.querySelector('.price')?.textContent ?? '';
       const m = priceText.replace(/\s/g, '').match(/([\d.,]+)/);
       let price = null;
-      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+      // Locale-agnostic: whichever separator appears LAST is the decimal point.
+      if (m) {
+        price = parseFloat(
+          m[1].lastIndexOf(',') > m[1].lastIndexOf('.') ? m[1].replace(/\./g, '').replace(',', '.') : m[1].replace(/,/g, ''),
+        );
+      }
 
       const imgEl = card.querySelector('img');
       const imgSrc = imgEl?.getAttribute('data-src') ?? imgEl?.getAttribute('src');
@@ -1203,7 +1307,14 @@ async function scrapeBebetei(page, store) {
       if (priceEl) {
         const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
         if (match) {
-          price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+          // Locale-agnostic: whichever separator appears LAST is the decimal
+          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
+          // fixed "dot=thousands" assumption silently produced 10158).
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
         }
       }
 
@@ -1365,7 +1476,12 @@ async function scrapeFoon(page, store) {
       const priceText = (card.querySelector('.k-i-c') ?? card.querySelector('.k-i-c-s'))?.textContent ?? '';
       const m = priceText.replace(/\s/g, '').match(/([\d.,]+)/);
       let price = null;
-      if (m) price = parseFloat(m[1].replace(/\./g, '').replace(',', '.'));
+      // Locale-agnostic: whichever separator appears LAST is the decimal point.
+      if (m) {
+        price = parseFloat(
+          m[1].lastIndexOf(',') > m[1].lastIndexOf('.') ? m[1].replace(/\./g, '').replace(',', '.') : m[1].replace(/,/g, ''),
+        );
+      }
 
       const imgEl = card.querySelector('img');
       const imgSrc = imgEl?.getAttribute('src') ?? imgEl?.getAttribute('data-src');
@@ -1415,7 +1531,9 @@ function isTcgProduct(title) {
   if (!title) return false;
   if (/binder|sleeve|alcove/i.test(title)) return false;
   if (!/pok[eé]mon/i.test(title)) return false;
-  return /tcg|carti|cards|booster|blister|trainer/i.test(title);
+  // "jcc" = Joc de Cărți Colecționabile, the RO/FR abbreviation some stores
+  // (Tulli) use in place of "TCG" — same thing, different label.
+  return /tcg|jcc|carti|cards|booster|blister|trainer/i.test(title);
 }
 
 /**
