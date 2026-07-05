@@ -1727,6 +1727,29 @@ async function scrapeAll() {
 }
 
 /**
+ * Fetch every row of a query, paginating past PostgREST's default 1000-row cap.
+ * A plain `.select()` silently TRUNCATES at 1000 rows with no error — once the
+ * products table passed 1000 rows, the "does this URL already exist" check in
+ * syncToSupabase started missing whichever ~N products fell outside that
+ * window (there's no ORDER BY, so it's not even a stable set), making them
+ * look brand new on every single scrape and re-firing "new product" alerts
+ * for products that had already been sitting there, unchanged, for days.
+ */
+async function fetchAllRows(queryFactory) {
+  const PAGE_SIZE = 1000;
+  const rows = [];
+  let offset = 0;
+  while (true) {
+    const { data, error } = await queryFactory().range(offset, offset + PAGE_SIZE - 1);
+    if (error) return { data: null, error };
+    rows.push(...data);
+    if (data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return { data: rows, error: null };
+}
+
+/**
  * Sync scraped products to Supabase using upsert on URL.
  * Updates price, image_url, in_stock for existing products.
  * Returns { inserted, updated, insertedProducts } for alert use.
@@ -1736,9 +1759,9 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
 
   // Fetch existing URLs + prior stock state to distinguish new/updated and
   // to detect out-of-stock -> in-stock restock transitions.
-  const { data: existing, error: fetchError } = await supabase
-    .from('products')
-    .select('url, in_stock');
+  const { data: existing, error: fetchError } = await fetchAllRows(() =>
+    supabase.from('products').select('url, in_stock'),
+  );
 
   if (fetchError) {
     throw new Error(`Failed to fetch existing products: ${fetchError.message}`);
@@ -1805,11 +1828,9 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
 
       // Fetch all currently in-stock products for this store
-      const { data: storeProducts, error: fetchErr } = await supabase
-        .from('products')
-        .select('id, url')
-        .eq('store_id', storeId)
-        .eq('in_stock', true);
+      const { data: storeProducts, error: fetchErr } = await fetchAllRows(() =>
+        supabase.from('products').select('id, url').eq('store_id', storeId).eq('in_stock', true),
+      );
 
       if (fetchErr) {
         console.error(`  Staleness sweep fetch error for store ${storeId}: ${fetchErr.message}`);
