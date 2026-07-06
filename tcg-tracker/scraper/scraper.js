@@ -47,6 +47,10 @@ const SCRAPER_MAP = {
   smyk: scrapeSmyk,
   ozone: scrapeOzone,
   woocommerce: scrapeWooCommerce,
+  woocommerce_api: scrapeDexHitApi, // never actually called via this map — fetchStoreData
+                                     // special-cases it (like shopify/ozone) to skip the
+                                     // page load; present here only so the "unknown
+                                     // scraper type" guard doesn't reject it.
   lumea_jocurilor: scrapeLumeaJocurilor,
   raijucarii: scrapeRaijucarii,
   tulli: scrapeTulli,
@@ -1007,6 +1011,93 @@ async function scrapeWooCommerce(page, store) {
   return results;
 }
 
+/** Decode the HTML entities WordPress/WooCommerce leaves in Store API JSON text
+ *  fields (titles come out as e.g. "Blister &#8211; Gengar", not real text). */
+function decodeHtmlEntities(str) {
+  if (!str) return str;
+  return str
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+/**
+ * DexHit.ro via WooCommerce's own Store API (/wp-json/wc/store/v1/products) —
+ * clean, paginated JSON with a real `is_in_stock` boolean, instead of the
+ * Playwright DOM scrape in scrapeWooCommerce above.
+ *
+ * Added because DexHit's category PAGE started returning HTTP 202/418
+ * specifically to GitHub Actions' IP range (confirmed: the identical request
+ * from a different network gets a normal 200) — a datacenter-IP/ASN block
+ * that no amount of selector or pagination work fixes, since the block
+ * happens before the page ever renders. This hits a different endpoint with
+ * no browser/page load at all; it MIGHT not be caught by the same rule. If it
+ * still is, classifyOutcome sees the real HTTP status and blocks/disables
+ * exactly as before — this is a genuine attempt, not a guaranteed fix.
+ */
+async function scrapeDexHitApi(_page, store) {
+  const origin = new URL(store.url).origin;
+  const categorySlug = new URL(store.url).pathname.split('/').filter(Boolean).pop();
+
+  const products = [];
+  let pageNum = 1;
+  let totalPages = 1;
+  let status = 0;
+  let challenged = false;
+
+  do {
+    const apiUrl = `${origin}/wp-json/wc/store/v1/products?category=${encodeURIComponent(categorySlug)}&per_page=100&page=${pageNum}`;
+    const res = await fetch(apiUrl, {
+      headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+      signal: AbortSignal.timeout(30000),
+    });
+    status = res.status;
+    const text = await res.text();
+    challenged = challenged || detectChallengeText(text);
+
+    if (!res.ok) {
+      console.log(`  ${store.name}: Store API HTTP ${status} (page ${pageNum})`);
+      return { products: [], status, challenged };
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // 200 but not JSON → an interstitial/challenge sitting in front of the API.
+      console.log(`  ${store.name}: Store API returned non-JSON (likely a block/interstitial)`);
+      return { products: [], status, challenged: true };
+    }
+
+    for (const p of data) {
+      const minorUnit = Number(p.prices?.currency_minor_unit ?? 2);
+      const rawPrice = p.prices?.price != null ? Number(p.prices.price) : null;
+      const price = rawPrice != null ? rawPrice / 10 ** minorUnit : null;
+
+      products.push({
+        title: decodeHtmlEntities(p.name),
+        price,
+        url: p.permalink,
+        image_url: p.images?.[0]?.src ?? null,
+        store_name: store.name,
+        store_id: store.id,
+        in_stock: p.is_in_stock === true,
+      });
+    }
+
+    if (pageNum === 1) {
+      totalPages = Number(res.headers.get('x-wp-totalpages') ?? 1);
+    }
+    pageNum++;
+  } while (pageNum <= totalPages);
+
+  return { products, status, challenged };
+}
+
 /**
  * LumeaJocurilor.ro — custom platform
  * Products use .wareItems .item cards with data-id attributes.
@@ -1620,6 +1711,11 @@ async function fetchStoreData(store, browser) {
     return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: r.confirmedEmpty === true };
   }
 
+  if (store.scraper_type === 'woocommerce_api') {
+    const r = await scrapeDexHitApi(null, store); // WooCommerce Store API — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: false };
+  }
+
   const scrapeFn = SCRAPER_MAP[store.scraper_type];
   const context = await browser.newContext({
     userAgent: BROWSER_UA,
@@ -1670,7 +1766,7 @@ async function scrapeAll() {
   // Only spin up Playwright if a store that actually needs a browser is due.
   // shopify + ozone are JSON-API scrapers (no page load), so a due-set of only
   // those skips launching Chromium entirely.
-  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone']);
+  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api']);
   const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
@@ -2075,4 +2171,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
