@@ -1177,6 +1177,10 @@ async function scrapeFlameyApi(_page, store) {
         store_name: store.name,
         store_id: store.id,
         in_stock: p.inStock === true,
+        // Matched an exact category id (Flamey's own taxonomy), not a text
+        // search — skip the generic TCG-keyword title heuristic, which would
+        // wrongly drop things like "Premium Collection"/"Coin Set".
+        categoryConfirmed: true,
       });
     }
 
@@ -1869,7 +1873,14 @@ async function scrapeAll() {
   const scrapedStoreIds = [];
 
   const commit = (store, raw, status, challenged, confirmedEmpty = false) => {
-    const products = raw.filter((p) => isTcgProduct(p.title));
+    // categoryConfirmed (opt-in, like confirmedEmpty): the scraper matched an
+    // exact category id, not a loose text search — e.g. Flamey's "Premium
+    // Collection"/"Coin Set"/"V-Union Collection Box" all say "Pokemon" but
+    // don't contain any TCG-ish keyword, so the title heuristic below would
+    // wrongly drop them despite Flamey's own taxonomy confirming they're
+    // Pokémon TCG products (their unrelated merch lives in separate
+    // categories like Funko POP). Trust the source over the heuristic.
+    const products = raw.filter((p) => p.categoryConfirmed === true || isTcgProduct(p.title));
     const outcome = classifyOutcome({ status, challenged, rawCount: raw.length, confirmedEmpty });
     if (outcome === 'success') {
       allProducts.push(...products);
