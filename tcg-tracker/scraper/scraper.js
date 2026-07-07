@@ -51,6 +51,7 @@ const SCRAPER_MAP = {
                                      // special-cases it (like shopify/ozone) to skip the
                                      // page load; present here only so the "unknown
                                      // scraper type" guard doesn't reject it.
+  flamey_api: scrapeFlameyApi, // same as woocommerce_api above — special-cased in fetchStoreData
   lumea_jocurilor: scrapeLumeaJocurilor,
   raijucarii: scrapeRaijucarii,
   tulli: scrapeTulli,
@@ -1099,6 +1100,96 @@ async function scrapeDexHitApi(_page, store) {
 }
 
 /**
+ * Flamey.ro (shop.flamey.ro) — a bespoke storefront with a clean, fully public
+ * JSON API (no auth/session/CSRF needed, unlike Carturesti's json-search). Two
+ * calls: resolve the category slug from the store URL to its id, then page
+ * through /api/shop/products for that category.
+ *
+ * The category filter is authoritative (an exact id, not a fuzzy text search
+ * like Ozone's), so some genuinely-Pokémon items don't repeat "Pokémon" in
+ * their own name (e.g. "Pitch Black - Sleeved Booster") — they'd otherwise be
+ * wrongly dropped by the shared isTcgProduct title check. Since every item
+ * carries its own categoryName, prefix "Pokémon TCG: " onto titles that need
+ * it rather than trusting free text alone.
+ */
+async function scrapeFlameyApi(_page, store) {
+  const origin = new URL(store.url).origin;
+  const slugPath = new URL(store.url).pathname.split('/').filter(Boolean).slice(-2).join('/');
+
+  const resolveRes = await fetch(`${origin}/api/categories/resolve/${slugPath}`, {
+    headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+    signal: AbortSignal.timeout(30000),
+  });
+  const resolveStatus = resolveRes.status;
+  const resolveText = await resolveRes.text();
+  if (!resolveRes.ok) {
+    console.log(`  ${store.name}: category resolve HTTP ${resolveStatus}`);
+    return { products: [], status: resolveStatus, challenged: detectChallengeText(resolveText) };
+  }
+
+  let category;
+  try {
+    category = JSON.parse(resolveText);
+  } catch {
+    console.log(`  ${store.name}: category resolve returned non-JSON (likely a block/interstitial)`);
+    return { products: [], status: resolveStatus, challenged: true };
+  }
+
+  const products = [];
+  let pageNum = 1;
+  let totalPages = 1;
+  let status = resolveStatus;
+  let challenged = false;
+
+  do {
+    const apiUrl = `${origin}/api/shop/products?page=${pageNum}&pageSize=100&category=${category.id}&isEvent=false`;
+    const res = await fetch(apiUrl, {
+      headers: { 'User-Agent': BROWSER_UA, Accept: 'application/json' },
+      signal: AbortSignal.timeout(30000),
+    });
+    status = res.status;
+    const text = await res.text();
+    challenged = challenged || detectChallengeText(text);
+
+    if (!res.ok) {
+      console.log(`  ${store.name}: Shop API HTTP ${status} (page ${pageNum})`);
+      return { products: [], status, challenged };
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.log(`  ${store.name}: Shop API returned non-JSON (likely a block/interstitial)`);
+      return { products: [], status, challenged: true };
+    }
+
+    for (const p of data.items ?? []) {
+      const needsPrefix = !/pok[eé]mon/i.test(p.name) && /pok[eé]mon/i.test(p.categoryName ?? '');
+      const title = needsPrefix ? `Pokémon TCG: ${p.name}` : p.name;
+      const imageUrl = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : origin + p.imageUrl) : null;
+
+      products.push({
+        title,
+        price: typeof p.price === 'number' ? p.price : null,
+        url: `${origin}/product/${p.slug}`,
+        image_url: imageUrl,
+        store_name: store.name,
+        store_id: store.id,
+        in_stock: p.inStock === true,
+      });
+    }
+
+    if (pageNum === 1) {
+      totalPages = Number(data.totalPages ?? 1);
+    }
+    pageNum++;
+  } while (pageNum <= totalPages);
+
+  return { products, status, challenged };
+}
+
+/**
  * LumeaJocurilor.ro — custom platform
  * Products use .wareItems .item cards with data-id attributes.
  */
@@ -1716,6 +1807,11 @@ async function fetchStoreData(store, browser) {
     return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: false };
   }
 
+  if (store.scraper_type === 'flamey_api') {
+    const r = await scrapeFlameyApi(null, store); // Flamey's own JSON API — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: false };
+  }
+
   const scrapeFn = SCRAPER_MAP[store.scraper_type];
   const context = await browser.newContext({
     userAgent: BROWSER_UA,
@@ -1766,7 +1862,7 @@ async function scrapeAll() {
   // Only spin up Playwright if a store that actually needs a browser is due.
   // shopify + ozone are JSON-API scrapers (no page load), so a due-set of only
   // those skips launching Chromium entirely.
-  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api']);
+  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api']);
   const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
@@ -1966,6 +2062,50 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
 }
 
 /**
+ * Delete products that have been continuously out-of-stock for over a week.
+ * The dashboard only ever shows in-stock (incl. preorder) products, so this is
+ * pure cleanup, not a stock-accuracy feature — out_of_stock_since is stamped
+ * by a DB trigger (see migration 021) on the real true->false transition, so
+ * it doesn't get reset by every scrape that finds the same item still gone.
+ *
+ * Scoped to currently-ENABLED stores only. A disabled store's whole catalog
+ * sits frozen at whatever state it was in when scraping stopped — that's not
+ * a real "still out of stock" signal, and deleting it would mean the moment
+ * the store is fixed and re-enabled, every one of its products comes back
+ * with no matching row, and the "new product" alert fires for the entire
+ * catalog at once. Products with no store_id (FK set NULL on store deletion)
+ * are skipped for the same reason — we can't confirm the store is enabled.
+ */
+async function cleanupStaleProducts(supabase) {
+  const CUTOFF_DAYS = 7;
+  const cutoff = new Date(Date.now() - CUTOFF_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: enabledStores, error: storesError } = await supabase.from('stores').select('id').eq('is_enabled', true);
+  if (storesError) {
+    console.error(`  Cleanup: failed to fetch enabled stores — ${storesError.message}`);
+    return;
+  }
+  const enabledIds = (enabledStores ?? []).map((s) => s.id);
+  if (enabledIds.length === 0) return;
+
+  const { data: deleted, error: deleteError } = await supabase
+    .from('products')
+    .delete()
+    .eq('in_stock', false)
+    .lt('out_of_stock_since', cutoff)
+    .in('store_id', enabledIds)
+    .select('id');
+
+  if (deleteError) {
+    console.error(`  Cleanup: delete failed — ${deleteError.message}`);
+    return;
+  }
+  if (deleted && deleted.length > 0) {
+    console.log(`  Cleanup: deleted ${deleted.length} product(s) out of stock for over ${CUTOFF_DAYS} days`);
+  }
+}
+
+/**
  * Update scrape_run status in Supabase (for manual scraping tracking).
  */
 async function updateScrapeRun(supabase, runId, updates) {
@@ -2156,6 +2296,9 @@ async function main() {
       console.log('\nSending email alerts...');
       await sendAlerts(alertProducts);
     }
+
+    console.log('\nCleaning up long-term out-of-stock products...');
+    await cleanupStaleProducts(supabase);
   } catch (err) {
     console.error(`  Scraper failed: ${err.message}`);
     await updateScrapeRun(supabase, runId, {
@@ -2171,4 +2314,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, cleanupStaleProducts };
