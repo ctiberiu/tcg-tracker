@@ -13,3 +13,8 @@ poke-tracker-spec.md
 tcg-tracker/scraper/run-migrations.js
 .devchain/
 pokemonia-products.md
+.DS_Store
+.idea/
+.playwright-mcp/
+.claude/settings.local.json
+.claude/hooks/devchain-relay.sh
