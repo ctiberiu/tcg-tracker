@@ -1,15 +1,12 @@
 import { next } from '@vercel/edge'
 
 export const config = {
-  matcher: ['/storybook', '/storybook/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
 
-export default function middleware(request: Request) {
-  const user = process.env.STORYBOOK_BASIC_AUTH_USER
-  const pass = process.env.STORYBOOK_BASIC_AUTH_PASSWORD
-
+function requireBasicAuth(request: Request, user: string | undefined, pass: string | undefined, realm: string) {
   if (!user || !pass) {
-    return new Response('Storybook Basic Auth is not configured', { status: 500 })
+    return new Response(`${realm} Basic Auth is not configured`, { status: 500 })
   }
 
   const authHeader = request.headers.get('authorization')
@@ -21,12 +18,38 @@ export default function middleware(request: Request) {
     const reqPass = decoded.slice(separatorIndex + 1)
 
     if (reqUser === user && reqPass === pass) {
-      return next()
+      return null
     }
   }
 
   return new Response('Authentication required', {
     status: 401,
-    headers: { 'WWW-Authenticate': 'Basic realm="Storybook", charset="UTF-8"' },
+    headers: { 'WWW-Authenticate': `Basic realm="${realm}", charset="UTF-8"` },
   })
+}
+
+export default function middleware(request: Request) {
+  const url = new URL(request.url)
+
+  if (url.pathname === '/storybook' || url.pathname.startsWith('/storybook/')) {
+    const denied = requireBasicAuth(
+      request,
+      process.env.STORYBOOK_BASIC_AUTH_USER,
+      process.env.STORYBOOK_BASIC_AUTH_PASSWORD,
+      'Storybook'
+    )
+    return denied ?? next()
+  }
+
+  if (url.hostname === 'dev.packradar.info') {
+    const denied = requireBasicAuth(
+      request,
+      process.env.DEV_BASIC_AUTH_USER,
+      process.env.DEV_BASIC_AUTH_PASSWORD,
+      'Dev'
+    )
+    return denied ?? next()
+  }
+
+  return next()
 }
