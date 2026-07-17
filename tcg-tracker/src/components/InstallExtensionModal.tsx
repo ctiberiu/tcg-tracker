@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { CtaButton, iconButtonStyle } from './packradar'
 
 export const EXTENSION_ZIP_URL = '/snipe-extension.zip'
 
@@ -7,13 +8,15 @@ interface InstallExtensionModalProps {
   onClose: () => void
 }
 
-const steps: { title: string; body: React.ReactNode }[] = [
+const codeStyle = { color: 'var(--pr-signal)', fontFamily: 'var(--pr-font-mono)' }
+
+const steps: { title: string; body: ReactNode }[] = [
   {
     title: 'Download & unzip',
     body: (
       <>
         Download the extension and unzip it. You&apos;ll get a{' '}
-        <code className="text-primary">snipe-extension</code> folder — keep it somewhere permanent
+        <code style={codeStyle}>snipe-extension</code> folder — keep it somewhere permanent
         (Chrome loads it from this location, so don&apos;t delete it after installing).
       </>
     ),
@@ -22,7 +25,7 @@ const steps: { title: string; body: React.ReactNode }[] = [
     title: 'Open the extensions page',
     body: (
       <>
-        In Chrome, go to <code className="text-primary">chrome://extensions</code>.
+        In Chrome, go to <code style={codeStyle}>chrome://extensions</code>.
       </>
     ),
   },
@@ -35,7 +38,7 @@ const steps: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         Click <strong>Load unpacked</strong> and select the unzipped{' '}
-        <code className="text-primary">snipe-extension</code> folder.
+        <code style={codeStyle}>snipe-extension</code> folder.
       </>
     ),
   },
@@ -59,66 +62,94 @@ export function InstallExtensionModal({ open, onClose }: InstallExtensionModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="packradar"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.6)',
+        padding: 16,
+      }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Install the Snipe extension"
     >
       <div
-        className="bg-surface-low rounded-2xl p-6 w-full max-w-lg max-h-[85vh] overflow-auto"
+        style={{
+          background: 'var(--pr-bg-panel)',
+          border: '1px solid var(--pr-border-hover)',
+          padding: 24,
+          width: '100%',
+          maxWidth: 560,
+          maxHeight: '85vh',
+          overflow: 'auto',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-headline text-xl font-bold text-on-surface">Install the Snipe extension</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-high transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--pr-font-display)', fontWeight: 700, fontSize: 18, color: 'var(--pr-text-bright)' }}>
+            Install the Snipe extension
+          </h2>
+          <button onClick={onClose} aria-label="Close" style={iconButtonStyle}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        <p className="text-on-surface-variant text-sm mb-4">
+        <p style={{ color: 'var(--pr-text-dim)', fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
           Chrome only (Manifest V3), installed in developer mode. It runs entirely in your own
           browser using your own krit.ro session — no credentials are stored.
         </p>
 
-        <a
-          href={EXTENSION_ZIP_URL}
-          download="snipe-extension.zip"
-          className="inline-block px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors mb-5"
-        >
-          Download extension (.zip)
-        </a>
+        <div style={{ marginBottom: 20 }}>
+          <CtaButton variant="solid" size="sm" href={EXTENSION_ZIP_URL} download="snipe-extension.zip">
+            DOWNLOAD EXTENSION (.ZIP)
+          </CtaButton>
+        </div>
 
-        <ol className="space-y-4">
+        <ol style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 0, margin: 0, listStyle: 'none' }}>
           {steps.map((step, i) => (
-            <li key={step.title} className="flex gap-3">
-              <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+            <li key={step.title} style={{ display: 'flex', gap: 12 }}>
+              <span
+                style={{
+                  width: 22,
+                  height: 22,
+                  border: '1px solid var(--pr-signal)',
+                  color: 'var(--pr-signal)',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  fontFamily: 'var(--pr-font-mono)',
+                }}
+              >
                 {i + 1}
               </span>
               <div>
-                <p className="text-on-surface text-sm font-bold">{step.title}</p>
-                <p className="text-on-surface-variant text-sm">{step.body}</p>
+                <p style={{ color: 'var(--pr-text-bright)', fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{step.title}</p>
+                <p style={{ color: 'var(--pr-text-dim)', fontSize: 12.5, lineHeight: 1.6 }}>{step.body}</p>
               </div>
             </li>
           ))}
         </ol>
 
-        <div className="mt-6 pt-5 border-t border-outline-variant">
-          <h3 className="text-on-surface text-sm font-bold mb-1">Multiple Krit accounts?</h3>
-          <p className="text-on-surface-variant text-sm">
+        <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--pr-border)' }}>
+          <h3 style={{ color: 'var(--pr-text-bright)', fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Multiple Krit accounts?</h3>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 12.5, lineHeight: 1.6 }}>
             There&apos;s no in-app account switching (and nothing is ever stored). To run more than
             one Krit account, use a{' '}
             <a
               href="https://support.google.com/chrome/answer/2364824"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              style={{ color: 'var(--pr-signal)' }}
             >
               separate Chrome profile
             </a>{' '}

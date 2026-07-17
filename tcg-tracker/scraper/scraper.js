@@ -1988,6 +1988,10 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       url: normalizeProductUrl(p.url),
       image_url: p.image_url,
       in_stock: p.in_stock ?? true,
+      // Stamped on every sighting regardless of in_stock value — the staleness
+      // sweep uses this (not just "missing from this run") to require a
+      // sustained absence before flipping a product to out-of-stock.
+      last_seen_at: new Date().toISOString(),
     }));
 
     const { error: upsertError, data } = await supabase
@@ -2014,7 +2018,18 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
     }
   }
 
-  // Staleness sweep: mark products not seen in this scrape as out-of-stock
+  // Staleness sweep: mark products out-of-stock only once they've been
+  // continuously missing from their store's listing for a grace period, not
+  // on the first miss. A single miss is often just a cart-hold blip on a
+  // hot/low-quantity SKU (product briefly unavailable while someone's cart
+  // reserves the last unit, then reappears when the hold expires) — flipping
+  // in_stock on that first miss turns a normal reservation cycle into a
+  // "restock" alert every time it comes back (confirmed on Noriel, ~15 min
+  // check interval: 20+ repeat alerts/day for one item). Requiring absence to
+  // outlast ~2 scrape cycles filters that out while still catching genuine
+  // stock-outs within roughly half an hour.
+  const STALE_GRACE_MS = 20 * 60 * 1000;
+
   if (scrapedStoreIds.length > 0) {
     console.log('\nRunning staleness sweep...');
 
@@ -2027,12 +2042,13 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
     }
 
     let totalStale = 0;
+    const staleCutoff = Date.now() - STALE_GRACE_MS;
     for (const storeId of scrapedStoreIds) {
       const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
 
       // Fetch all currently in-stock products for this store
       const { data: storeProducts, error: fetchErr } = await fetchAllRows(() =>
-        supabase.from('products').select('id, url').eq('store_id', storeId).eq('in_stock', true),
+        supabase.from('products').select('id, url, last_seen_at').eq('store_id', storeId).eq('in_stock', true),
       );
 
       if (fetchErr) {
@@ -2040,9 +2056,14 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
         continue;
       }
 
-      // Find products not seen in this scrape
+      // Find products not seen in this scrape AND missing long enough to be
+      // a real stock-out rather than a single-run blip.
       const staleIds = storeProducts
-        .filter((p) => !scrapedUrlSet.has(normalizeProductUrl(p.url)))
+        .filter((p) => {
+          if (scrapedUrlSet.has(normalizeProductUrl(p.url))) return false;
+          const lastSeen = p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
+          return lastSeen <= staleCutoff;
+        })
         .map((p) => p.id);
 
       if (staleIds.length === 0) continue;

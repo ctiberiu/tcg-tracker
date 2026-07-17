@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useSubscribers } from '../hooks/useSubscribers'
 import { useAuth } from '../hooks/useAuth'
+import { CtaButton, fieldStyle, sectionTitleStyle, errorBoxStyle, smallLinkButtonStyle } from './packradar'
 
 export function ManageEmails() {
   const { subscribers, loading, error, addSubscriber, removeSubscriber } = useSubscribers()
@@ -35,7 +36,7 @@ export function ManageEmails() {
     }
   }
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleAdd = async (e: FormEvent) => {
     e.preventDefault()
     setFormError(null)
     const email = newEmail.trim().toLowerCase()
@@ -68,79 +69,71 @@ export function ManageEmails() {
   }
 
   return (
-    <section className="mb-12">
-      <h2 className="font-headline text-2xl font-bold text-on-surface mb-2">
-        Manage Emails
-      </h2>
-      <p className="text-on-surface-variant text-sm mb-4">
+    <section style={{ marginBottom: 40 }}>
+      <h2 style={{ ...sectionTitleStyle, marginBottom: 6 }}>Manage Emails</h2>
+      <p style={{ color: 'var(--pr-text-dim)', fontSize: 12.5, marginBottom: 16 }}>
         Everyone here receives the stock alert emails.
       </p>
 
       {error && (
-        <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">
-          Failed to load emails: {error}
-        </div>
+        <div style={{ ...errorBoxStyle, marginBottom: 16 }}>Failed to load emails: {error}</div>
       )}
 
-      <form onSubmit={handleAdd} className="flex flex-wrap items-center gap-3 mb-2">
+      <form onSubmit={handleAdd} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: 8 }}>
         <input
           type="email"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder="name@example.com"
           maxLength={254}
-          className="px-3 py-2 rounded-lg bg-surface-low text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary min-w-[240px]"
+          style={{ ...fieldStyle, width: 'auto', minWidth: 240 }}
         />
-        <button
-          type="submit"
-          disabled={busy}
-          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-        >
-          + Add Email
-        </button>
+        <CtaButton type="submit" variant="solid" size="sm" disabled={busy}>
+          + ADD EMAIL
+        </CtaButton>
       </form>
-      {formError && <p className="text-error text-sm mb-3">{formError}</p>}
+      {formError && <p style={{ color: 'var(--pr-status-gone)', fontSize: 12.5, marginBottom: 12 }}>{formError}</p>}
 
       {loading ? (
-        <p className="text-on-surface-variant text-sm">Loading emails...</p>
+        <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading emails...</p>
       ) : subscribers.length === 0 ? (
-        <p className="text-on-surface-variant text-sm">No emails yet.</p>
+        <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No emails yet.</p>
       ) : (
-        <ul className="space-y-2 max-w-xl mt-3">
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 560, marginTop: 12 }}>
           {subscribers.map((s) => {
             const isMine = s.email.toLowerCase() === myEmail
             return (
               <li
                 key={s.id}
-                className="flex items-center justify-between bg-surface-low rounded-lg px-4 py-3"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  border: '1px solid var(--pr-border)',
+                  background: 'var(--pr-bg-panel)',
+                  padding: '10px 14px',
+                }}
               >
-                <span className="text-on-surface text-sm truncate">
+                <span style={{ color: 'var(--pr-text-bright)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {s.email}
                   {isMine && (
-                    <span className="ml-2 text-on-surface-variant text-xs uppercase tracking-wider">
+                    <span style={{ marginLeft: 8, color: 'var(--pr-text-dim)', fontSize: 10, letterSpacing: 1, textTransform: 'uppercase' }}>
                       (you)
                     </span>
                   )}
-                  {!s.is_active && <span className="ml-2 text-error text-xs">inactive</span>}
+                  {!s.is_active && <span style={{ marginLeft: 8, color: 'var(--pr-status-gone)', fontSize: 11 }}>inactive</span>}
                   {testMsg?.id === s.id && (
-                    <span className={`ml-2 text-xs ${testMsg.ok ? 'text-primary' : 'text-error'}`}>
+                    <span style={{ marginLeft: 8, fontSize: 11, color: testMsg.ok ? 'var(--pr-signal)' : 'var(--pr-status-gone)' }}>
                       {testMsg.text}
                     </span>
                   )}
                 </span>
-                <div className="flex items-center gap-3 shrink-0 ml-3">
-                  <button
-                    onClick={() => handleTest(s.id, s.email)}
-                    disabled={testingId === s.id}
-                    className="text-on-surface-variant hover:text-primary text-sm transition-colors disabled:opacity-50"
-                  >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, marginLeft: 12 }}>
+                  <button onClick={() => handleTest(s.id, s.email)} disabled={testingId === s.id} style={smallLinkButtonStyle}>
                     {testingId === s.id ? 'Sending...' : 'Test'}
                   </button>
                   {!isMine && (
-                    <button
-                      onClick={() => handleRemove(s.id, s.email)}
-                      className="text-on-surface-variant hover:text-error text-sm transition-colors"
-                    >
+                    <button onClick={() => handleRemove(s.id, s.email)} style={smallLinkButtonStyle}>
                       Remove
                     </button>
                   )}

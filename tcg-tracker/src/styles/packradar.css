@@ -1,0 +1,230 @@
+/* PackRadar design tokens — scoped to the PackRadar pages only.
+   Do not merge with src/index.css's @theme; the rest of the app keeps its own palette. */
+:root {
+  --pr-bg: #060B08;
+  --pr-bg-panel: #081009;
+  --pr-bg-deep: #050906;
+
+  --pr-border: #22302A;
+  --pr-border-hover: #3a4a40;
+
+  --pr-signal: #2EE86C;
+
+  --pr-text-bright: #C8F5DC;
+  --pr-text-mid: #8FAF9D;
+  --pr-text-dim: #5E7A6B;
+
+  --pr-status-in-stock: #2EE86C;
+  --pr-status-preorder: #FFB020;
+  --pr-status-gone: #FF4747;
+
+  --pr-game-pokemon: #FFD447;
+  --pr-game-pokemon-dim: #4a4020;
+  --pr-game-magic: #B486FF;
+  --pr-game-magic-dim: #3a3050;
+  --pr-game-lorcana: #4FC3FF;
+  --pr-game-lorcana-dim: #20404f;
+  --pr-game-yugioh: #FF8A5C;
+  --pr-game-yugioh-dim: #4a3225;
+
+  --pr-font-mono: 'IBM Plex Mono', monospace;
+  --pr-font-display: 'Space Grotesk', sans-serif;
+
+  --pr-gutter: 44px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --pr-gutter: 20px;
+  }
+}
+
+.packradar {
+  background: var(--pr-bg);
+  font-family: var(--pr-font-mono);
+  color: var(--pr-text-mid);
+}
+
+@media (max-width: 768px) {
+  .pr-page {
+    /* Clears the fixed bottom tab bar so the last row of content isn't hidden under it. */
+    padding-bottom: 64px;
+  }
+}
+
+.pr-hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 768px) {
+  .pr-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pr-signal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .pr-signal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.pr-store-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* StoreCard's domain text — dropped on mobile so the store name and status label
+   (both higher-value info) have room to coexist on one line without crushing the name. */
+@media (max-width: 768px) {
+  .pr-store-domain {
+    display: none;
+  }
+}
+
+/* StoreCard's 4-up stat row — the reference PDF's broken mobile export showed this
+   overflowing (4 columns can't fit labels like "LAST SIGNAL" at mobile widths), so
+   this collapses to 2x2 instead of a straight 1-for-1 port of the desktop layout. */
+@media (max-width: 768px) {
+  .pr-store-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .pr-store-stats > div:nth-child(-n + 2) {
+    box-shadow: inset 0 -1px 0 var(--pr-border);
+  }
+
+  .pr-store-stats > div:nth-child(2n) {
+    border-right: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pr-store-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* NavBar's plain text links — the mobile bottom tab bar covers this job on small screens. */
+.pr-navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+@media (max-width: 768px) {
+  .pr-navbar-links {
+    display: none;
+  }
+}
+
+/* FilterRack's store/min/max row — collapsed behind a "FILTERS ▾" disclosure on mobile,
+   always shown on desktop regardless of the toggle state. */
+.pr-filter-extra {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .pr-filter-extra {
+    display: none;
+  }
+
+  .pr-filter-extra.pr-filter-extra--open {
+    display: flex;
+  }
+}
+
+.pr-filters-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pr-filters-toggle {
+    display: block;
+  }
+}
+
+/* Landing page's "latest signals" rows — the 6-column desktop grid stacks into single
+   lines on mobile rather than the spec's literal 3-line grouping, to avoid a deeper
+   restructure of SignalRow for a screen we don't have an exact mockup for. */
+@media (max-width: 768px) {
+  .pr-signal-row {
+    grid-template-columns: 1fr !important;
+    gap: 2px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+}
+
+.pr-mobile-tabbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pr-mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--pr-bg-panel);
+    border-top: 1px solid var(--pr-border);
+    z-index: 40;
+  }
+}
+
+@media (max-width: 768px) {
+  .pr-footer {
+    flex-direction: column;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 6px;
+  }
+}
+
+/* Status strip's timezone trail — dropped on mobile (matches the mobile mockup, which
+   keeps store count + health label but not the timezone) to keep the top bar on one line. */
+@media (max-width: 768px) {
+  .pr-status-strip-meta > span:last-child {
+    display: none;
+  }
+}
+
+.packradar a {
+  color: var(--pr-signal);
+  text-decoration: none;
+}
+
+.packradar a:hover {
+  color: var(--pr-text-bright);
+}
+
+@keyframes pr-radarspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pr-pingpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 232, 108, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(46, 232, 108, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 232, 108, 0);
+  }
+}

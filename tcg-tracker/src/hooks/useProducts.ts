@@ -4,12 +4,15 @@ import type { Product } from '../lib/types'
 
 const PAGE_SIZE = 100
 
+export type ProductSort = 'newest' | 'price_asc' | 'price_desc'
+
 export interface ProductFilters {
   store?: string
   minPrice?: number
   maxPrice?: number
   inStockOnly?: boolean
   search?: string
+  sort?: ProductSort
 }
 
 export function useProducts(filters: ProductFilters = {}) {
@@ -17,17 +20,30 @@ export function useProducts(filters: ProductFilters = {}) {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Track current filters to detect changes
   const filtersRef = useRef(filters)
 
-  const buildQuery = useCallback((from: number, to: number) => {
+  const buildQuery = useCallback((from: number, to: number, withCount = false) => {
     let query = supabase
       .from('products')
-      .select('*')
-      .order('first_seen', { ascending: false })
+      .select('*', withCount ? { count: 'exact' } : undefined)
       .range(from, to)
+
+    switch (filters.sort) {
+      case 'price_asc':
+        query = query.order('price', { ascending: true, nullsFirst: false })
+        break
+      case 'price_desc':
+        query = query.order('price', { ascending: false, nullsFirst: false })
+        break
+      case 'newest':
+      default:
+        query = query.order('first_seen', { ascending: false })
+        break
+    }
 
     if (filters.store) {
       query = query.eq('store_name', filters.store)
@@ -46,7 +62,7 @@ export function useProducts(filters: ProductFilters = {}) {
     }
 
     return query
-  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search])
+  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
 
   useEffect(() => {
     // Reset when filters change
@@ -57,13 +73,14 @@ export function useProducts(filters: ProductFilters = {}) {
     setError(null)
 
     async function fetchInitial() {
-      const { data, error } = await buildQuery(0, PAGE_SIZE - 1)
+      const { data, error, count } = await buildQuery(0, PAGE_SIZE - 1, true)
 
       if (error) {
         setError(error.message)
       } else {
         setProducts(data as Product[])
         setHasMore(data.length === PAGE_SIZE)
+        setTotalCount(count ?? null)
       }
       setLoading(false)
     }
@@ -87,5 +104,5 @@ export function useProducts(filters: ProductFilters = {}) {
     setLoadingMore(false)
   }, [products.length, loadingMore, hasMore, buildQuery])
 
-  return { products, loading, loadingMore, hasMore, error, loadMore }
+  return { products, loading, loadingMore, hasMore, totalCount, error, loadMore }
 }

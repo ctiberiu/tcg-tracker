@@ -1,6 +1,18 @@
-import { useState } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, ALLOWED_EMAIL } from '../lib/supabase'
+import { RadarSpinner, CtaButton } from '../components/packradar'
+
+const fieldStyle: CSSProperties = {
+  width: '100%',
+  padding: '11px 14px',
+  background: 'var(--pr-bg)',
+  color: 'var(--pr-text-bright)',
+  fontSize: 13,
+  border: '1px solid var(--pr-border)',
+  fontFamily: 'var(--pr-font-mono)',
+  outline: 'none',
+}
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -9,7 +21,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -31,28 +43,50 @@ export function LoginPage() {
       return
     }
 
-    navigate('/dashboard', { replace: true })
+    navigate('/admin', { replace: true })
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-full max-w-md text-center">
-        <h1 className="font-headline font-black text-3xl text-on-surface uppercase tracking-tight mb-2">
-          TCG Tracker
-        </h1>
-        <p className="text-primary text-xs font-body uppercase tracking-widest mb-10">
-          Track prices. Spot deals. Stay ahead.
-        </p>
-        <form onSubmit={handleSubmit} className="bg-surface-low rounded-xl p-8">
-          <h2 className="font-headline text-xl font-bold text-on-surface mb-6">
-            Sign In
-          </h2>
+    <div className="packradar" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+          <RadarSpinner size={34} />
+          <span
+            style={{
+              fontFamily: 'var(--pr-font-display)',
+              fontWeight: 700,
+              fontSize: 22,
+              color: 'var(--pr-text-bright)',
+              letterSpacing: 0.5,
+            }}
+          >
+            PackRadar
+          </span>
+          <span style={{ fontSize: 10.5, color: 'var(--pr-signal)', letterSpacing: 2 }}>
+            /// OPERATOR ACCESS
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ border: '1px solid var(--pr-border)', background: 'var(--pr-bg-panel)', padding: 28 }}>
+          <div style={{ fontSize: 9.5, color: 'var(--pr-text-dim)', letterSpacing: 2, marginBottom: 18 }}>
+            SIGN IN
+          </div>
+
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-error/10 text-error text-sm">
+            <div
+              style={{
+                marginBottom: 16,
+                padding: '10px 12px',
+                border: '1px solid var(--pr-status-gone)',
+                color: 'var(--pr-status-gone)',
+                fontSize: 12.5,
+              }}
+            >
               {error}
             </div>
           )}
-          <div className="mb-4">
+
+          <div style={{ marginBottom: 12 }}>
             <input
               type="email"
               required
@@ -60,11 +94,11 @@ export function LoginPage() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant text-on-surface placeholder:text-on-surface-variant/50 font-body text-sm focus:outline-none focus:border-primary transition-colors"
+              style={fieldStyle}
               autoComplete="email"
             />
           </div>
-          <div className="mb-6">
+          <div style={{ marginBottom: 20 }}>
             <input
               type="password"
               required
@@ -73,17 +107,19 @@ export function LoginPage() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant text-on-surface placeholder:text-on-surface-variant/50 font-body text-sm focus:outline-none focus:border-primary transition-colors"
+              style={fieldStyle}
               autoComplete="current-password"
             />
           </div>
-          <button
+
+          <CtaButton
             type="submit"
+            variant="solid"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm uppercase tracking-wider hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            fullWidth
           >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+            {loading ? 'SIGNING IN…' : 'SIGN IN'}
+          </CtaButton>
         </form>
       </div>
     </div>

@@ -6,6 +6,16 @@ import { useExtensionDetected } from '../hooks/useExtensionDetected'
 import { useSnipeTrigger } from '../hooks/useSnipeTrigger'
 import { InstallExtensionModal, EXTENSION_ZIP_URL } from '../components/InstallExtensionModal'
 import {
+  StatusDot,
+  CtaButton,
+  fieldStyle,
+  labelStyle,
+  panelStyle,
+  rowStyle,
+  sectionTitleStyle,
+  errorBoxStyle,
+} from '../components/packradar'
+import {
   PAYMENT_METHODS,
   MODES,
   EMPTY_FLOW_FORM,
@@ -19,17 +29,13 @@ import {
 } from '../lib/snipe'
 import type { SnipeFlow, SnipeTask, SnipeTaskStatus } from '../lib/types'
 
-const inputClass =
-  'w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary'
-const labelClass = 'block text-on-surface-variant text-xs uppercase tracking-wider mb-1'
-
-const STATUS_STYLES: Record<SnipeTaskStatus, string> = {
-  idle: 'bg-surface-container text-on-surface-variant',
-  running: 'bg-primary/10 text-primary',
-  grabbed: 'bg-primary/10 text-primary',
-  awaiting_payment: 'bg-tertiary/10 text-tertiary',
-  ordered: 'bg-tertiary/10 text-tertiary',
-  failed: 'bg-error/10 text-error',
+const STATUS_COLOR: Record<SnipeTaskStatus, string> = {
+  idle: 'var(--pr-text-dim)',
+  running: 'var(--pr-signal)',
+  grabbed: 'var(--pr-signal)',
+  awaiting_payment: 'var(--pr-status-preorder)',
+  ordered: 'var(--pr-status-preorder)',
+  failed: 'var(--pr-status-gone)',
 }
 
 export function SnipePage() {
@@ -186,25 +192,28 @@ export function SnipePage() {
     `${flow.site} · ${flow.payment_method}${flow.shipping_method ? ` · ${flow.shipping_method}` : ''}`
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="packradar" style={{ minHeight: '100vh', display: 'flex' }}>
       <AppSidebar activePage="snipe" />
 
-      <div className="flex-1 p-8 overflow-auto">
-        <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight mb-8">
-          TCG Tracker
-        </h1>
+      <div style={{ flex: 1, padding: 32, overflow: 'auto' }}>
+        <div style={{ fontSize: 10.5, color: 'var(--pr-signal)', letterSpacing: 2, marginBottom: 24 }}>
+          /// PACKRADAR OPERATOR CONSOLE
+        </div>
 
         {/* Extension status banner */}
         <div
-          className={`p-3 rounded-lg text-sm mb-8 flex items-center gap-2 ${
-            checking
-              ? 'bg-surface-container text-on-surface-variant'
-              : detected
-                ? 'bg-tertiary/10 text-tertiary'
-                : 'bg-error/10 text-error'
-          }`}
+          style={{
+            padding: '10px 14px',
+            border: `1px solid ${checking ? 'var(--pr-border)' : detected ? 'var(--pr-signal)' : 'var(--pr-status-gone)'}`,
+            fontSize: 13,
+            marginBottom: 32,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            color: checking ? 'var(--pr-text-dim)' : detected ? 'var(--pr-signal)' : 'var(--pr-status-gone)',
+          }}
         >
-          <span className={`w-2 h-2 rounded-full shrink-0 ${detected ? 'bg-tertiary' : checking ? 'bg-outline' : 'bg-error'}`} />
+          <StatusDot color={checking ? 'var(--pr-text-dim)' : detected ? 'var(--pr-signal)' : 'var(--pr-status-gone)'} size={8} />
           {checking
             ? 'Checking for the Snipe extension…'
             : detected
@@ -213,54 +222,42 @@ export function SnipePage() {
         </div>
 
         {/* Get the extension */}
-        <div className="flex items-center gap-3 mb-8">
-          <a
-            href={EXTENSION_ZIP_URL}
-            download="snipe-extension.zip"
-            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors"
-          >
-            Download extension
-          </a>
-          <button
-            onClick={() => setShowInstall(true)}
-            className="px-4 py-2 rounded-lg bg-surface-high text-on-surface font-headline font-bold text-sm hover:bg-surface-highest transition-colors"
-          >
-            How to install
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+          <CtaButton variant="solid" size="sm" href={EXTENSION_ZIP_URL} download="snipe-extension.zip">
+            DOWNLOAD EXTENSION
+          </CtaButton>
+          <CtaButton variant="ghost" size="sm" onClick={() => setShowInstall(true)}>
+            HOW TO INSTALL
+          </CtaButton>
         </div>
 
         <InstallExtensionModal open={showInstall} onClose={() => setShowInstall(false)} />
 
         {/* ── Flows ── */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-headline text-2xl font-bold text-on-surface">Flows</h2>
-          <button
-            onClick={openAddFlow}
-            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors"
-          >
-            + Add Flow
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h2 style={sectionTitleStyle}>Flows</h2>
+          <CtaButton variant="solid" size="sm" onClick={openAddFlow}>+ ADD FLOW</CtaButton>
         </div>
 
         {flowsError && (
-          <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">Failed to load flows: {flowsError}</div>
+          <div style={{ ...errorBoxStyle, marginBottom: 16 }}>Failed to load flows: {flowsError}</div>
         )}
-        {flowsLoading && <p className="text-on-surface-variant text-sm">Loading flows…</p>}
+        {flowsLoading && <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading flows…</p>}
 
         {showFlowForm && (
-          <div className="bg-surface-low rounded-xl p-6 mb-6">
-            <h3 className="font-headline font-bold text-on-surface mb-4">{editingFlowId ? 'Edit Flow' : 'Add Flow'}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ ...panelStyle, marginBottom: 20 }}>
+            <h3 style={{ ...sectionTitleStyle, fontSize: 16, marginBottom: 16 }}>{editingFlowId ? 'Edit Flow' : 'Add Flow'}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
               <div>
-                <label className={labelClass}>Site</label>
-                <input type="text" value={flowForm.site} disabled className={`${inputClass} opacity-60`} />
+                <label style={labelStyle}>Site</label>
+                <input type="text" value={flowForm.site} disabled style={{ ...fieldStyle, opacity: 0.6 }} />
               </div>
               <div>
-                <label className={labelClass}>Payment Method</label>
+                <label style={labelStyle}>Payment Method</label>
                 <select
                   value={flowForm.payment_method}
                   onChange={(e) => setFlowForm({ ...flowForm, payment_method: e.target.value as FlowFormData['payment_method'] })}
-                  className={inputClass}
+                  style={fieldStyle}
                 >
                   {PAYMENT_METHODS.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -268,103 +265,81 @@ export function SnipePage() {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Shipping Method (optional)</label>
+                <label style={labelStyle}>Shipping Method (optional)</label>
                 <input
                   type="text"
                   value={flowForm.shipping_method}
                   onChange={(e) => setFlowForm({ ...flowForm, shipping_method: e.target.value })}
-                  className={inputClass}
+                  style={fieldStyle}
                   placeholder="e.g. Curier / Easybox"
                 />
               </div>
               <div>
-                <label className={labelClass}>Address (optional — blank = account default)</label>
+                <label style={labelStyle}>Address (optional — blank = account default)</label>
                 <input
                   type="text"
                   value={flowForm.address}
                   onChange={(e) => setFlowForm({ ...flowForm, address: e.target.value })}
-                  className={inputClass}
+                  style={fieldStyle}
                   placeholder="Saved address label"
                 />
               </div>
             </div>
-            {flowFormError && <p className="text-error text-sm mt-3">{flowFormError}</p>}
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleSaveFlow}
-                disabled={savingFlow}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {savingFlow ? 'Saving…' : 'Save'}
-              </button>
-              <button
-                onClick={() => setShowFlowForm(false)}
-                className="px-4 py-2 rounded-lg bg-surface-high text-on-surface font-headline text-sm hover:bg-surface-highest transition-colors"
-              >
-                Cancel
-              </button>
+            {flowFormError && <p style={{ color: 'var(--pr-status-gone)', fontSize: 12.5, marginTop: 12 }}>{flowFormError}</p>}
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <CtaButton variant="solid" size="sm" onClick={handleSaveFlow} disabled={savingFlow}>
+                {savingFlow ? 'SAVING…' : 'SAVE'}
+              </CtaButton>
+              <CtaButton variant="ghost" size="sm" onClick={() => setShowFlowForm(false)}>CANCEL</CtaButton>
             </div>
           </div>
         )}
 
         {!flowsLoading && flows.length === 0 && (
-          <p className="text-on-surface-variant text-sm mb-8">No flows yet. Add one to configure checkout.</p>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13, marginBottom: 32 }}>No flows yet. Add one to configure checkout.</p>
         )}
-        <div className="space-y-3 mb-10">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
           {flows.map((flow) => (
-            <div key={flow.id} className="bg-surface-low rounded-xl p-4 flex items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-headline font-bold text-on-surface text-sm">{flowLabel(flow)}</h3>
-                <p className="text-on-surface-variant text-xs">
+            <div key={flow.id} style={rowStyle}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontFamily: 'var(--pr-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--pr-text-bright)' }}>
+                  {flowLabel(flow)}
+                </h3>
+                <p style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>
                   {flow.address ? `Address: ${flow.address}` : 'Address: account default'}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => openEditFlow(flow)}
-                  className="px-3 py-1.5 rounded-lg bg-surface-high text-on-surface text-xs font-bold hover:bg-surface-highest transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteFlow(flow)}
-                  className="px-3 py-1.5 rounded-lg bg-surface-high text-on-surface text-xs font-bold hover:bg-surface-highest hover:text-error transition-colors"
-                >
-                  Delete
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <CtaButton variant="ghost" size="sm" onClick={() => openEditFlow(flow)}>EDIT</CtaButton>
+                <CtaButton variant="ghost" size="sm" onClick={() => handleDeleteFlow(flow)}>DELETE</CtaButton>
               </div>
             </div>
           ))}
         </div>
 
         {/* ── Tasks ── */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-headline text-2xl font-bold text-on-surface">Tasks</h2>
-          <button
-            onClick={openAddTask}
-            disabled={flows.length === 0}
-            title={flows.length === 0 ? 'Add a flow first' : undefined}
-            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            + Add Task
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h2 style={sectionTitleStyle}>Tasks</h2>
+          <CtaButton variant="solid" size="sm" onClick={openAddTask} disabled={flows.length === 0} title={flows.length === 0 ? 'Add a flow first' : undefined}>
+            + ADD TASK
+          </CtaButton>
         </div>
 
         {tasksError && (
-          <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">Failed to load tasks: {tasksError}</div>
+          <div style={{ ...errorBoxStyle, marginBottom: 16 }}>Failed to load tasks: {tasksError}</div>
         )}
-        {tasksLoading && <p className="text-on-surface-variant text-sm">Loading tasks…</p>}
+        {tasksLoading && <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading tasks…</p>}
 
         {showTaskForm && (
-          <div className="bg-surface-low rounded-xl p-6 mb-6">
-            <h3 className="font-headline font-bold text-on-surface mb-4">{editingTaskId ? 'Edit Task' : 'Add Task'}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ ...panelStyle, marginBottom: 20 }}>
+            <h3 style={{ ...sectionTitleStyle, fontSize: 16, marginBottom: 16 }}>{editingTaskId ? 'Edit Task' : 'Add Task'}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
               <div>
-                <label className={labelClass}>Flow</label>
+                <label style={labelStyle}>Flow</label>
                 <select
                   value={taskForm.flow_id}
                   onChange={(e) => setTaskForm({ ...taskForm, flow_id: e.target.value })}
-                  className={inputClass}
+                  style={fieldStyle}
                 >
                   {flows.map((flow) => (
                     <option key={flow.id} value={flow.id}>{flowLabel(flow)}</option>
@@ -372,11 +347,11 @@ export function SnipePage() {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Mode</label>
+                <label style={labelStyle}>Mode</label>
                 <select
                   value={taskForm.mode}
                   onChange={(e) => setTaskForm({ ...taskForm, mode: e.target.value as TaskFormData['mode'] })}
-                  className={inputClass}
+                  style={fieldStyle}
                 >
                   {MODES.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
@@ -384,149 +359,141 @@ export function SnipePage() {
                 </select>
               </div>
               {taskForm.mode === 'link' ? (
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Product URL (Mode A)</label>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={labelStyle}>Product URL (Mode A)</label>
                   <input
                     type="url"
                     value={taskForm.url}
                     onChange={(e) => setTaskForm({ ...taskForm, url: e.target.value })}
-                    className={inputClass}
+                    style={fieldStyle}
                     placeholder="https://krit.ro/produs/…"
                   />
                 </div>
               ) : (
-                <div className="md:col-span-2">
-                  <label className={labelClass}>Keywords (comma-separated, Mode B)</label>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={labelStyle}>Keywords (comma-separated, Mode B)</label>
                   <input
                     type="text"
                     value={taskForm.keywords}
                     onChange={(e) => setTaskForm({ ...taskForm, keywords: e.target.value })}
-                    className={inputClass}
+                    style={fieldStyle}
                     placeholder="pokemon, prismatic, elite"
                   />
                 </div>
               )}
               <div>
-                <label className={labelClass}>Desired Quantity</label>
+                <label style={labelStyle}>Desired Quantity</label>
                 <input
                   type="number"
                   min={1}
                   value={taskForm.desired_qty}
                   onChange={(e) => setTaskForm({ ...taskForm, desired_qty: Number(e.target.value) })}
-                  className={inputClass}
+                  style={fieldStyle}
                 />
               </div>
               <div>
-                <label className={labelClass}>Max Price (optional, RON)</label>
+                <label style={labelStyle}>Max Price (optional, RON)</label>
                 <input
                   type="number"
                   min={0}
                   step="0.01"
                   value={taskForm.max_price}
                   onChange={(e) => setTaskForm({ ...taskForm, max_price: e.target.value })}
-                  className={inputClass}
+                  style={fieldStyle}
                   placeholder="No cap"
                 />
               </div>
-              <div className="flex items-center gap-3 pt-5">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
                 <input
                   type="checkbox"
                   id="respect_limit"
                   checked={taskForm.respect_limit}
                   onChange={(e) => setTaskForm({ ...taskForm, respect_limit: e.target.checked })}
-                  className="w-4 h-4 accent-primary"
+                  style={{ width: 16, height: 16, accentColor: 'var(--pr-signal)' }}
                 />
-                <label htmlFor="respect_limit" className="text-on-surface text-sm">Respect per-person limit</label>
+                <label htmlFor="respect_limit" style={{ color: 'var(--pr-text-mid)', fontSize: 13 }}>Respect per-person limit</label>
               </div>
-              <div className="flex items-start gap-3 md:col-span-2">
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, gridColumn: 'span 2' }}>
                 <input
                   type="checkbox"
                   id="watch_until_stopped"
                   checked={taskForm.watch_until_stopped}
                   onChange={(e) => setTaskForm({ ...taskForm, watch_until_stopped: e.target.checked })}
-                  className="w-4 h-4 accent-primary mt-0.5"
+                  style={{ width: 16, height: 16, accentColor: 'var(--pr-signal)', marginTop: 2 }}
                 />
-                <label htmlFor="watch_until_stopped" className="text-on-surface text-sm">
+                <label htmlFor="watch_until_stopped" style={{ color: 'var(--pr-text-mid)', fontSize: 13 }}>
                   Keep checking until I stop it
-                  <span className="block text-on-surface-variant text-xs">
+                  <span style={{ display: 'block', color: 'var(--pr-text-dim)', fontSize: 11.5, marginTop: 2 }}>
                     Ignores the normal error give-up limit (for late/not-yet-listed restocks). Auto-stops after 24h as a safety net.
                   </span>
                 </label>
               </div>
             </div>
-            {taskFormError && <p className="text-error text-sm mt-3">{taskFormError}</p>}
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleSaveTask}
-                disabled={savingTask}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {savingTask ? 'Saving…' : 'Save'}
-              </button>
-              <button
-                onClick={() => setShowTaskForm(false)}
-                className="px-4 py-2 rounded-lg bg-surface-high text-on-surface font-headline text-sm hover:bg-surface-highest transition-colors"
-              >
-                Cancel
-              </button>
+            {taskFormError && <p style={{ color: 'var(--pr-status-gone)', fontSize: 12.5, marginTop: 12 }}>{taskFormError}</p>}
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <CtaButton variant="solid" size="sm" onClick={handleSaveTask} disabled={savingTask}>
+                {savingTask ? 'SAVING…' : 'SAVE'}
+              </CtaButton>
+              <CtaButton variant="ghost" size="sm" onClick={() => setShowTaskForm(false)}>CANCEL</CtaButton>
             </div>
           </div>
         )}
 
         {!tasksLoading && tasks.length === 0 && (
-          <p className="text-on-surface-variant text-sm">No tasks yet.</p>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No tasks yet.</p>
         )}
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {tasks.map((task) => {
             const effectiveStatus = liveStatus[task.id] ?? task.status
             const isRunning =
               effectiveStatus === 'running' || effectiveStatus === 'grabbed' || effectiveStatus === 'awaiting_payment'
             return (
-              <div key={task.id} className="bg-surface-low rounded-xl p-4 flex items-center gap-4">
-                <span className={`text-xs font-bold px-2 py-0.5 rounded shrink-0 ${STATUS_STYLES[effectiveStatus]}`}>
+              <div key={task.id} style={rowStyle}>
+                <span
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    textTransform: 'uppercase',
+                    padding: '4px 8px',
+                    border: `1px solid ${STATUS_COLOR[effectiveStatus]}`,
+                    color: STATUS_COLOR[effectiveStatus],
+                    flexShrink: 0,
+                  }}
+                >
                   {effectiveStatus}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-headline font-bold text-on-surface text-sm truncate">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontFamily: 'var(--pr-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--pr-text-bright)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {task.mode === 'link' ? task.url : `Keywords: ${(task.keywords ?? []).join(', ')}`}
                   </h3>
-                  <p className="text-on-surface-variant text-xs">
+                  <p style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>
                     {task.mode === 'link' ? 'Mode A · watch URL' : 'Mode B · keyword search'} · qty {task.desired_qty}
                     {task.respect_limit ? ' · respects limit' : ''}
                     {task.max_price != null ? ` · ≤ ${task.max_price} RON` : ''}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {triggerMsg[task.id] && <span className="text-error text-xs max-w-[180px] truncate">{triggerMsg[task.id]}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  {triggerMsg[task.id] && (
+                    <span style={{ color: 'var(--pr-status-gone)', fontSize: 11, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {triggerMsg[task.id]}
+                    </span>
+                  )}
                   {isRunning ? (
-                    <button
-                      onClick={() => handleStop(task)}
-                      className="px-3 py-1.5 rounded-lg bg-error/10 text-error text-xs font-bold hover:bg-error/20 transition-colors"
-                    >
-                      Stop
-                    </button>
+                    <CtaButton variant="ghost" size="sm" onClick={() => handleStop(task)}>STOP</CtaButton>
                   ) : (
-                    <button
+                    <CtaButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handlePlay(task)}
                       disabled={!detected}
                       title={!detected ? 'Install the Snipe extension first' : undefined}
-                      className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors disabled:opacity-50"
                     >
-                      Play
-                    </button>
+                      PLAY
+                    </CtaButton>
                   )}
-                  <button
-                    onClick={() => openEditTask(task)}
-                    className="px-3 py-1.5 rounded-lg bg-surface-high text-on-surface text-xs font-bold hover:bg-surface-highest transition-colors"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task)}
-                    className="px-3 py-1.5 rounded-lg bg-surface-high text-on-surface text-xs font-bold hover:bg-surface-highest hover:text-error transition-colors"
-                  >
-                    Delete
-                  </button>
+                  <CtaButton variant="ghost" size="sm" onClick={() => openEditTask(task)}>EDIT</CtaButton>
+                  <CtaButton variant="ghost" size="sm" onClick={() => handleDeleteTask(task)}>DELETE</CtaButton>
                 </div>
               </div>
             )

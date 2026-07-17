@@ -6,8 +6,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-on-surface-variant font-body">Loading...</p>
+      <div className="packradar" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading…</p>
       </div>
     )
   }

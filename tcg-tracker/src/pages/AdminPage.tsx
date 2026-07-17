@@ -3,6 +3,17 @@ import { useStores } from '../hooks/useStores'
 import { supabase } from '../lib/supabase'
 import { AppSidebar } from '../components/AppSidebar'
 import { ManageEmails } from '../components/ManageEmails'
+import {
+  StatusDot,
+  CtaButton,
+  fieldStyle,
+  labelStyle,
+  panelStyle,
+  rowStyle,
+  sectionTitleStyle,
+  errorBoxStyle,
+  iconButtonStyle,
+} from '../components/packradar'
 import type { Store, ScraperType, Product, ScrapeRun } from '../lib/types'
 
 const SCRAPER_TYPES: { value: ScraperType; label: string }[] = [
@@ -195,145 +206,128 @@ export function AdminPage() {
   const sidebarStore = stores.find((s) => s.id === sidebarStoreId)
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="packradar" style={{ minHeight: '100vh', display: 'flex' }}>
       <AppSidebar activePage="admin" />
 
       {/* Main content */}
-      <div className="flex-1 p-8 overflow-auto">
-        <h1 className="font-headline font-black text-xl text-on-surface uppercase tracking-tight mb-8">
-          TCG Tracker
-        </h1>
+      <div style={{ flex: 1, padding: 32, overflow: 'auto' }}>
+        <div style={{ fontSize: 10.5, color: 'var(--pr-signal)', letterSpacing: 2, marginBottom: 24 }}>
+          /// PACKRADAR OPERATOR CONSOLE
+        </div>
 
         {/* Manage Emails — recipients of stock alerts */}
         <ManageEmails />
 
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-headline text-2xl font-bold text-on-surface">
-            Manage Stores
-          </h2>
-          <button
-            onClick={openAdd}
-            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors"
-          >
-            + Add Store
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h2 style={sectionTitleStyle}>Manage Stores</h2>
+          <CtaButton variant="solid" size="sm" onClick={openAdd}>+ ADD STORE</CtaButton>
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-error/10 text-error text-sm mb-4">
-            Failed to load stores: {error}
-          </div>
+          <div style={{ ...errorBoxStyle, marginBottom: 16 }}>Failed to load stores: {error}</div>
         )}
 
-        {loading && <p className="text-on-surface-variant text-sm">Loading stores...</p>}
+        {loading && <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading stores...</p>}
 
         {/* Store form */}
         {showForm && (
-          <div className="bg-surface-low rounded-xl p-6 mb-6">
-            <h3 className="font-headline font-bold text-on-surface mb-4">
+          <div style={{ ...panelStyle, marginBottom: 20 }}>
+            <h3 style={{ ...sectionTitleStyle, fontSize: 16, marginBottom: 16 }}>
               {editingId ? 'Edit Store' : 'Add Store'}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
               <div>
-                <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Name</label>
+                <label style={labelStyle}>Name</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+                  style={fieldStyle}
                   placeholder="Store name"
                 />
               </div>
               <div>
-                <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">URL</label>
+                <label style={labelStyle}>URL</label>
                 <input
                   type="url"
                   value={form.url}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+                  style={fieldStyle}
                   placeholder="https://store.ro/products"
                 />
               </div>
               <div>
-                <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Scraper Type</label>
+                <label style={labelStyle}>Scraper Type</label>
                 <select
                   value={form.scraper_type}
                   onChange={(e) => setForm({ ...form, scraper_type: e.target.value as ScraperType })}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+                  style={fieldStyle}
                 >
                   {SCRAPER_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
               </div>
-              <div className="flex items-center gap-3 pt-5">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
                 <input
                   type="checkbox"
                   id="is_enabled"
                   checked={form.is_enabled}
                   onChange={(e) => setForm({ ...form, is_enabled: e.target.checked })}
-                  className="w-4 h-4 accent-primary"
+                  style={{ width: 16, height: 16, accentColor: 'var(--pr-signal)' }}
                 />
-                <label htmlFor="is_enabled" className="text-on-surface text-sm">Enabled</label>
+                <label htmlFor="is_enabled" style={{ color: 'var(--pr-text-mid)', fontSize: 13 }}>Enabled</label>
               </div>
               <div>
-                <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">In-Stock Selector (CSS)</label>
+                <label style={labelStyle}>In-Stock Selector (CSS)</label>
                 <input
                   type="text"
                   value={form.in_stock_selector}
                   onChange={(e) => setForm({ ...form, in_stock_selector: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+                  style={fieldStyle}
                   placeholder='e.g. button[class*="add-to-cart"]'
                 />
               </div>
               <div>
-                <label className="block text-on-surface-variant text-xs uppercase tracking-wider mb-1">Out-of-Stock Selector (CSS)</label>
+                <label style={labelStyle}>Out-of-Stock Selector (CSS)</label>
                 <input
                   type="text"
                   value={form.out_of_stock_selector}
                   onChange={(e) => setForm({ ...form, out_of_stock_selector: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-surface-container text-on-surface text-sm outline-none focus:ring-1 focus:ring-primary"
+                  style={fieldStyle}
                   placeholder='e.g. .out-of-stock, .sold-out'
                 />
               </div>
             </div>
             {formError && (
-              <p className="text-error text-sm mt-3">{formError}</p>
+              <p style={{ color: 'var(--pr-status-gone)', fontSize: 12.5, marginTop: 12 }}>{formError}</p>
             )}
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary font-headline font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 rounded-lg bg-surface-high text-on-surface font-headline text-sm hover:bg-surface-highest transition-colors"
-              >
-                Cancel
-              </button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <CtaButton variant="solid" size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? 'SAVING…' : 'SAVE'}
+              </CtaButton>
+              <CtaButton variant="ghost" size="sm" onClick={() => setShowForm(false)}>
+                CANCEL
+              </CtaButton>
             </div>
           </div>
         )}
 
         {/* Stores list */}
         {!loading && stores.length === 0 && (
-          <p className="text-on-surface-variant text-sm">No stores configured yet.</p>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No stores configured yet.</p>
         )}
 
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {stores.map((store) => (
-            <div
-              key={store.id}
-              className="bg-surface-low rounded-xl p-4 flex items-center gap-4"
-            >
-              <div className={`w-2 h-2 rounded-full shrink-0 ${store.is_enabled ? 'bg-tertiary' : 'bg-outline'}`} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-headline font-bold text-on-surface text-sm">{store.name}</h3>
-                  <span className="text-on-surface-variant text-xs px-2 py-0.5 rounded bg-surface-container">
+            <div key={store.id} style={rowStyle}>
+              <StatusDot color={store.is_enabled ? 'var(--pr-signal)' : 'var(--pr-text-dim)'} size={8} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h3 style={{ fontFamily: 'var(--pr-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--pr-text-bright)' }}>
+                    {store.name}
+                  </h3>
+                  <span style={{ fontSize: 9, color: 'var(--pr-text-dim)', letterSpacing: 1, padding: '2px 6px', border: '1px solid var(--pr-border)' }}>
                     {store.scraper_type}
                   </span>
                 </div>
@@ -342,49 +336,32 @@ export function AdminPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-on-surface-variant text-xs truncate hover:text-primary transition-colors"
+                  style={{ fontSize: 11, color: 'var(--pr-text-dim)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 >{store.url}</a>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 {/* Scrape result notification */}
                 {scrapeResult?.storeId === store.id && scrapeResult.run.status === 'completed' && (
-                  <span className="text-tertiary text-xs font-bold">
+                  <span style={{ color: 'var(--pr-signal)', fontSize: 11, fontWeight: 700 }}>
                     {scrapeResult.run.products_found} found, {scrapeResult.run.products_new} new
                   </span>
                 )}
                 {scrapeResult?.storeId === store.id && scrapeResult.run.status === 'failed' && (
-                  <span className="text-error text-xs">Scrape failed</span>
+                  <span style={{ color: 'var(--pr-status-gone)', fontSize: 11 }}>Scrape failed</span>
                 )}
-                <button
-                  onClick={() => handleScrapeNow(store)}
-                  disabled={scrapingId === store.id}
-                  title="Scrape now"
-                  className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors disabled:opacity-50"
-                >
-                  {scrapingId === store.id ? 'Scraping...' : 'Scrape Now'}
-                </button>
-                <button
-                  onClick={() => openSidebar(store.id)}
-                  title="View items"
-                  className="px-3 py-1.5 rounded-lg bg-surface-high text-on-surface text-xs font-bold hover:bg-surface-highest transition-colors"
-                >
-                  View Items
-                </button>
-                <button
-                  onClick={() => openEdit(store)}
-                  title="Edit"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-high transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <CtaButton variant="ghost" size="sm" onClick={() => handleScrapeNow(store)} disabled={scrapingId === store.id}>
+                  {scrapingId === store.id ? 'SCRAPING…' : 'SCRAPE NOW'}
+                </CtaButton>
+                <CtaButton variant="ghost" size="sm" onClick={() => openSidebar(store.id)}>
+                  VIEW ITEMS
+                </CtaButton>
+                <button onClick={() => openEdit(store)} title="Edit" style={iconButtonStyle}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                 </button>
-                <button
-                  onClick={() => handleDelete(store.id, store.name)}
-                  title="Delete"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-high hover:text-error transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <button onClick={() => handleDelete(store.id, store.name)} title="Delete" style={iconButtonStyle}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   </svg>
                 </button>
@@ -396,24 +373,21 @@ export function AdminPage() {
 
       {/* Items sidebar */}
       {sidebarStoreId && (
-        <div className="w-[400px] min-h-screen bg-surface-low border-l border-outline-variant shrink-0 flex flex-col">
-          <div className="p-4 flex items-center justify-between border-b border-outline-variant">
-            <h3 className="font-headline font-bold text-on-surface text-sm">
+        <div style={{ width: 400, minHeight: '100vh', background: 'var(--pr-bg-panel)', borderLeft: '1px solid var(--pr-border)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--pr-border)' }}>
+            <h3 style={{ fontFamily: 'var(--pr-font-display)', fontWeight: 700, fontSize: 14, color: 'var(--pr-text-bright)' }}>
               {sidebarStore?.name ?? 'Store'} Items
             </h3>
-            <button
-              onClick={() => setSidebarStoreId(null)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-high transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button onClick={() => setSidebarStoreId(null)} style={iconButtonStyle}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
-          <div className="flex-1 overflow-auto p-4 space-y-3">
-            {sidebarLoading && <p className="text-on-surface-variant text-sm">Loading...</p>}
+          <div style={{ flex: 1, overflow: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {sidebarLoading && <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading...</p>}
             {!sidebarLoading && sidebarProducts.length === 0 && (
-              <p className="text-on-surface-variant text-sm">No products scraped yet.</p>
+              <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No products scraped yet.</p>
             )}
             {sidebarProducts.map((p) => (
               <a
@@ -421,20 +395,22 @@ export function AdminPage() {
                 href={p.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block bg-surface-container rounded-lg p-3 hover:ring-1 hover:ring-primary/50 transition-all"
+                style={{ display: 'block', border: '1px solid var(--pr-border)', background: 'var(--pr-bg)', padding: 10 }}
               >
-                <div className="flex gap-3">
+                <div style={{ display: 'flex', gap: 10 }}>
                   {p.image_url && (
-                    <img src={p.image_url} alt={p.title} className="w-14 h-14 rounded object-contain bg-surface-high shrink-0" />
+                    <img src={p.image_url} alt={p.title} style={{ width: 56, height: 56, objectFit: 'contain', background: '#fff', flexShrink: 0 }} />
                   )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-on-surface text-xs font-bold leading-tight line-clamp-2">{p.title}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-primary text-xs font-bold">
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ color: 'var(--pr-text-bright)', fontSize: 12, fontWeight: 700, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {p.title}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                      <span style={{ color: 'var(--pr-signal)', fontSize: 12, fontWeight: 700 }}>
                         {p.price != null ? `${p.price.toFixed(2)} RON` : 'N/A'}
                       </span>
                       {!p.in_stock && (
-                        <span className="text-error text-xs">Out of stock</span>
+                        <span style={{ color: 'var(--pr-status-gone)', fontSize: 11 }}>Out of stock</span>
                       )}
                     </div>
                   </div>
