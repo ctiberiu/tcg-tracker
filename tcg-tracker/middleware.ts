@@ -41,7 +41,7 @@ export default function middleware(request: Request) {
     return denied ?? next()
   }
 
-  if (url.hostname === 'dev.packradar.info') {
+  if (process.env.APP_ENV === 'DEV') {
     const denied = requireBasicAuth(
       request,
       process.env.DEV_BASIC_AUTH_USER,
