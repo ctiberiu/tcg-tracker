@@ -601,13 +601,13 @@ async function scrapeMagento(page, store) {
 
 /**
  * OpenCart platform (e.g. ATU-Toys.ro) — classic server-rendered catalog.
- * Products use .product-thumb cards inside a .product-layout wrapper.
- * The listing page itself carries no stock-status marker (only the individual
- * product page shows "Availability: In Stock/Out Of Stock") — fetching every
- * product's own page just for that would be a lot of extra requests for a
- * small store, so listed items default to in_stock: true. OpenCart's default
- * catalog setting hides zero-quantity products from the listing entirely, so
- * "appears in the listing" is already a reasonable in-stock proxy in practice.
+ * Products use .product-thumb cards inside a .product-layout wrapper. The
+ * listing page itself carries no stock-status marker — the "Add to Cart"
+ * button renders unconditionally regardless of actual stock (confirmed live:
+ * present even though OpenCart's own product PAGE shows a real
+ * "Availability: In Stock/Out Of Stock" line). So each listed product's own
+ * page is fetched (plain fetch, not a full Playwright page load) to read that
+ * real status — cheap for the small catalogs this scraper covers so far.
  */
 async function scrapeOpenCart(page, store) {
   try {
@@ -617,7 +617,7 @@ async function scrapeOpenCart(page, store) {
     return [];
   }
 
-  return page.evaluate(({ storeName, storeId }) => {
+  const products = await page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -668,6 +668,25 @@ async function scrapeOpenCart(page, store) {
 
     return results;
   }, { storeName: store.name, storeId: store.id });
+
+  await Promise.all(
+    products.map(async (p) => {
+      try {
+        const res = await fetch(p.url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(15000) });
+        if (!res.ok) return; // leave the optimistic default on a fetch failure
+        const html = await res.text();
+        const match = html.match(/Availability:\s*([^<]+)/i);
+        if (match) {
+          const text = match[1].trim().toLowerCase();
+          p.in_stock = !/out of stock|epuizat|indisponibil/.test(text);
+        }
+      } catch {
+        // leave the optimistic default on a network error for this one product
+      }
+    }),
+  );
+
+  return products;
 }
 
 /**
