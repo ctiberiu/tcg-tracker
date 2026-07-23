@@ -4,6 +4,7 @@ import { useProducts, type ProductFilters, type ProductSort } from '../hooks/use
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
 import { useGameCounts } from '../hooks/useGameCounts'
+import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
   NavBar,
@@ -23,7 +24,10 @@ export function SignalLogPage() {
   const { stores } = useStores()
   const { overallLastSweepAt, healthy, storeHealths } = useStoreHealth()
 
-  const [storeFilter, setStoreFilter] = useState(searchParams.get('store') ?? '')
+  const [storeFilter, setStoreFilter] = useState(() => {
+    const raw = searchParams.get('store')
+    return raw ? getStoreBaseName(raw) : ''
+  })
   const [gameFilter, setGameFilter] = useState<GameKey | null>((searchParams.get('game') as GameKey) || null)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
@@ -32,25 +36,38 @@ export function SignalLogPage() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<ProductSort>('newest')
 
+  // A physical store has one `stores` row per game (see storeName.ts) — the
+  // filter dropdown shows one entry per base name, and selecting it resolves
+  // to every row's id sharing that name so the channel/game filter narrows
+  // further, instead of duplicate "RedGoblin" / "RedGoblin (One Piece)" entries.
+  const storeBaseNames = useMemo(
+    () => Array.from(new Set(stores.map((s) => getStoreBaseName(s.name)))).sort(),
+    [stores],
+  )
+  const storeIds = useMemo(
+    () => (storeFilter ? stores.filter((s) => getStoreBaseName(s.name) === storeFilter).map((s) => s.id) : undefined),
+    [storeFilter, stores],
+  )
+
   const filters = useMemo<ProductFilters>(() => ({
-    store: storeFilter || undefined,
+    storeIds,
     game: gameFilter ?? undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
     search: search.trim() || undefined,
     sort,
-  }), [storeFilter, gameFilter, minPrice, maxPrice, inStockOnly, search, sort])
+  }), [storeIds, gameFilter, minPrice, maxPrice, inStockOnly, search, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
   const countFilters = useMemo(() => ({
-    store: storeFilter || undefined,
+    storeIds,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
     search: search.trim() || undefined,
-  }), [storeFilter, minPrice, maxPrice, inStockOnly, search])
+  }), [storeIds, minPrice, maxPrice, inStockOnly, search])
 
   const { counts } = useGameCounts(countFilters)
 
@@ -82,7 +99,7 @@ export function SignalLogPage() {
           onSearchChange={setSearch}
           store={storeFilter}
           onStoreChange={setStoreFilter}
-          storeOptions={stores.map((s) => s.name)}
+          storeOptions={storeBaseNames}
           minPrice={minPrice}
           onMinPriceChange={setMinPrice}
           maxPrice={maxPrice}
@@ -145,7 +162,7 @@ export function SignalLogPage() {
                 <SignalCard
                   key={product.id}
                   game={GAMES[product.game]}
-                  store={product.store_name}
+                  store={getStoreBaseName(product.store_name)}
                   date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
                   title={product.title}
                   price={product.price}

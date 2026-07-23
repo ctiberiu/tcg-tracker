@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
+import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
   NavBar,
@@ -130,7 +131,7 @@ export function RadarFloorPage() {
                 key={product.id}
                 game={GAMES[product.game]}
                 date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
-                store={product.store_name}
+                store={getStoreBaseName(product.store_name)}
                 title={product.title}
                 price={product.price}
                 status={product.in_stock ? 'IN STOCK' : 'GONE'}

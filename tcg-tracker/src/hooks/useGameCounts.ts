@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { GAMES, type GameKey } from '../components/packradar/tokens'
 
 export interface GameCountFilters {
-  store?: string
+  storeIds?: string[]
   minPrice?: number
   maxPrice?: number
   inStockOnly?: boolean
@@ -32,7 +32,7 @@ export function useGameCounts(filters: GameCountFilters = {}) {
       const entries = await Promise.all(
         GAME_KEYS.map(async (game) => {
           let query = supabase.from('products').select('*', { count: 'exact', head: true }).eq('game', game)
-          if (filters.store) query = query.eq('store_name', filters.store)
+          if (filters.storeIds && filters.storeIds.length > 0) query = query.in('store_id', filters.storeIds)
           if (filters.minPrice != null) query = query.gte('price', filters.minPrice)
           if (filters.maxPrice != null) query = query.lte('price', filters.maxPrice)
           if (filters.inStockOnly) query = query.eq('in_stock', true)
@@ -51,7 +51,7 @@ export function useGameCounts(filters: GameCountFilters = {}) {
     return () => {
       cancelled = true
     }
-  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search])
+  }, [filters.storeIds?.join(','), filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search])
 
   return { counts, loading }
 }

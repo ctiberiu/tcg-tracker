@@ -8,7 +8,9 @@ const PAGE_SIZE = 100
 export type ProductSort = 'newest' | 'price_asc' | 'price_desc'
 
 export interface ProductFilters {
-  store?: string
+  /** Store row IDs to include — a single physical store may have multiple
+   * rows (one per game, see storeName.ts), so this is a list, not one id. */
+  storeIds?: string[]
   game?: GameKey
   minPrice?: number
   maxPrice?: number
@@ -47,8 +49,8 @@ export function useProducts(filters: ProductFilters = {}) {
         break
     }
 
-    if (filters.store) {
-      query = query.eq('store_name', filters.store)
+    if (filters.storeIds && filters.storeIds.length > 0) {
+      query = query.in('store_id', filters.storeIds)
     }
     if (filters.game) {
       query = query.eq('game', filters.game)
@@ -67,7 +69,7 @@ export function useProducts(filters: ProductFilters = {}) {
     }
 
     return query
-  }, [filters.store, filters.game, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
+  }, [filters.storeIds?.join(','), filters.game, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
 
   useEffect(() => {
     // Reset when filters change
