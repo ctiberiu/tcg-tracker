@@ -8,6 +8,7 @@ export type GameKey =
   | 'duel_masters'
   | 'dragon_ball_super'
   | 'weiss_schwarz'
+  | 'riftbound'
 
 export interface GameInfo {
   key: GameKey
@@ -26,6 +27,7 @@ export const GAMES: Record<GameKey, GameInfo> = {
   duel_masters: { key: 'duel_masters', label: 'DUEL MASTERS', color: '#2DD4BF', dim: '#1a3d38' },
   dragon_ball_super: { key: 'dragon_ball_super', label: 'DRAGON BALL SUPER', color: '#F5A623', dim: '#4a3510' },
   weiss_schwarz: { key: 'weiss_schwarz', label: 'WEISS SCHWARZ', color: '#E5E5E5', dim: '#3a3a3a' },
+  riftbound: { key: 'riftbound', label: 'RIFTBOUND', color: '#4FE0C4', dim: '#1f4a42' },
 }
 
 export type ProductStatus = 'IN STOCK' | 'PREORDER' | 'GONE'

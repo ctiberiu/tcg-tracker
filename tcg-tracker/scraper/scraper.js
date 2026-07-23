@@ -1882,12 +1882,13 @@ const GAME_NAME_PATTERNS = {
   pokemon: /pok[eé]mon/i,
   magic: /magic(?:\s*:?\s*the\s*gathering)?|\bmtg\b/i,
   lorcana: /lorcana/i,
-  yugioh: /yu-?gi-?oh/i,
+  yugioh: /yu-?gi-?oh|\bygo\b/i,
   digimon: /digimon/i,
   one_piece: /one piece/i,
   duel_masters: /duel masters/i,
   dragon_ball_super: /dragon ball(?:\s*super)?/i,
   weiss_schwarz: /wei[sß]{1,2} schwarz/i,
+  riftbound: /riftbound/i,
 };
 
 /** Returns true if the product title looks like a TCG product for the given game. */
@@ -1904,7 +1905,9 @@ function isGameProduct(game, title) {
   // naming (e.g. "Disney Lorcana: Archazias Island - Starter Deck", "...
   // Illumineer's Trove", "... Gift Box") — these rarely repeat "TCG"/"cards"
   // even though they're genuine TCG releases, not unrelated Disney merch.
-  return /tcg|jcc|carti|cards|card game|booster|blister|trainer|starter|deck|trove|illumineer|gift\s*(box|set)/i.test(title);
+  // "duel"/"tin" cover Yu-Gi-Oh's own naming (Speed Duel Box, Duel Academy,
+  // anniversary Tins) — sealed product formats without "TCG"/"booster"/"deck".
+  return /tcg|jcc|carti|cards|card game|booster|blister|trainer|starter|deck|trove|illumineer|gift\s*(box|set)|duel|\btin\b/i.test(title);
 }
 
 /**
