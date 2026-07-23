@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
@@ -13,6 +14,7 @@ import {
 } from '../components/packradar'
 
 export function RadarFloorPage() {
+  const navigate = useNavigate()
   const { stores } = useStores()
   const { storeHealths, overallLastSweepAt, healthy } = useStoreHealth()
   const { products, totalCount, loading } = useProducts({ inStockOnly: true, sort: 'newest' })
@@ -92,7 +94,15 @@ export function RadarFloorPage() {
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {channels.map(({ game, count }) => (
-            <ChannelChip key={game.key} game={game} count={count} countSuffix="SIGNALS" size="lg" background="var(--pr-bg-panel)" />
+            <ChannelChip
+              key={game.key}
+              game={game}
+              count={count}
+              countSuffix="SIGNALS"
+              size="lg"
+              background="var(--pr-bg-panel)"
+              onClick={() => navigate(`/view?game=${game.key}`)}
+            />
           ))}
         </div>
       </div>

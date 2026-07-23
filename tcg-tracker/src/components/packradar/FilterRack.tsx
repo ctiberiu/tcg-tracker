@@ -1,6 +1,8 @@
 import { useState, type CSSProperties } from 'react'
 import { ChannelChip } from './ChannelChip'
-import { GAMES, type GameInfo } from './tokens'
+import type { GameInfo, GameKey } from './tokens'
+
+const ALL_CHANNEL = { label: 'ALL', color: 'var(--pr-text-mid)', dim: 'var(--pr-border)' }
 
 const fieldStyle: CSSProperties = {
   padding: '11px 14px',
@@ -24,6 +26,8 @@ interface FilterRackProps {
   maxPrice: string
   onMaxPriceChange: (value: string) => void
   channels: { game: GameInfo; count: number }[]
+  activeGame: GameKey | null
+  onGameChange: (game: GameKey | null) => void
 }
 
 export function FilterRack({
@@ -37,6 +41,8 @@ export function FilterRack({
   maxPrice,
   onMaxPriceChange,
   channels,
+  activeGame,
+  onGameChange,
 }: FilterRackProps) {
   const [showMore, setShowMore] = useState(false)
 
@@ -92,9 +98,16 @@ export function FilterRack({
         <span style={{ fontSize: 9.5, color: 'var(--pr-text-dim)', letterSpacing: 2, marginRight: 6 }}>
           CHANNEL
         </span>
-        <ChannelChip game={GAMES.pokemon} active />
+        <ChannelChip game={ALL_CHANNEL} active={activeGame === null} onClick={() => onGameChange(null)} />
         {channels.map(({ game, count }) => (
-          <ChannelChip key={game.key} game={game} count={count} size="md" />
+          <ChannelChip
+            key={game.key}
+            game={game}
+            count={count}
+            size="md"
+            active={activeGame === game.key}
+            onClick={() => onGameChange(game.key)}
+          />
         ))}
       </div>
     </div>

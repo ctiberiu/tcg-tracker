@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Product } from '../lib/types'
+import type { GameKey } from '../components/packradar/tokens'
 
 const PAGE_SIZE = 100
 
@@ -8,6 +9,7 @@ export type ProductSort = 'newest' | 'price_asc' | 'price_desc'
 
 export interface ProductFilters {
   store?: string
+  game?: GameKey
   minPrice?: number
   maxPrice?: number
   inStockOnly?: boolean
@@ -48,6 +50,9 @@ export function useProducts(filters: ProductFilters = {}) {
     if (filters.store) {
       query = query.eq('store_name', filters.store)
     }
+    if (filters.game) {
+      query = query.eq('game', filters.game)
+    }
     if (filters.minPrice != null) {
       query = query.gte('price', filters.minPrice)
     }
@@ -62,7 +67,7 @@ export function useProducts(filters: ProductFilters = {}) {
     }
 
     return query
-  }, [filters.store, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
+  }, [filters.store, filters.game, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
 
   useEffect(() => {
     // Reset when filters change

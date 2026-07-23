@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
-import type { Product } from '../lib/types'
+import { useGameCounts } from '../hooks/useGameCounts'
 import {
   StatusStrip,
   NavBar,
@@ -14,6 +14,7 @@ import {
   PackRadarFooter,
   MobileTabBar,
   GAMES,
+  type GameKey,
 } from '../components/packradar'
 
 export function SignalLogPage() {
@@ -23,6 +24,7 @@ export function SignalLogPage() {
   const { overallLastSweepAt, healthy, storeHealths } = useStoreHealth()
 
   const [storeFilter, setStoreFilter] = useState(searchParams.get('store') ?? '')
+  const [gameFilter, setGameFilter] = useState<GameKey | null>((searchParams.get('game') as GameKey) || null)
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   // Hidden for now — we only show in-stock items until that changes.
@@ -32,20 +34,31 @@ export function SignalLogPage() {
 
   const filters = useMemo<ProductFilters>(() => ({
     store: storeFilter || undefined,
+    game: gameFilter ?? undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
     search: search.trim() || undefined,
     sort,
-  }), [storeFilter, minPrice, maxPrice, inStockOnly, search, sort])
+  }), [storeFilter, gameFilter, minPrice, maxPrice, inStockOnly, search, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
+  const countFilters = useMemo(() => ({
+    store: storeFilter || undefined,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    inStockOnly,
+    search: search.trim() || undefined,
+  }), [storeFilter, minPrice, maxPrice, inStockOnly, search])
+
+  const { counts } = useGameCounts(countFilters)
+
   const channels = useMemo(() => {
-    const counts = new Map<Product['game'], number>()
-    for (const p of products) counts.set(p.game, (counts.get(p.game) ?? 0) + 1)
-    return Array.from(counts.entries()).map(([key, count]) => ({ game: GAMES[key], count }))
-  }, [products])
+    return (Object.keys(GAMES) as GameKey[])
+      .filter((key) => (counts[key] ?? 0) > 0)
+      .map((key) => ({ game: GAMES[key], count: counts[key] ?? 0 }))
+  }, [counts])
 
   const lastSweepLabel = overallLastSweepAt
     ? `${Math.max(0, Math.round((Date.now() - new Date(overallLastSweepAt).getTime()) / 60000))} MIN AGO`
@@ -75,6 +88,8 @@ export function SignalLogPage() {
           maxPrice={maxPrice}
           onMaxPriceChange={setMaxPrice}
           channels={channels}
+          activeGame={gameFilter}
+          onGameChange={setGameFilter}
         />
       </div>
 
