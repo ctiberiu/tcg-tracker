@@ -5,7 +5,6 @@ import nodemailer from 'nodemailer';
 import { fileURLToPath } from 'node:url';
 import {
   BROWSER_UA,
-  BLOCK_DISABLE_THRESHOLD,
   detectChallengeText,
   classifyOutcome,
   applyFailureOutcome,
