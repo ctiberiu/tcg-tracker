@@ -1897,8 +1897,10 @@ function isGameProduct(game, title) {
   const namePattern = GAME_NAME_PATTERNS[game] ?? GAME_NAME_PATTERNS.pokemon;
   if (!namePattern.test(title)) return false;
   // "jcc" = Joc de Cărți Colecționabile, the RO/FR abbreviation some stores
-  // (Tulli) use in place of "TCG" — same thing, different label.
-  return /tcg|jcc|carti|cards|booster|blister|trainer/i.test(title);
+  // (Tulli) use in place of "TCG" — same thing, different label. "card game"
+  // (singular "card") covers One Piece listings like "One Piece Card Game:
+  // Premium Card Collection", which name neither "TCG" nor plural "cards".
+  return /tcg|jcc|carti|cards|card game|booster|blister|trainer/i.test(title);
 }
 
 /**
