@@ -17,8 +17,10 @@ INSERT INTO stores (name, url, scraper_type, game) VALUES
   ('LexShop (Yu-Gi-Oh!)',            'https://www.lexshop.ro/yu-gi-oh-167', 'pokemonia', 'yugioh'),
   -- LexShop splits Yu-Gi-Oh into two non-overlapping subcategories (167 =
   -- boosters/packs, 173 = structure decks/tins/boxes) — both needed for
-  -- full coverage, verified live to have zero overlapping products.
-  ('LexShop 2 (Yu-Gi-Oh!)',          'https://www.lexshop.ro/yu-gi-oh-173', 'pokemonia', 'yugioh'),
+  -- full coverage, verified live to have zero overlapping products. Same
+  -- name as the row above on purpose: the store-page dedup (storeName.ts)
+  -- groups by exact name, and both rows ARE the same physical store+game.
+  ('LexShop (Yu-Gi-Oh!)',            'https://www.lexshop.ro/yu-gi-oh-173', 'pokemonia', 'yugioh'),
   ('RedGoblin (Yu-Gi-Oh!)',          'https://redgoblin.ro/collections/yu-gi-oh', 'shopify', 'yugioh'),
   ('TCGarena (Yu-Gi-Oh!)',           'https://tcgarena.ro/collections/cartonase-yugioh', 'shopify', 'yugioh'),
   ('RegatulJocurilor (Yu-Gi-Oh!)',   'https://regatuljocurilor.ro/ro/cautare?controller=search&orderby=position&orderway=desc&search_query=yugioh&submit_search=', 'regatul_jocurilor', 'yugioh'),

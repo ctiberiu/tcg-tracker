@@ -1,6 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { GAMES, type GameInfo, type GameKey, type StoreHealthStatus } from '../components/packradar/tokens'
+import { getStoreBaseName } from '../lib/storeName'
+
+// Worse status wins when merging multiple game-rows of the same physical
+// store — a Pokémon row being OK shouldn't hide a One Piece row that's DOWN.
+const STATUS_SEVERITY: Record<StoreHealthStatus, number> = { OK: 0, SLOW: 1, DOWN: 2 }
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 // Stores sweep on a ~15 min cycle — give some slack before calling a store SLOW/DOWN.
@@ -108,7 +113,22 @@ export function useStoreHealth() {
       inStockCountByStore.set(product.store_id, (inStockCountByStore.get(product.store_id) ?? 0) + 1)
     }
 
-    const healths: StoreHealth[] = storesRes.data.map((store) => {
+    // A physical store has one `stores` row per game it's scraped for (see
+    // storeName.ts) — compute health per row first, then merge rows sharing
+    // a base name into a single card so "RedGoblin" and "RedGoblin (One
+    // Piece)" don't show up as two separate stores.
+    interface RowHealth {
+      baseName: string
+      domain: string
+      status: StoreHealthStatus
+      signals7d: number
+      lastSweepAt: string | null
+      latestProduct: { title: string; first_seen: string } | undefined
+      games: Set<GameKey>
+      inStockCount: number
+    }
+
+    const rowHealths: RowHealth[] = storesRes.data.map((store) => {
       const latestRun = latestRunByStore.get(store.id)
       const latestProduct = latestProductByStore.get(store.id)
 
@@ -118,9 +138,7 @@ export function useStoreHealth() {
       // "last new product seen" as a loose proxy for store health until a real
       // data source is decided (see task: "Decide store health data source").
       let status: StoreHealthStatus
-      let lastSweep: string
       if (latestRun) {
-        lastSweep = formatElapsed(latestRun.started_at, now)
         const elapsedMin = (now - new Date(latestRun.started_at).getTime()) / 60000
         if (latestRun.status === 'failed') {
           status = 'DOWN'
@@ -132,12 +150,10 @@ export function useStoreHealth() {
           status = 'DOWN'
         }
       } else if (latestProduct) {
-        lastSweep = formatElapsed(latestProduct.first_seen, now)
         const elapsedHours = (now - new Date(latestProduct.first_seen).getTime()) / 3600000
         status = elapsedHours <= 48 ? 'OK' : elapsedHours <= 24 * 7 ? 'SLOW' : 'DOWN'
       } else {
         status = 'DOWN'
-        lastSweep = '—'
       }
 
       let domain = store.url
@@ -148,17 +164,53 @@ export function useStoreHealth() {
       }
 
       return {
-        id: store.id,
-        name: store.name,
+        baseName: getStoreBaseName(store.name),
         domain,
         status,
         signals7d: signals7dByStore.get(store.id) ?? 0,
-        lastSweep,
         lastSweepAt: latestRun?.started_at ?? latestProduct?.first_seen ?? null,
+        latestProduct,
+        games: gamesByStore.get(store.id) ?? new Set(),
+        inStockCount: inStockCountByStore.get(store.id) ?? 0,
+      }
+    })
+
+    const rowsByBaseName = new Map<string, RowHealth[]>()
+    for (const row of rowHealths) {
+      if (!rowsByBaseName.has(row.baseName)) rowsByBaseName.set(row.baseName, [])
+      rowsByBaseName.get(row.baseName)!.push(row)
+    }
+
+    const healths: StoreHealth[] = Array.from(rowsByBaseName.entries()).map(([name, rows]) => {
+      const status = rows.reduce<StoreHealthStatus>(
+        (worst, r) => (STATUS_SEVERITY[r.status] > STATUS_SEVERITY[worst] ? r.status : worst),
+        'OK',
+      )
+      const lastSweepAt = rows.reduce<string | null>((latest, r) => {
+        if (!r.lastSweepAt) return latest
+        if (!latest || new Date(r.lastSweepAt) > new Date(latest)) return r.lastSweepAt
+        return latest
+      }, null)
+      const latestProduct = rows.reduce<RowHealth['latestProduct']>((latest, r) => {
+        if (!r.latestProduct) return latest
+        if (!latest || new Date(r.latestProduct.first_seen) > new Date(latest.first_seen)) return r.latestProduct
+        return latest
+      }, undefined)
+      const games = new Set<GameKey>()
+      for (const r of rows) for (const g of r.games) games.add(g)
+
+      return {
+        id: name,
+        name,
+        domain: rows[0].domain,
+        status,
+        signals7d: rows.reduce((sum, r) => sum + r.signals7d, 0),
+        lastSweep: lastSweepAt ? formatElapsed(lastSweepAt, now) : '—',
+        lastSweepAt,
         lastSignal: latestProduct ? formatSignalDate(latestProduct.first_seen) : '—',
         latest: latestProduct?.title ?? '—',
-        channels: Array.from(gamesByStore.get(store.id) ?? []).map((key) => GAMES[key]),
-        inStockCount: inStockCountByStore.get(store.id) ?? 0,
+        channels: Array.from(games).map((key) => GAMES[key]),
+        inStockCount: rows.reduce((sum, r) => sum + r.inStockCount, 0),
       }
     })
 
