@@ -1900,7 +1900,11 @@ function isGameProduct(game, title) {
   // (Tulli) use in place of "TCG" — same thing, different label. "card game"
   // (singular "card") covers One Piece listings like "One Piece Card Game:
   // Premium Card Collection", which name neither "TCG" nor plural "cards".
-  return /tcg|jcc|carti|cards|card game|booster|blister|trainer/i.test(title);
+  // starter/deck/trove/illumineer/gift box|set cover Lorcana's product-line
+  // naming (e.g. "Disney Lorcana: Archazias Island - Starter Deck", "...
+  // Illumineer's Trove", "... Gift Box") — these rarely repeat "TCG"/"cards"
+  // even though they're genuine TCG releases, not unrelated Disney merch.
+  return /tcg|jcc|carti|cards|card game|booster|blister|trainer|starter|deck|trove|illumineer|gift\s*(box|set)/i.test(title);
 }
 
 /**
