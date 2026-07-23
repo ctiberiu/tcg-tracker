@@ -52,12 +52,14 @@ const SCRAPER_MAP = {
                                      // page load; present here only so the "unknown
                                      // scraper type" guard doesn't reject it.
   flamey_api: scrapeFlameyApi, // same as woocommerce_api above — special-cased in fetchStoreData
+  secretcards_api: scrapeSecretCardsApi, // same as woocommerce_api above — special-cased in fetchStoreData
   lumea_jocurilor: scrapeLumeaJocurilor,
   raijucarii: scrapeRaijucarii,
   tulli: scrapeTulli,
   bebetei: scrapeBebetei,
   carturesti: scrapeCarturesti,
   foon: scrapeFoon,
+  opencart: scrapeOpenCart,
 };
 
 /**
@@ -598,6 +600,77 @@ async function scrapeMagento(page, store) {
 }
 
 /**
+ * OpenCart platform (e.g. ATU-Toys.ro) — classic server-rendered catalog.
+ * Products use .product-thumb cards inside a .product-layout wrapper.
+ * The listing page itself carries no stock-status marker (only the individual
+ * product page shows "Availability: In Stock/Out Of Stock") — fetching every
+ * product's own page just for that would be a lot of extra requests for a
+ * small store, so listed items default to in_stock: true. OpenCart's default
+ * catalog setting hides zero-quantity products from the listing entirely, so
+ * "appears in the listing" is already a reasonable in-stock proxy in practice.
+ */
+async function scrapeOpenCart(page, store) {
+  try {
+    await page.waitForSelector('.product-thumb', { timeout: 15000 });
+  } catch {
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return [];
+  }
+
+  return page.evaluate(({ storeName, storeId }) => {
+    function normalizeImageUrl(src, base) {
+      if (!src) return null;
+      src = src.trim();
+      if (src.startsWith('data:')) return null;
+      if (src.startsWith('//')) return 'https:' + src;
+      if (src.startsWith('/')) return base + src;
+      if (src.startsWith('http')) return src;
+      return base + '/' + src;
+    }
+    const baseUrl = window.location.origin;
+    const cards = document.querySelectorAll('.product-thumb');
+    const results = [];
+    const seen = new Set();
+
+    for (const card of cards) {
+      const linkEl = card.querySelector('h4 a[href], .caption a[href]');
+      const title = linkEl?.textContent?.trim();
+      const url = linkEl?.href;
+      if (!title || !url || seen.has(url)) continue;
+      seen.add(url);
+
+      let price = null;
+      const priceEl = card.querySelector('.price');
+      if (priceEl) {
+        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
+        if (match) {
+          price = parseFloat(
+            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
+              ? match[1].replace(/\./g, '').replace(',', '.')
+              : match[1].replace(/,/g, ''),
+          );
+        }
+      }
+
+      const imgEl = card.querySelector('.image img');
+      const imgSrc = imgEl?.src;
+
+      results.push({
+        title,
+        price,
+        url,
+        image_url: normalizeImageUrl(imgSrc, baseUrl),
+        store_name: storeName,
+        store_id: storeId,
+        in_stock: true,
+      });
+    }
+
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+}
+
+/**
  * Krit.ro — custom Next.js/React platform
  * Products use .product cards inside .product-grid-wrapper.
  */
@@ -1108,7 +1181,7 @@ async function scrapeDexHitApi(_page, store) {
  * The category filter is authoritative (an exact id, not a fuzzy text search
  * like Ozone's), so some genuinely-Pokémon items don't repeat "Pokémon" in
  * their own name (e.g. "Pitch Black - Sleeved Booster") — they'd otherwise be
- * wrongly dropped by the shared isTcgProduct title check. Since every item
+ * wrongly dropped by the shared isGameProduct title check. Since every item
  * carries its own categoryName, prefix "Pokémon TCG: " onto titles that need
  * it rather than trusting free text alone.
  */
@@ -1189,6 +1262,81 @@ async function scrapeFlameyApi(_page, store) {
     }
     pageNum++;
   } while (pageNum <= totalPages);
+
+  return { products, status, challenged };
+}
+
+/**
+ * SecretCards.ro — Laravel + Inertia.js storefront. No separate JSON API: the
+ * full page props (including the product list) are server-side rendered into
+ * a `<script data-page="app" type="application/json">` blob in the initial
+ * HTML — same "parse the embedded state" approach as scrapeCarturesti, just a
+ * plain fetch instead of Playwright since Inertia SSRs the data, no client JS
+ * needed to see it. The store.url's query string (?brand=pokemon&...) IS the
+ * category filter, so it's fetched as-is (unlike Shopify's helper, which
+ * strips query params before building its own).
+ */
+async function scrapeSecretCardsApi(_page, store) {
+  const products = [];
+  let pageNum = 1;
+  let lastPage = 1;
+  let status = 0;
+  let challenged = false;
+
+  const separator = store.url.includes('?') ? '&' : '?';
+
+  do {
+    const pageUrl = pageNum === 1 ? store.url : `${store.url}${separator}page=${pageNum}`;
+    const res = await fetch(pageUrl, {
+      headers: { 'User-Agent': BROWSER_UA },
+      signal: AbortSignal.timeout(30000),
+    });
+    status = res.status;
+    const html = await res.text();
+    challenged = challenged || detectChallengeText(html);
+
+    if (!res.ok) {
+      console.log(`  ${store.name}: HTTP ${status} (page ${pageNum})`);
+      return { products: [], status, challenged };
+    }
+
+    const match = html.match(/<script data-page="app" type="application\/json">(.*?)<\/script>/s);
+    if (!match) {
+      console.log(`  ${store.name}: could not find embedded Inertia page data (likely a block/interstitial)`);
+      return { products: [], status, challenged: true };
+    }
+
+    let data;
+    try {
+      data = JSON.parse(match[1]);
+    } catch {
+      console.log(`  ${store.name}: embedded Inertia page data was not valid JSON`);
+      return { products: [], status, challenged: true };
+    }
+
+    const page = data.props?.products;
+    for (const p of page?.data ?? []) {
+      products.push({
+        title: p.name,
+        price: typeof p.current_price === 'number' ? p.current_price : null,
+        url: `https://secretcards.ro/products/${p.slug}`,
+        image_url: p.primary_image?.url ?? null,
+        store_name: store.name,
+        store_id: store.id,
+        in_stock: p.is_in_stock === true,
+        // ?brand=pokemon in the store URL is the store's own authoritative
+        // filter — skip the generic TCG-keyword title heuristic (like Flamey),
+        // which would wrongly drop items that don't repeat "Pokemon" in their
+        // own name (e.g. a set/box name alone).
+        categoryConfirmed: true,
+      });
+    }
+
+    if (pageNum === 1) {
+      lastPage = Number(page?.last_page ?? 1);
+    }
+    pageNum++;
+  } while (pageNum <= lastPage);
 
   return { products, status, challenged };
 }
@@ -1706,37 +1854,63 @@ function normalizeProductUrl(url) {
 }
 
 /**
- * Returns true if the product title looks like a Pokémon TCG product. Every store
- * this scraper covers is Pokémon-only, but broad-marketplace searches (Ozone's
- * FastSimon search, etc.) return other card games too — Weiss Schwarz, Disney
- * Lorcana, Genshin Impact, Sorcery, Altered, Naruto Mythos — since their titles
- * also contain "TCG"/"booster"/"cards". Requiring "pokemon"/"pokémon" in the
- * title as well keeps this a Pokémon tracker, not a general-TCG one.
+ * Each store row is tagged with one `game` (see migration 023) and only ever
+ * searches/lists that game, but broad-marketplace searches (Ozone's FastSimon
+ * search, a Shopify store's full catalog, etc.) still return other card games
+ * or unrelated merch mixed in. GAME_NAME_PATTERNS narrows a store's raw results
+ * down to titles that actually name its assigned game.
  */
-function isTcgProduct(title) {
+const GAME_NAME_PATTERNS = {
+  pokemon: /pok[eé]mon/i,
+  magic: /magic(?:\s*:?\s*the\s*gathering)?|\bmtg\b/i,
+  lorcana: /lorcana/i,
+  yugioh: /yu-?gi-?oh/i,
+  digimon: /digimon/i,
+  one_piece: /one piece/i,
+  duel_masters: /duel masters/i,
+  dragon_ball_super: /dragon ball(?:\s*super)?/i,
+  weiss_schwarz: /wei[sß]{1,2} schwarz/i,
+};
+
+/** Returns true if the product title looks like a TCG product for the given game. */
+function isGameProduct(game, title) {
   if (!title) return false;
   if (/binder|sleeve|alcove/i.test(title)) return false;
-  if (!/pok[eé]mon/i.test(title)) return false;
+  const namePattern = GAME_NAME_PATTERNS[game] ?? GAME_NAME_PATTERNS.pokemon;
+  if (!namePattern.test(title)) return false;
   // "jcc" = Joc de Cărți Colecționabile, the RO/FR abbreviation some stores
   // (Tulli) use in place of "TCG" — same thing, different label.
   return /tcg|jcc|carti|cards|booster|blister|trainer/i.test(title);
 }
 
 /**
- * Persist a store's consecutive block-like failure streak and AUTO-DISABLE it
- * once the streak hits the threshold (so the scraper doesn't keep hammering a
- * store that's actively blocking it). Never auto-re-enables — that stays a
- * manual decision after investigating. A transient (one-off) error leaves the
- * streak untouched; a success resets it to 0. Also stamps `last_scraped_at` for
+ * Persist a store's consecutive block-like failure streak and FLAG it (stays
+ * enabled, but polled hourly — see FLAGGED_CHECK_INTERVAL_MINUTES) once the
+ * streak hits the flag threshold. Only AUTO-DISABLES once a store has stayed
+ * continuously flagged for FLAG_DISABLE_GRACE_MS (12h) — a short burst of
+ * failures is often transient, so disabling outright was too aggressive; 12h
+ * of sustained failure is a much stronger signal that it needs manual
+ * investigation. Never auto-re-enables — that stays a manual decision after
+ * investigating. A transient (one-off) error leaves the streak untouched; a
+ * success resets it to 0 and clears any flag. Also stamps `last_scraped_at` for
  * EVERY attempt (regardless of outcome) — that drives the due-based scheduling.
  */
 async function updateStoreFailureState(supabase, store, outcome) {
-  const prev = store.consecutive_failures ?? 0;
-  const { consecutiveFailures, disable } = applyFailureOutcome(prev, outcome);
+  const prevState = {
+    consecutiveFailures: store.consecutive_failures ?? 0,
+    isFlagged: store.is_flagged === true,
+    flaggedAt: store.flagged_at ?? null,
+  };
+  const { consecutiveFailures, isFlagged, flaggedAt, disable } = applyFailureOutcome(prevState, outcome);
 
   // Always record the attempt time so due-based scheduling advances even on a
-  // failure/block; also carry the (possibly unchanged) failure streak.
-  const update = { consecutive_failures: consecutiveFailures, last_scraped_at: new Date().toISOString() };
+  // failure/block; also carry the (possibly unchanged) failure streak/flag.
+  const update = {
+    consecutive_failures: consecutiveFailures,
+    is_flagged: isFlagged,
+    flagged_at: flaggedAt,
+    last_scraped_at: new Date().toISOString(),
+  };
   if (disable) update.is_enabled = false;
   const { error } = await supabase.from('stores').update(update).eq('id', store.id);
   if (error) {
@@ -1745,9 +1919,13 @@ async function updateStoreFailureState(supabase, store, outcome) {
   }
   if (disable) {
     console.error(
-      `  🚫 ${store.name}: AUTO-DISABLED after ${consecutiveFailures} consecutive block-like failures — likely being blocked. Investigate, then re-enable manually.`,
+      `  🚫 ${store.name}: AUTO-DISABLED after staying flagged for 12h+ (${consecutiveFailures} consecutive block-like failures) — likely being blocked. Investigate, then re-enable manually.`,
     );
     await notifyStoreDisabled(store, consecutiveFailures);
+  } else if (isFlagged && !prevState.isFlagged) {
+    console.warn(
+      `  ⚑ ${store.name}: FLAGGED after ${consecutiveFailures} consecutive block-like failures — now checking hourly. Will auto-disable if still failing after 12h.`,
+    );
   }
 }
 
@@ -1816,6 +1994,11 @@ async function fetchStoreData(store, browser) {
     return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: false };
   }
 
+  if (store.scraper_type === 'secretcards_api') {
+    const r = await scrapeSecretCardsApi(null, store); // embedded Inertia page data — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: false };
+  }
+
   const scrapeFn = SCRAPER_MAP[store.scraper_type];
   const context = await browser.newContext({
     userAgent: BROWSER_UA,
@@ -1866,7 +2049,7 @@ async function scrapeAll() {
   // Only spin up Playwright if a store that actually needs a browser is due.
   // shopify + ozone are JSON-API scrapers (no page load), so a due-set of only
   // those skips launching Chromium entirely.
-  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api']);
+  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api', 'secretcards_api']);
   const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
@@ -1880,7 +2063,10 @@ async function scrapeAll() {
     // wrongly drop them despite Flamey's own taxonomy confirming they're
     // Pokémon TCG products (their unrelated merch lives in separate
     // categories like Funko POP). Trust the source over the heuristic.
-    const products = raw.filter((p) => p.categoryConfirmed === true || isTcgProduct(p.title));
+    const game = store.game ?? 'pokemon';
+    const products = raw
+      .filter((p) => p.categoryConfirmed === true || isGameProduct(game, p.title))
+      .map((p) => ({ ...p, game }));
     const outcome = classifyOutcome({ status, challenged, rawCount: raw.length, confirmedEmpty });
     if (outcome === 'success') {
       allProducts.push(...products);
@@ -1988,6 +2174,7 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       url: normalizeProductUrl(p.url),
       image_url: p.image_url,
       in_stock: p.in_stock ?? true,
+      game: p.game ?? 'pokemon',
       // Stamped on every sighting regardless of in_stock value — the staleness
       // sweep uses this (not just "missing from this run") to require a
       // sustained absence before flipping a product to out-of-stock.

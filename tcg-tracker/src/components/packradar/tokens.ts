@@ -1,4 +1,13 @@
-export type GameKey = 'pokemon' | 'magic' | 'lorcana' | 'yugioh'
+export type GameKey =
+  | 'pokemon'
+  | 'magic'
+  | 'lorcana'
+  | 'yugioh'
+  | 'digimon'
+  | 'one_piece'
+  | 'duel_masters'
+  | 'dragon_ball_super'
+  | 'weiss_schwarz'
 
 export interface GameInfo {
   key: GameKey
@@ -12,6 +21,11 @@ export const GAMES: Record<GameKey, GameInfo> = {
   magic: { key: 'magic', label: 'MAGIC', color: '#B486FF', dim: '#3a3050' },
   lorcana: { key: 'lorcana', label: 'LORCANA', color: '#4FC3FF', dim: '#20404f' },
   yugioh: { key: 'yugioh', label: 'YU-GI-OH!', color: '#FF8A5C', dim: '#4a3225' },
+  digimon: { key: 'digimon', label: 'DIGIMON', color: '#FF6EC7', dim: '#4a2540' },
+  one_piece: { key: 'one_piece', label: 'ONE PIECE', color: '#FF5A5A', dim: '#4a2020' },
+  duel_masters: { key: 'duel_masters', label: 'DUEL MASTERS', color: '#2DD4BF', dim: '#1a3d38' },
+  dragon_ball_super: { key: 'dragon_ball_super', label: 'DRAGON BALL SUPER', color: '#F5A623', dim: '#4a3510' },
+  weiss_schwarz: { key: 'weiss_schwarz', label: 'WEISS SCHWARZ', color: '#E5E5E5', dim: '#3a3a3a' },
 }
 
 export type ProductStatus = 'IN STOCK' | 'PREORDER' | 'GONE'

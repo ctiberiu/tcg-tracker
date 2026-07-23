@@ -10,8 +10,14 @@
 export const BROWSER_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-/** Auto-disable a store after this many CONSECUTIVE block-like failures. */
-export const BLOCK_DISABLE_THRESHOLD = 5;
+/** Flag a store (not disable) after this many CONSECUTIVE block-like failures. */
+export const BLOCK_FLAG_THRESHOLD = 5;
+
+/** Once flagged, auto-disable only after the flag has persisted this long. */
+export const FLAG_DISABLE_GRACE_MS = 12 * 60 * 60 * 1000; // 12h
+
+/** While flagged, check this store hourly instead of its normal check_interval_minutes. */
+export const FLAGGED_CHECK_INTERVAL_MINUTES = 60;
 
 /** Anti-bot / access-denied text markers on a page body (a block, not a normal store page). */
 // SPECIFIC challenge-page phrases only. Bare `cloudflare`/`captcha` were removed
@@ -55,23 +61,55 @@ export function classifyOutcome({ status = 0, challenged = false, rawCount = 0, 
 }
 
 /**
- * Fold a per-store outcome into the persisted consecutive-failure counter.
- * @param {number} prevFailures the store's current consecutive_failures
+ * Fold a per-store outcome into the persisted consecutive-failure/flag state.
+ * A block-like streak no longer disables a store outright — it FLAGS it (stays
+ * enabled, but polled hourly instead of its normal interval) once the streak
+ * reaches `flagThreshold`. Only once a store has stayed continuously flagged for
+ * `disableGraceMs` does it actually get auto-disabled — a single burst of 5
+ * failures is often transient (a temporary block, a deploy hiccup on their end),
+ * so disabling immediately was too aggressive; 12h of sustained failure is a
+ * much stronger signal that it needs manual investigation.
+ * @param {{ consecutiveFailures?: number, isFlagged?: boolean, flaggedAt?: string|null }} state
  * @param {"block"|"success"|"transient"} outcome
- * @param {number} [threshold]
- * @returns {{ consecutiveFailures: number, disable: boolean }}
- *   - block   → increment; disable once the streak reaches the threshold.
- *   - success → reset to 0 (never disable).
- *   - transient (one-off network/nav error) → unchanged; NEVER disables on its own.
+ * @param {number} [nowMs]
+ * @param {{ flagThreshold?: number, disableGraceMs?: number }} [opts]
+ * @returns {{ consecutiveFailures: number, isFlagged: boolean, flaggedAt: string|null, disable: boolean }}
+ *   - block   → increment the streak; flag once it reaches flagThreshold; disable
+ *               only once already-flagged for >= disableGraceMs.
+ *   - success → reset the streak and clear any flag (never disables).
+ *   - transient (one-off network/nav error) → state unchanged; never flags/disables.
  */
-export function applyFailureOutcome(prevFailures, outcome, threshold = BLOCK_DISABLE_THRESHOLD) {
-  const prev = Number.isFinite(prevFailures) ? prevFailures : 0;
-  if (outcome === 'success') return { consecutiveFailures: 0, disable: false };
-  if (outcome === 'block') {
-    const next = prev + 1;
-    return { consecutiveFailures: next, disable: next >= threshold };
+export function applyFailureOutcome(
+  state,
+  outcome,
+  nowMs = Date.now(),
+  { flagThreshold = BLOCK_FLAG_THRESHOLD, disableGraceMs = FLAG_DISABLE_GRACE_MS } = {},
+) {
+  const prevFailures = Number.isFinite(state?.consecutiveFailures) ? state.consecutiveFailures : 0;
+  const wasFlagged = state?.isFlagged === true;
+  const prevFlaggedAt = state?.flaggedAt ?? null;
+
+  if (outcome === 'success') {
+    return { consecutiveFailures: 0, isFlagged: false, flaggedAt: null, disable: false };
   }
-  // transient: leave the streak untouched — a network blip neither disables a
-  // store nor resets a genuine ongoing block streak.
-  return { consecutiveFailures: prev, disable: false };
+  if (outcome === 'transient') {
+    // A network blip neither advances nor resets a genuine ongoing block streak.
+    return { consecutiveFailures: prevFailures, isFlagged: wasFlagged, flaggedAt: prevFlaggedAt, disable: false };
+  }
+
+  // outcome === 'block'
+  const nextFailures = prevFailures + 1;
+  if (wasFlagged) {
+    const flaggedSinceMs = prevFlaggedAt ? new Date(prevFlaggedAt).getTime() : nowMs;
+    const disable = nowMs - flaggedSinceMs >= disableGraceMs;
+    return { consecutiveFailures: nextFailures, isFlagged: true, flaggedAt: prevFlaggedAt, disable };
+  }
+
+  const shouldFlag = nextFailures >= flagThreshold;
+  return {
+    consecutiveFailures: nextFailures,
+    isFlagged: shouldFlag,
+    flaggedAt: shouldFlag ? new Date(nowMs).toISOString() : null,
+    disable: false,
+  };
 }

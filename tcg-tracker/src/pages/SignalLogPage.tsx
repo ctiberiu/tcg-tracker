@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
+import type { Product } from '../lib/types'
 import {
   StatusStrip,
   NavBar,
@@ -40,6 +41,12 @@ export function SignalLogPage() {
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
+  const channels = useMemo(() => {
+    const counts = new Map<Product['game'], number>()
+    for (const p of products) counts.set(p.game, (counts.get(p.game) ?? 0) + 1)
+    return Array.from(counts.entries()).map(([key, count]) => ({ game: GAMES[key], count }))
+  }, [products])
+
   const lastSweepLabel = overallLastSweepAt
     ? `${Math.max(0, Math.round((Date.now() - new Date(overallLastSweepAt).getTime()) / 60000))} MIN AGO`
     : '—'
@@ -67,7 +74,7 @@ export function SignalLogPage() {
           onMinPriceChange={setMinPrice}
           maxPrice={maxPrice}
           onMaxPriceChange={setMaxPrice}
-          channels={[{ game: GAMES.pokemon, count: totalCount ?? products.length }]}
+          channels={channels}
         />
       </div>
 
@@ -122,7 +129,7 @@ export function SignalLogPage() {
               {products.map((product) => (
                 <SignalCard
                   key={product.id}
-                  game={GAMES.pokemon}
+                  game={GAMES[product.game]}
                   store={product.store_name}
                   date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
                   title={product.title}

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { GAMES, type GameInfo, type StoreHealthStatus } from '../components/packradar/tokens'
+import { GAMES, type GameInfo, type GameKey, type StoreHealthStatus } from '../components/packradar/tokens'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 // Stores sweep on a ~15 min cycle — give some slack before calling a store SLOW/DOWN.
@@ -50,7 +50,7 @@ export function useStoreHealth() {
       supabase.from('scrape_runs').select('store_id, status, started_at').order('started_at', { ascending: false }).limit(500),
       supabase
         .from('products')
-        .select('store_id, title, first_seen')
+        .select('store_id, title, first_seen, game')
         .order('first_seen', { ascending: false })
         .limit(RECENT_PRODUCTS_LIMIT),
       // Explicit wide range rather than a default-limited select — this needs the
@@ -91,6 +91,7 @@ export function useStoreHealth() {
 
     const latestProductByStore = new Map<string, { title: string; first_seen: string }>()
     const signals7dByStore = new Map<string, number>()
+    const gamesByStore = new Map<string, Set<GameKey>>()
     for (const product of productsRes.data) {
       if (!latestProductByStore.has(product.store_id)) {
         latestProductByStore.set(product.store_id, product)
@@ -98,6 +99,8 @@ export function useStoreHealth() {
       if (new Date(product.first_seen).getTime() >= sevenDaysAgo) {
         signals7dByStore.set(product.store_id, (signals7dByStore.get(product.store_id) ?? 0) + 1)
       }
+      if (!gamesByStore.has(product.store_id)) gamesByStore.set(product.store_id, new Set())
+      gamesByStore.get(product.store_id)!.add(product.game as GameKey)
     }
 
     const inStockCountByStore = new Map<string, number>()
@@ -154,7 +157,7 @@ export function useStoreHealth() {
         lastSweepAt: latestRun?.started_at ?? latestProduct?.first_seen ?? null,
         lastSignal: latestProduct ? formatSignalDate(latestProduct.first_seen) : '—',
         latest: latestProduct?.title ?? '—',
-        channels: latestProduct ? [GAMES.pokemon] : [],
+        channels: Array.from(gamesByStore.get(store.id) ?? []).map((key) => GAMES[key]),
         inStockCount: inStockCountByStore.get(store.id) ?? 0,
       }
     })

@@ -1,3 +1,5 @@
+import type { GameKey } from '../components/packradar/tokens'
+
 export interface Product {
   id: string
   store_name: string
@@ -9,6 +11,7 @@ export interface Product {
   in_stock: boolean
   is_notified: boolean
   first_seen: string
+  game: GameKey
 }
 
 export interface Subscriber {
@@ -18,7 +21,28 @@ export interface Subscriber {
   created_at: string
 }
 
-export type ScraperType = 'pokemonia' | 'shopify' | 'hobby_planet' | 'regatul_jocurilor'
+export type ScraperType =
+  | 'pokemonia'
+  | 'shopify'
+  | 'hobby_planet'
+  | 'regatul_jocurilor'
+  | 'magento'
+  | 'krit'
+  | 'smyk'
+  | 'ozone'
+  | 'woocommerce'
+  | 'woocommerce_api'
+  | 'flamey_api'
+  | 'secretcards_api'
+  | 'lumea_jocurilor'
+  | 'raijucarii'
+  | 'tulli'
+  | 'bebetei'
+  | 'carturesti'
+  | 'foon'
+  | 'opencart'
+  | 'gomag'
+  | 'pokemania'
 
 export interface Store {
   id: string
@@ -29,6 +53,9 @@ export interface Store {
   in_stock_selector: string | null
   out_of_stock_selector: string | null
   created_at: string
+  game: GameKey
+  is_flagged: boolean
+  flagged_at: string | null
 }
 
 export interface ScrapeRun {

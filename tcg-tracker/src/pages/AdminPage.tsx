@@ -14,14 +14,33 @@ import {
   errorBoxStyle,
   iconButtonStyle,
 } from '../components/packradar'
+import { GAMES, type GameKey } from '../components/packradar'
 import type { Store, ScraperType, Product, ScrapeRun } from '../lib/types'
 
 const SCRAPER_TYPES: { value: ScraperType; label: string }[] = [
-  { value: 'pokemonia', label: 'Pokemonia (Gomag)' },
+  { value: 'pokemonia', label: 'Gomag' },
   { value: 'shopify', label: 'Shopify' },
   { value: 'hobby_planet', label: 'Hobby-Planet (MerchantPro)' },
   { value: 'regatul_jocurilor', label: 'RegatulJocurilor (PrestaShop)' },
+  { value: 'magento', label: 'Magento' },
+  { value: 'opencart', label: 'OpenCart' },
+  { value: 'krit', label: 'Krit (Next.js)' },
+  { value: 'smyk', label: 'Smyk (custom)' },
+  { value: 'ozone', label: 'Ozone (FastSimon)' },
+  { value: 'woocommerce', label: 'WooCommerce' },
+  { value: 'woocommerce_api', label: 'WooCommerce (Store API)' },
+  { value: 'flamey_api', label: 'Flamey (bespoke API)' },
+  { value: 'secretcards_api', label: 'SecretCards (Laravel/Inertia)' },
+  { value: 'lumea_jocurilor', label: 'LumeaJocurilor (custom)' },
+  { value: 'raijucarii', label: 'Raijucarii (custom)' },
+  { value: 'tulli', label: 'Tulli (custom)' },
+  { value: 'bebetei', label: 'Bebetei (custom)' },
+  { value: 'carturesti', label: 'Carturesti (AngularJS)' },
+  { value: 'foon', label: 'Foon (custom)' },
+  { value: 'pokemania', label: 'Pokemania (cdnmp.net)' },
 ]
+
+const GAME_OPTIONS = Object.values(GAMES)
 
 interface StoreFormData {
   name: string
@@ -30,6 +49,7 @@ interface StoreFormData {
   is_enabled: boolean
   in_stock_selector: string
   out_of_stock_selector: string
+  game: GameKey
 }
 
 const EMPTY_FORM: StoreFormData = {
@@ -39,6 +59,7 @@ const EMPTY_FORM: StoreFormData = {
   is_enabled: true,
   in_stock_selector: '',
   out_of_stock_selector: '',
+  game: 'pokemon',
 }
 
 export function AdminPage() {
@@ -85,6 +106,7 @@ export function AdminPage() {
       is_enabled: store.is_enabled,
       in_stock_selector: store.in_stock_selector ?? '',
       out_of_stock_selector: store.out_of_stock_selector ?? '',
+      game: store.game,
     })
     setFormError(null)
     setShowForm(true)
@@ -105,11 +127,12 @@ export function AdminPage() {
         is_enabled: form.is_enabled,
         in_stock_selector: form.in_stock_selector.trim() || null,
         out_of_stock_selector: form.out_of_stock_selector.trim() || null,
+        game: form.game,
       }
       if (editingId) {
         await updateStore(editingId, payload)
       } else {
-        await addStore(payload)
+        await addStore({ ...payload, is_flagged: false, flagged_at: null })
       }
       setShowForm(false)
     } catch (err) {
@@ -268,6 +291,18 @@ export function AdminPage() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label style={labelStyle}>Game</label>
+                <select
+                  value={form.game}
+                  onChange={(e) => setForm({ ...form, game: e.target.value as GameKey })}
+                  style={fieldStyle}
+                >
+                  {GAME_OPTIONS.map((g) => (
+                    <option key={g.key} value={g.key}>{g.label}</option>
+                  ))}
+                </select>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
                 <input
                   type="checkbox"
@@ -330,6 +365,17 @@ export function AdminPage() {
                   <span style={{ fontSize: 9, color: 'var(--pr-text-dim)', letterSpacing: 1, padding: '2px 6px', border: '1px solid var(--pr-border)' }}>
                     {store.scraper_type}
                   </span>
+                  <span style={{ fontSize: 9, color: GAMES[store.game].color, letterSpacing: 1, padding: '2px 6px', border: `1px solid ${GAMES[store.game].dim}` }}>
+                    {GAMES[store.game].label}
+                  </span>
+                  {store.is_flagged && (
+                    <span
+                      title={store.flagged_at ? `Flagged since ${new Date(store.flagged_at).toLocaleString('ro-RO')} — auto-disables after 12h if still failing` : 'Flagged'}
+                      style={{ fontSize: 9, color: 'var(--pr-status-preorder)', letterSpacing: 1, padding: '2px 6px', border: '1px solid var(--pr-status-preorder)' }}
+                    >
+                      ⚑ FLAGGED
+                    </span>
+                  )}
                 </div>
                 <a
                   href={store.url}

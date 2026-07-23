@@ -20,6 +20,10 @@ export function RadarFloorPage() {
   const latestSix = products.slice(0, 6)
   const signalCount = totalCount ?? products.length
 
+  const channelCounts = new Map<typeof products[number]['game'], number>()
+  for (const p of products) channelCounts.set(p.game, (channelCounts.get(p.game) ?? 0) + 1)
+  const channels = Array.from(channelCounts.entries()).map(([key, count]) => ({ game: GAMES[key], count }))
+
   // Compact sweep panel: most recently active stores first, capped so it stays
   // glanceable rather than listing every monitored store (that's what /stores is for).
   const sweepStores = [...storeHealths]
@@ -87,7 +91,9 @@ export function RadarFloorPage() {
           CHANNELS · ONE COLOR PER GAME
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <ChannelChip game={GAMES.pokemon} count={signalCount} countSuffix="SIGNALS" size="lg" background="var(--pr-bg-panel)" />
+          {channels.map(({ game, count }) => (
+            <ChannelChip key={game.key} game={game} count={count} countSuffix="SIGNALS" size="lg" background="var(--pr-bg-panel)" />
+          ))}
         </div>
       </div>
 
@@ -112,7 +118,7 @@ export function RadarFloorPage() {
             {latestSix.map((product) => (
               <SignalRow
                 key={product.id}
-                game={GAMES.pokemon}
+                game={GAMES[product.game]}
                 date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
                 store={product.store_name}
                 title={product.title}
