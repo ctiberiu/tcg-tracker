@@ -2190,10 +2190,23 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
   const alertProducts = [];
   let updated = 0;
 
+  // De-dupe by normalized URL BEFORE batching. Two different store rows can
+  // legitimately return the same product URL in one run — e.g. a broad
+  // catch-all category (Krit's "other TCGs") overlapping with that same
+  // product's own dedicated game category — and Postgres's upsert rejects a
+  // WHOLE batch outright ("ON CONFLICT DO UPDATE command cannot affect row a
+  // second time") if the same conflict key (url) appears twice in one
+  // statement. Last one seen wins; this cost an entire game's products
+  // silently (Weiss Schwarz, Riftbound: 0 rows synced despite being scraped
+  // successfully) before this was caught.
+  const dedupedProducts = Array.from(
+    new Map(products.map((p) => [normalizeProductUrl(p.url), p])).values(),
+  );
+
   // Process in batches of 50
   const BATCH_SIZE = 50;
-  for (let i = 0; i < products.length; i += BATCH_SIZE) {
-    const batch = products.slice(i, i + BATCH_SIZE).map((p) => ({
+  for (let i = 0; i < dedupedProducts.length; i += BATCH_SIZE) {
+    const batch = dedupedProducts.slice(i, i + BATCH_SIZE).map((p) => ({
       store_name: p.store_name,
       store_id: p.store_id ?? null,
       title: p.title,
@@ -2247,9 +2260,12 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
   if (scrapedStoreIds.length > 0) {
     console.log('\nRunning staleness sweep...');
 
-    // Group scraped product URLs by store_id (normalized for consistent matching)
+    // Group scraped product URLs by store_id (normalized for consistent matching).
+    // Uses the deduped list so this matches what actually got written above —
+    // a URL that lost the dedup to another store's row shouldn't make that
+    // OTHER store wrongly think its own copy is now stale.
     const urlsByStore = new Map();
-    for (const p of products) {
+    for (const p of dedupedProducts) {
       if (!p.store_id) continue;
       if (!urlsByStore.has(p.store_id)) urlsByStore.set(p.store_id, []);
       urlsByStore.get(p.store_id).push(normalizeProductUrl(p.url));
