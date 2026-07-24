@@ -11,7 +11,7 @@ export interface ProductFilters {
   /** Store row IDs to include — a single physical store may have multiple
    * rows (one per game, see storeName.ts), so this is a list, not one id. */
   storeIds?: string[]
-  game?: GameKey
+  games?: GameKey[]
   minPrice?: number
   maxPrice?: number
   inStockOnly?: boolean
@@ -52,8 +52,8 @@ export function useProducts(filters: ProductFilters = {}) {
     if (filters.storeIds && filters.storeIds.length > 0) {
       query = query.in('store_id', filters.storeIds)
     }
-    if (filters.game) {
-      query = query.eq('game', filters.game)
+    if (filters.games && filters.games.length > 0) {
+      query = query.in('game', filters.games)
     }
     if (filters.minPrice != null) {
       query = query.gte('price', filters.minPrice)
@@ -69,7 +69,7 @@ export function useProducts(filters: ProductFilters = {}) {
     }
 
     return query
-  }, [filters.storeIds?.join(','), filters.game, filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
+  }, [filters.storeIds?.join(','), filters.games?.join(','), filters.minPrice, filters.maxPrice, filters.inStockOnly, filters.search, filters.sort])
 
   useEffect(() => {
     // Reset when filters change

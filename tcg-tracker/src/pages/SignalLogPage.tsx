@@ -4,12 +4,13 @@ import { useProducts, type ProductFilters, type ProductSort } from '../hooks/use
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
 import { useGameCounts } from '../hooks/useGameCounts'
+import { useStoreCounts } from '../hooks/useStoreCounts'
 import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
   NavBar,
   PageHeader,
-  FilterRack,
+  SearchFilterBar,
   SignalCard,
   CtaButton,
   PackRadarFooter,
@@ -24,14 +25,17 @@ export function SignalLogPage() {
   const { stores } = useStores()
   const { overallLastSweepAt, healthy, storeHealths } = useStoreHealth()
 
-  const [storeFilter, setStoreFilter] = useState(() => {
+  const [storeFilters, setStoreFilters] = useState<string[]>(() => {
     const raw = searchParams.get('store')
-    return raw ? getStoreBaseName(raw) : ''
+    return raw ? [getStoreBaseName(raw)] : []
   })
-  const [gameFilter, setGameFilter] = useState<GameKey | null>((searchParams.get('game') as GameKey) || null)
+  const [gameFilters, setGameFilters] = useState<GameKey[]>(() => {
+    const raw = searchParams.get('game') as GameKey | null
+    return raw ? [raw] : []
+  })
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
-  // Hidden for now — we only show in-stock items until that changes.
+  // No standalone control — the log only ever shows in-stock signals.
   const inStockOnly = true
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<ProductSort>('newest')
@@ -45,19 +49,22 @@ export function SignalLogPage() {
     [stores],
   )
   const storeIds = useMemo(
-    () => (storeFilter ? stores.filter((s) => getStoreBaseName(s.name) === storeFilter).map((s) => s.id) : undefined),
-    [storeFilter, stores],
+    () =>
+      storeFilters.length > 0
+        ? stores.filter((s) => storeFilters.includes(getStoreBaseName(s.name))).map((s) => s.id)
+        : undefined,
+    [storeFilters, stores],
   )
 
   const filters = useMemo<ProductFilters>(() => ({
     storeIds,
-    game: gameFilter ?? undefined,
+    games: gameFilters.length > 0 ? gameFilters : undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
     search: search.trim() || undefined,
     sort,
-  }), [storeIds, gameFilter, minPrice, maxPrice, inStockOnly, search, sort])
+  }), [storeIds, gameFilters, minPrice, maxPrice, inStockOnly, search, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
@@ -77,6 +84,34 @@ export function SignalLogPage() {
       .map((key) => ({ game: GAMES[key], count: counts[key] ?? 0 }))
   }, [counts])
 
+  const storeCountFilters = useMemo(() => ({
+    games: gameFilters.length > 0 ? gameFilters : undefined,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    inStockOnly,
+    search: search.trim() || undefined,
+  }), [gameFilters, minPrice, maxPrice, inStockOnly, search])
+
+  const { counts: storeCounts } = useStoreCounts(stores, storeCountFilters)
+
+  const storeOptions = useMemo(
+    () =>
+      storeBaseNames
+        .map((name) => ({ name, count: storeCounts[name] ?? 0 }))
+        .sort((a, b) => b.count - a.count),
+    [storeBaseNames, storeCounts],
+  )
+
+  const hasActiveFilters = Boolean(search || gameFilters.length || storeFilters.length || minPrice || maxPrice)
+
+  const clearAllFilters = () => {
+    setSearch('')
+    setGameFilters([])
+    setStoreFilters([])
+    setMinPrice('')
+    setMaxPrice('')
+  }
+
   const lastSweepLabel = overallLastSweepAt
     ? `${Math.max(0, Math.round((Date.now() - new Date(overallLastSweepAt).getTime()) / 60000))} MIN AGO`
     : '—'
@@ -94,19 +129,22 @@ export function SignalLogPage() {
       />
 
       <div style={{ padding: '0 var(--pr-gutter)' }}>
-        <FilterRack
+        <SearchFilterBar
           search={search}
           onSearchChange={setSearch}
-          store={storeFilter}
-          onStoreChange={setStoreFilter}
-          storeOptions={storeBaseNames}
-          minPrice={minPrice}
-          onMinPriceChange={setMinPrice}
-          maxPrice={maxPrice}
-          onMaxPriceChange={setMaxPrice}
           channels={channels}
-          activeGame={gameFilter}
-          onGameChange={setGameFilter}
+          selectedChannels={gameFilters}
+          onChannelsChange={setGameFilters}
+          stores={storeOptions}
+          selectedStores={storeFilters}
+          onStoresChange={setStoreFilters}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onPriceChange={(min, max) => {
+            setMinPrice(min)
+            setMaxPrice(max)
+          }}
+          resultCount={totalCount ?? products.length}
         />
       </div>
 
@@ -152,7 +190,31 @@ export function SignalLogPage() {
         )}
 
         {!loading && !error && products.length === 0 && (
-          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No signals found.</p>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13, letterSpacing: 0.5 }}>
+            {hasActiveFilters ? (
+              <>
+                NO SIGNALS MATCH THESE FILTERS ·{' '}
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--pr-signal)',
+                    fontSize: 13,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  CLEAR ALL
+                </button>
+              </>
+            ) : (
+              'No signals found.'
+            )}
+          </p>
         )}
 
         {!loading && !error && products.length > 0 && (

@@ -27,6 +27,10 @@
   --pr-game-yugioh: #FF8A5C;
   --pr-game-yugioh-dim: #4a3225;
 
+  --pr-popover-bg: #0a130d;
+  --pr-active-bg: #0d1f13;
+  --pr-active-border: #2EE86C66;
+
   --pr-font-mono: 'IBM Plex Mono', monospace;
   --pr-font-display: 'Space Grotesk', sans-serif;
 
@@ -127,32 +131,100 @@
   }
 }
 
-/* FilterRack's store/min/max row — collapsed behind a "FILTERS ▾" disclosure on mobile,
-   always shown on desktop regardless of the toggle state. */
-.pr-filter-extra {
+/* SearchFilterBar — constant-height command bar (search + Channel/Store/Price
+   dropdown buttons). Desktop: single row. Tablet: search takes the full first
+   line, the button group wraps to a second line. Mobile: buttons collapse
+   behind a single "FILTERS · N" trigger that opens a full-height sheet. */
+.pr-searchbar {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
-@media (max-width: 768px) {
-  .pr-filter-extra {
-    display: none;
-  }
+.pr-searchbar-search-input {
+  flex: 1;
+  min-width: 240px;
+}
 
-  .pr-filter-extra.pr-filter-extra--open {
-    display: flex;
+@media (max-width: 1023px) {
+  .pr-searchbar-search-input {
+    min-width: 200px;
   }
 }
 
-.pr-filters-toggle {
+@media (min-width: 640px) and (max-width: 1023px) {
+  .pr-searchbar-search-input {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .pr-searchbar-search-input {
+    min-width: 120px;
+  }
+}
+
+.pr-searchbar-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 639px) {
+  .pr-searchbar-buttons {
+    display: none;
+  }
+}
+
+.pr-filters-trigger {
   display: none;
 }
 
-@media (max-width: 768px) {
-  .pr-filters-toggle {
-    display: block;
+@media (max-width: 639px) {
+  .pr-filters-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 14px;
+    min-height: 44px;
+    background: var(--pr-bg-panel);
+    color: var(--pr-text-mid);
+    font-family: var(--pr-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--pr-border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+}
+
+.pr-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: transparent;
+}
+
+.pr-dropdown-row:hover {
+  background: #ffffff0d !important;
+}
+
+.pr-active-pills {
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 639px) {
+  .pr-active-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .pr-active-pills::-webkit-scrollbar {
+    display: none;
   }
 }
 
