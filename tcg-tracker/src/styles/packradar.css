@@ -200,13 +200,6 @@
   }
 }
 
-.pr-dropdown-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: transparent;
-}
-
 .pr-dropdown-row:hover {
   background: #ffffff0d !important;
 }

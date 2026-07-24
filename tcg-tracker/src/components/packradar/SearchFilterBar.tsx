@@ -1,6 +1,5 @@
 import { useState, type CSSProperties } from 'react'
 import { GAMES, type GameInfo, type GameKey } from './tokens'
-import { FilterDropdownButton } from './FilterDropdownButton'
 import { ChannelFilterDropdown } from './ChannelFilterDropdown'
 import { StoreFilterDropdown } from './StoreFilterDropdown'
 import { PriceFilterDropdown } from './PriceFilterDropdown'
@@ -101,39 +100,27 @@ export function SearchFilterBar({
         />
 
         <div className="pr-searchbar-buttons">
-          <div style={{ position: 'relative' }}>
-            <FilterDropdownButton
-              label="CHANNEL"
-              count={selectedChannels.length}
-              open={openMenu === 'channel'}
-              onClick={() => setOpenMenu((m) => (m === 'channel' ? null : 'channel'))}
-            />
-            {openMenu === 'channel' && (
-              <ChannelFilterDropdown channels={channels} selected={selectedChannels} onToggle={toggleChannel} />
-            )}
-          </div>
-          <div style={{ position: 'relative' }}>
-            <FilterDropdownButton
-              label="STORE"
-              count={selectedStores.length}
-              open={openMenu === 'store'}
-              onClick={() => setOpenMenu((m) => (m === 'store' ? null : 'store'))}
-            />
-            {openMenu === 'store' && (
-              <StoreFilterDropdown stores={stores} selected={selectedStores} onToggle={toggleStore} />
-            )}
-          </div>
-          <div style={{ position: 'relative' }}>
-            <FilterDropdownButton
-              label="PRICE"
-              count={priceActive ? 1 : 0}
-              open={openMenu === 'price'}
-              onClick={() => setOpenMenu((m) => (m === 'price' ? null : 'price'))}
-            />
-            {openMenu === 'price' && (
-              <PriceFilterDropdown minPrice={minPrice} maxPrice={maxPrice} onChange={onPriceChange} />
-            )}
-          </div>
+          <ChannelFilterDropdown
+            channels={channels}
+            selected={selectedChannels}
+            onToggle={toggleChannel}
+            open={openMenu === 'channel'}
+            onOpenChange={(next) => setOpenMenu(next ? 'channel' : null)}
+          />
+          <StoreFilterDropdown
+            stores={stores}
+            selected={selectedStores}
+            onToggle={toggleStore}
+            open={openMenu === 'store'}
+            onOpenChange={(next) => setOpenMenu(next ? 'store' : null)}
+          />
+          <PriceFilterDropdown
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onChange={onPriceChange}
+            open={openMenu === 'price'}
+            onOpenChange={(next) => setOpenMenu(next ? 'price' : null)}
+          />
         </div>
 
         <button type="button" className="pr-filters-trigger" onClick={() => setSheetOpen(true)}>
@@ -142,8 +129,6 @@ export function SearchFilterBar({
       </div>
 
       <ActiveFilterPills pills={pills} onClearAll={clearAll} />
-
-      {openMenu && <div className="pr-dropdown-backdrop" onClick={() => setOpenMenu(null)} />}
 
       {sheetOpen && (
         <MobileFilterSheet
