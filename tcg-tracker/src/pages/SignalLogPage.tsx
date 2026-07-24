@@ -128,7 +128,16 @@ export function SignalLogPage() {
         meta={`${totalCount ?? products.length} SIGNALS · ${respondingCount}/${stores.length} STORES RESPONDING · LAST SWEEP ${lastSweepLabel}`}
       />
 
-      <div style={{ padding: '0 var(--pr-gutter)' }}>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 30,
+          background: 'var(--pr-bg)',
+          padding: '14px var(--pr-gutter)',
+          borderBottom: '1px solid var(--pr-border)',
+        }}
+      >
         <SearchFilterBar
           search={search}
           onSearchChange={setSearch}
@@ -146,10 +155,8 @@ export function SignalLogPage() {
           }}
           resultCount={totalCount ?? products.length}
         />
-      </div>
 
-      <div style={{ padding: '28px var(--pr-gutter) 0', flex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
           <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2 }}>
             SHOWING {products.length} OF {totalCount ?? products.length} SIGNALS
           </span>
@@ -178,7 +185,9 @@ export function SignalLogPage() {
             </span>
           </span>
         </div>
+      </div>
 
+      <div style={{ padding: '20px var(--pr-gutter) 0', flex: 1 }}>
         {loading && (
           <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading signals…</p>
         )}
