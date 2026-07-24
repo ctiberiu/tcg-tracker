@@ -93,6 +93,9 @@ export function ChannelFilterDropdown({ channels, selected, onToggle, open, onOp
                 // eslint-disable-next-line react-hooks/refs -- floating-ui callback-ref setter, not a `.current` read
                 ref={refs.setReference}
                 type="text"
+                role="combobox"
+                aria-expanded="true"
+                aria-autocomplete="list"
                 aria-label="Filter channels"
                 aria-controls={listboxId}
                 aria-activedescendant={activeIndex != null ? `channel-option-${activeIndex}` : undefined}

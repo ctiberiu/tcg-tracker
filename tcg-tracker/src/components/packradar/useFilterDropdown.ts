@@ -10,7 +10,6 @@ import {
   useId,
   useInteractions,
   useListNavigation,
-  useRole,
 } from '@floating-ui/react'
 
 // Panel never shrinks below this — enough for the pinned input plus a
@@ -51,8 +50,11 @@ export function useFilterDropdown({ open, onOpenChange, listNav = false }: UseFi
     ],
   })
 
+  // No useRole: it assumes the floating element itself is the listbox, but
+  // ours is a wrapper around [input, listbox, live-region] as siblings, so
+  // its role would land on the wrapper instead of the actual listbox div.
+  // ARIA roles are set by hand on the right elements instead.
   const dismiss = useDismiss(context)
-  const role = useRole(context, { role: 'listbox', enabled: listNav })
   const listNavigation = useListNavigation(context, {
     enabled: listNav,
     listRef,
@@ -63,7 +65,7 @@ export function useFilterDropdown({ open, onOpenChange, listNav = false }: UseFi
     focusItemOnOpen: false,
   })
 
-  const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([dismiss, role, listNavigation])
+  const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions([dismiss, listNavigation])
 
   return {
     refs,

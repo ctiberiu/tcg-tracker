@@ -3,8 +3,7 @@ import type { CSSProperties } from 'react'
 export const ACCENT_HEX = '#2EE86C'
 
 export const dropdownTypeaheadStyle: CSSProperties = {
-  position: 'sticky',
-  top: 0,
+  flex: 'none',
   padding: '10px 12px',
   background: 'var(--pr-popover-bg)',
   color: 'var(--pr-text-mid)',

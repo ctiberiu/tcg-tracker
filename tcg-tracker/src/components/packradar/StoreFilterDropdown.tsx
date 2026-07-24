@@ -91,6 +91,9 @@ export function StoreFilterDropdown({ stores, selected, onToggle, open, onOpenCh
                 // eslint-disable-next-line react-hooks/refs -- floating-ui callback-ref setter, not a `.current` read
                 ref={refs.setReference}
                 type="text"
+                role="combobox"
+                aria-expanded="true"
+                aria-autocomplete="list"
                 aria-label="Search stores"
                 aria-controls={listboxId}
                 aria-activedescendant={activeIndex != null ? `store-option-${activeIndex}` : undefined}
