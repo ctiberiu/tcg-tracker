@@ -40,24 +40,25 @@ export function MobileFilterSheet({
 }: MobileFilterSheetProps) {
   const [storeQuery, setStoreQuery] = useState('')
   // Stays mounted for TRANSITION_MS after `open` goes false, so the close
-  // animation can play instead of the sheet vanishing instantly.
+  // animation can play instead of the sheet vanishing instantly. Driven by
+  // CSS keyframe animations (not a transform+transition toggle) because a
+  // transition needs the browser to have already painted the "from" state
+  // in an earlier frame — react's effect + rAF here can land in the same
+  // paint as the initial render, silently skipping the animation. A
+  // keyframe animation restarts reliably whenever animation-name changes,
+  // including on a brand-new element's very first paint.
   const [rendered, setRendered] = useState(open)
-  const [visible, setVisible] = useState(false)
+  const [phase, setPhase] = useState<'entering' | 'exiting'>('entering')
 
   useEffect(() => {
     if (open) {
-      // Mount-then-animate: `rendered` must flip synchronously so the sheet is in
-      // the DOM (at its hidden transform) before the next frame reveals it.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRendered(true)
-      const raf = requestAnimationFrame(() => setVisible(true))
-      return () => cancelAnimationFrame(raf)
+      setPhase('entering')
+      return
     }
-    setVisible(false)
-  }, [open])
-
-  useEffect(() => {
-    if (open || !rendered) return
+    if (!rendered) return
+    setPhase('exiting')
     const timeout = setTimeout(() => setRendered(false), TRANSITION_MS)
     return () => clearTimeout(timeout)
   }, [open, rendered])
@@ -83,7 +84,7 @@ export function MobileFilterSheet({
 
   return (
     <div
-      className="pr-filter-sheet"
+      className={`pr-filter-sheet pr-filter-sheet--${phase}`}
       style={{
         position: 'fixed',
         inset: 0,
@@ -91,7 +92,6 @@ export function MobileFilterSheet({
         background: 'var(--pr-popover-bg)',
         display: 'flex',
         flexDirection: 'column',
-        transform: visible ? 'translateY(0)' : 'translateY(100%)',
       }}
     >
       <div
