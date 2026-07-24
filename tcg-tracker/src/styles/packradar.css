@@ -221,6 +221,16 @@
   }
 }
 
+.pr-filter-sheet {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-filter-sheet {
+    transition: none;
+  }
+}
+
 /* Landing page's "latest signals" rows — the 6-column desktop grid stacks into single
    lines on mobile rather than the spec's literal 3-line grouping, to avoid a deeper
    restructure of SignalRow for a screen we don't have an exact mockup for. */

@@ -1,10 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { GameInfo, GameKey } from './tokens'
 import { FilterCheckbox } from './FilterCheckbox'
 import { StatusDot } from './StatusDot'
 import { PRICE_PRESETS, dropdownRowStyle, formatPriceRange, priceInputStyle, sectionLabelStyle } from './filterStyles'
 
+// Keep in sync with the transition duration on .pr-filter-sheet in packradar.css.
+const TRANSITION_MS = 260
+
 interface MobileFilterSheetProps {
+  open: boolean
   channels: { game: GameInfo; count: number }[]
   selectedChannels: GameKey[]
   onToggleChannel: (key: GameKey) => void
@@ -20,6 +24,7 @@ interface MobileFilterSheetProps {
 }
 
 export function MobileFilterSheet({
+  open,
   channels,
   selectedChannels,
   onToggleChannel,
@@ -34,6 +39,39 @@ export function MobileFilterSheet({
   onClose,
 }: MobileFilterSheetProps) {
   const [storeQuery, setStoreQuery] = useState('')
+  // Stays mounted for TRANSITION_MS after `open` goes false, so the close
+  // animation can play instead of the sheet vanishing instantly.
+  const [rendered, setRendered] = useState(open)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      // Mount-then-animate: `rendered` must flip synchronously so the sheet is in
+      // the DOM (at its hidden transform) before the next frame reveals it.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRendered(true)
+      const raf = requestAnimationFrame(() => setVisible(true))
+      return () => cancelAnimationFrame(raf)
+    }
+    setVisible(false)
+  }, [open])
+
+  useEffect(() => {
+    if (open || !rendered) return
+    const timeout = setTimeout(() => setRendered(false), TRANSITION_MS)
+    return () => clearTimeout(timeout)
+  }, [open, rendered])
+
+  // Block the page behind the sheet from scrolling for as long as it's
+  // shown or animating out.
+  useEffect(() => {
+    if (!rendered) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [rendered])
 
   const filteredStores = useMemo(() => {
     const q = storeQuery.trim().toLowerCase()
@@ -41,10 +79,20 @@ export function MobileFilterSheet({
     return stores.filter((s) => s.name.toLowerCase().includes(q))
   }, [stores, storeQuery])
 
+  if (!rendered) return null
+
   return (
     <div
       className="pr-filter-sheet"
-      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'var(--pr-popover-bg)', display: 'flex', flexDirection: 'column' }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 100,
+        background: 'var(--pr-popover-bg)',
+        display: 'flex',
+        flexDirection: 'column',
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+      }}
     >
       <div
         style={{
@@ -77,7 +125,7 @@ export function MobileFilterSheet({
         </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '20px 20px 0' }}>
         <div style={{ marginBottom: 28 }}>
           <div style={{ ...sectionLabelStyle, marginBottom: 10 }}>Channel</div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>

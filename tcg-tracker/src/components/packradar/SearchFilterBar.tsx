@@ -130,22 +130,21 @@ export function SearchFilterBar({
 
       <ActiveFilterPills pills={pills} onClearAll={clearAll} />
 
-      {sheetOpen && (
-        <MobileFilterSheet
-          channels={channels}
-          selectedChannels={selectedChannels}
-          onToggleChannel={toggleChannel}
-          stores={stores}
-          selectedStores={selectedStores}
-          onToggleStore={toggleStore}
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          onPriceChange={onPriceChange}
-          onClear={clearAll}
-          resultCount={resultCount}
-          onClose={() => setSheetOpen(false)}
-        />
-      )}
+      <MobileFilterSheet
+        open={sheetOpen}
+        channels={channels}
+        selectedChannels={selectedChannels}
+        onToggleChannel={toggleChannel}
+        stores={stores}
+        selectedStores={selectedStores}
+        onToggleStore={toggleStore}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        onPriceChange={onPriceChange}
+        onClear={clearAll}
+        resultCount={resultCount}
+        onClose={() => setSheetOpen(false)}
+      />
     </div>
   )
 }
