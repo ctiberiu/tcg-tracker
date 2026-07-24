@@ -254,6 +254,28 @@
   }
 }
 
+@keyframes pr-shimmer {
+  0% {
+    background-position: -460px 0;
+  }
+  100% {
+    background-position: 460px 0;
+  }
+}
+
+.pr-shimmer {
+  background: linear-gradient(90deg, #0c150f 25%, #152018 50%, #0c150f 75%);
+  background-size: 460px 100%;
+  animation: pr-shimmer 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-shimmer {
+    animation: none;
+    background: #0c150f;
+  }
+}
+
 /* Landing page's "latest signals" rows — the 6-column desktop grid stacks into single
    lines on mobile rather than the spec's literal 3-line grouping, to avoid a deeper
    restructure of SignalRow for a screen we don't have an exact mockup for. */

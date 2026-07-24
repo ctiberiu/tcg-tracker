@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
@@ -12,12 +12,15 @@ import {
   PageHeader,
   SearchFilterBar,
   SignalCard,
+  SignalCardSkeleton,
   CtaButton,
   PackRadarFooter,
   MobileTabBar,
   GAMES,
   type GameKey,
 } from '../components/packradar'
+
+const SKELETON_COUNT = 8
 
 export function SignalLogPage() {
   const [searchParams] = useSearchParams()
@@ -38,7 +41,14 @@ export function SignalLogPage() {
   // No standalone control — the log only ever shows in-stock signals.
   const inStockOnly = true
   const [search, setSearch] = useState('')
+  // Debounced so keystrokes don't each fire a fetch (and re-trigger the loading skeleton).
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sort, setSort] = useState<ProductSort>('newest')
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timeout)
+  }, [search])
 
   // A physical store has one `stores` row per game (see storeName.ts) — the
   // filter dropdown shows one entry per base name, and selecting it resolves
@@ -62,9 +72,9 @@ export function SignalLogPage() {
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-    search: search.trim() || undefined,
+    search: debouncedSearch.trim() || undefined,
     sort,
-  }), [storeIds, gameFilters, minPrice, maxPrice, inStockOnly, search, sort])
+  }), [storeIds, gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
@@ -73,8 +83,8 @@ export function SignalLogPage() {
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-    search: search.trim() || undefined,
-  }), [storeIds, minPrice, maxPrice, inStockOnly, search])
+    search: debouncedSearch.trim() || undefined,
+  }), [storeIds, minPrice, maxPrice, inStockOnly, debouncedSearch])
 
   const { counts } = useGameCounts(countFilters)
 
@@ -89,8 +99,8 @@ export function SignalLogPage() {
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-    search: search.trim() || undefined,
-  }), [gameFilters, minPrice, maxPrice, inStockOnly, search])
+    search: debouncedSearch.trim() || undefined,
+  }), [gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch])
 
   const { counts: storeCounts } = useStoreCounts(stores, storeCountFilters)
 
@@ -106,6 +116,7 @@ export function SignalLogPage() {
 
   const clearAllFilters = () => {
     setSearch('')
+    setDebouncedSearch('')
     setGameFilters([])
     setStoreFilters([])
     setMinPrice('')
@@ -157,8 +168,8 @@ export function SignalLogPage() {
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
-          <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2 }}>
-            SHOWING {products.length} OF {totalCount ?? products.length} SIGNALS
+          <span style={{ fontSize: 10, color: loading ? 'var(--pr-signal)' : 'var(--pr-text-dim)', letterSpacing: 2 }}>
+            {loading ? '● SWEEPING RADAR…' : `SHOWING ${products.length} OF ${totalCount ?? products.length} SIGNALS`}
           </span>
           <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
             SORT:
@@ -189,7 +200,11 @@ export function SignalLogPage() {
 
       <div style={{ padding: '20px var(--pr-gutter) 0', flex: 1 }}>
         {loading && (
-          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading signals…</p>
+          <div className="pr-signal-grid">
+            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <SignalCardSkeleton key={i} />
+            ))}
+          </div>
         )}
 
         {error && (
