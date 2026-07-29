@@ -36,6 +36,17 @@ export function detectChallengeText(text) {
 }
 
 /**
+ * HTTP statuses that mean "the store's own infrastructure failed", not "the store
+ * refused us". A shop that is down for maintenance, or whose origin/gateway is
+ * erroring, is not blocking the scraper — it just isn't serving anyone right now.
+ * Treating these as `block` meant a weekend of maintenance walked a store all the
+ * way to auto-disable, which is why several stores had to be re-enabled by hand.
+ */
+function isServerSideOutage(status) {
+  return status >= 500 || status === 408;
+}
+
+/**
  * Classify a store's scrape outcome from observable, non-DOM-injection signals.
  * @param {{ status?: number, challenged?: boolean, rawCount?: number, confirmedEmpty?: boolean }} sig
  *   status    HTTP status of the store's page/API (0/undefined if unknown)
@@ -45,9 +56,11 @@ export function detectChallengeText(text) {
  *             signal (e.g. a dedicated empty-search page) — a legitimately empty
  *             search, NOT a failure. Opt-in per scraper; default false leaves every
  *             other store's behavior unchanged.
- * @returns {"block" | "success"}
- *   "block" = 403/429, a challenge wall, or a total failure to find ANY product
- *             structure (page shape gone — likely a block/redirect, not "0 TCG").
+ * @returns {"block" | "success" | "transient"}
+ *   "block"     = 403/429, a challenge wall, or a total failure to find ANY product
+ *                 structure (page shape gone — likely a block/redirect, not "0 TCG").
+ *   "transient" = the store's own server erred (5xx/408) and we got nothing — their
+ *                 outage, not our block. Never counts toward flag/auto-disable.
  */
 export function classifyOutcome({ status = 0, challenged = false, rawCount = 0, confirmedEmpty = false } = {}) {
   if (status === 403 || status === 429) return 'block';
@@ -56,8 +69,12 @@ export function classifyOutcome({ status = 0, challenged = false, rawCount = 0, 
   // the real-block signals above so a genuine 403/challenge still wins, but BEFORE
   // the rawCount===0 fallback so a legit empty search doesn't count as a failure.
   if (confirmedEmpty) return 'success';
-  if (!(rawCount > 0)) return 'block'; // found no products at all → page structure missing
-  return 'success';
+  if (rawCount > 0) return 'success';
+  // No products from here on. A 5xx/408 explains that without implying a block —
+  // checked AFTER 403/429 and `challenged` so a challenge wall served with a 5xx
+  // (some WAFs do this) still classifies as the block it is.
+  if (isServerSideOutage(status)) return 'transient';
+  return 'block'; // found no products at all → page structure missing
 }
 
 /**

@@ -59,6 +59,7 @@ const SCRAPER_MAP = {
   carturesti: scrapeCarturesti,
   foon: scrapeFoon,
   opencart: scrapeOpenCart,
+  atu_toys: scrapeAtuToys, // atu-toys.ro migrated OFF OpenCart to a bespoke theme
 };
 
 /**
@@ -686,6 +687,83 @@ async function scrapeOpenCart(page, store) {
   );
 
   return products;
+}
+
+/**
+ * ATU-Toys.ro — bespoke platform (their own /themes/atutoys theme).
+ *
+ * They migrated off OpenCart: the catalogue moved behind a /ro/ locale prefix,
+ * several category slugs were renamed, and the product grid is now rendered
+ * CLIENT-SIDE into `.prod-row` — the served HTML contains an empty grid, so a
+ * plain fetch sees zero products. Playwright runs the JS, so scraping still
+ * works, but none of the OpenCart selectors (`.product-thumb`) survive.
+ *
+ * Returns { products, confirmedEmpty } like scrapeSmyk. ATU-Toys keeps category
+ * pages published even when they carry no stock (verified live: magic-the-gathering
+ * has 30 products and riftbound-tcg has 8, while pokemon / yu-gi-oh / weiss-schwarz
+ * are legitimately empty). Without the confirmed-empty signal those three would
+ * scrape rawCount===0 every run, classify as 'block', and walk straight back to
+ * auto-disabled — which is exactly the state this migration is meant to fix.
+ * `.prod-row` is the grid container and is present even when empty, so it's a
+ * reliable "the page rendered correctly, there just isn't any stock" marker.
+ */
+async function scrapeAtuToys(page, store) {
+  try {
+    await page.waitForSelector('.prod-item', { timeout: 15000 });
+  } catch {
+    // No product cards. Distinguish an empty-but-healthy category from a real
+    // failure by checking for the grid container itself — present on every
+    // category page, absent if we got a block/redirect/layout change.
+    const gridPresent = await page.$('.prod-row').then((el) => el != null).catch(() => false);
+    if (gridPresent) {
+      console.log(`  ${store.name}: category rendered but carries no products — healthy, not a failure`);
+      return { products: [], confirmedEmpty: true };
+    }
+    console.log(`  ${store.name}: No products found or page timed out`);
+    return { products: [], confirmedEmpty: false };
+  }
+
+  const products = await page.evaluate(({ storeName, storeId }) => {
+    const results = [];
+    const seen = new Set();
+
+    for (const card of document.querySelectorAll('.prod-item')) {
+      const linkEl = card.querySelector('.prod-item-title a[href]');
+      const title = linkEl?.textContent?.trim();
+      const url = linkEl?.href;
+      if (!title || !url || seen.has(url)) continue;
+      seen.add(url);
+
+      // Prices render as plain "26 Lei" today, but parse defensively for grouped
+      // thousands — decide the decimal separator by whichever comes last.
+      let price = null;
+      const priceText = card.querySelector('.prod-item-price')?.textContent?.trim();
+      const match = priceText?.match(/([\d.,]+)\s*(lei|ron)/i);
+      if (match) {
+        const n = match[1];
+        price = parseFloat(
+          n.lastIndexOf(',') > n.lastIndexOf('.') ? n.replace(/\./g, '').replace(',', '.') : n.replace(/,/g, ''),
+        );
+        if (!Number.isFinite(price)) price = null;
+      }
+
+      // Stock shows as a ribbon over the thumbnail ("In stoc", .bg-success).
+      // Treat anything that isn't a positive in-stock marker as out of stock:
+      // a false negative just withholds an alert, a false positive invents one.
+      const ribbon = card.querySelector('.div-ribbon .ribbon');
+      const ribbonText = ribbon?.textContent?.trim() ?? '';
+      const in_stock = /[iî]n stoc/i.test(ribbonText) || ribbon?.classList.contains('bg-success') === true;
+
+      let image_url = card.querySelector('.prod-item-link img')?.getAttribute('src') ?? null;
+      if (image_url?.startsWith('//')) image_url = 'https:' + image_url;
+      else if (image_url?.startsWith('/')) image_url = window.location.origin + image_url;
+
+      results.push({ title, price, url, image_url, store_name: storeName, store_id: storeId, in_stock });
+    }
+    return results;
+  }, { storeName: store.name, storeId: store.id });
+
+  return { products, confirmedEmpty: false };
 }
 
 /**
@@ -2100,6 +2178,8 @@ async function scrapeAll() {
       scrapedStoreIds.push(store.id);
       const emptyNote = confirmedEmpty && raw.length === 0 ? ' — confirmed empty search (healthy, no matches)' : '';
       console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)${emptyNote}`);
+    } else if (outcome === 'transient') {
+      console.warn(`  ${store.name}: store-side outage (HTTP ${status}) — not counted toward auto-disable`);
     } else {
       console.warn(`  ${store.name}: block-like failure (HTTP ${status}${challenged ? ', challenge page' : ''}, ${raw.length} products)`);
     }
@@ -2436,29 +2516,102 @@ async function getRecipients(supabase) {
   return [];
 }
 
-async function sendAlerts(insertedProducts) {
+/**
+ * Resolve which transport, sender and audience a subscriber alert should use.
+ *
+ * Restock alerts are the only COMMERCIAL mail this project sends, and ZeptoMail
+ * bills them per credit — so the send path is gated by ALERT_MODE and defaults to
+ * the mode that cannot spend anything. Admin warnings (notifyStoreDisabled) are a
+ * separate audience on a separate transport and are deliberately NOT gated here:
+ * they go to ALERT_EMAIL_TO over Gmail, cost nothing, and are wanted in every
+ * environment.
+ *
+ *   dry      (default) render + log, send nothing, spend no credits
+ *   redirect send the REAL rendered email over Gmail to ALERT_EMAIL_TO — full
+ *            end-to-end verification of content/links/formatting with ZeptoMail
+ *            never touched
+ *   live     ZeptoMail → the real subscribers table
+ *
+ * `markNotified` is false in both test modes on purpose: marking products notified
+ * during a dry/redirect run would permanently suppress their first real alert.
+ * The trade-off is that test runs re-alert the same backlog every time (harmless —
+ * it only ever reaches you), and that the first `live` run will fire the whole
+ * accumulated backlog at once unless it is marked notified beforehand.
+ */
+async function resolveAlertChannel(supabase) {
+  const mode = (process.env.ALERT_MODE ?? 'dry').toLowerCase();
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const gmail = () =>
+    nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
 
-  if (!gmailUser || !gmailPass) {
-    console.log('  GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping email alerts');
-    return;
+  if (mode === 'live') {
+    const user = process.env.ZEPTOMAIL_USER ?? 'emailapikey';
+    const pass = process.env.ZEPTOMAIL_TOKEN;
+    const from = process.env.ALERT_FROM;
+    if (!pass || !from) {
+      console.error('  ALERT_MODE=live but ZEPTOMAIL_TOKEN / ALERT_FROM not set — refusing to send');
+      return null;
+    }
+    const recipients = await getRecipients(supabase);
+    if (recipients.length === 0) {
+      console.log('  No active subscribers — skipping email alerts');
+      return null;
+    }
+    return {
+      mode,
+      from,
+      recipients,
+      markNotified: true,
+      transporter: nodemailer.createTransport({
+        host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
+        port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
+        secure: false, // 587 upgrades via STARTTLS
+        auth: { user, pass },
+      }),
+    };
   }
+
+  // Both test modes need somewhere safe to land: the admin address, over Gmail.
+  const selfAddresses = (process.env.ALERT_EMAIL_TO ?? '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  if (mode === 'redirect') {
+    if (!gmailUser || !gmailPass || selfAddresses.length === 0) {
+      console.log('  ALERT_MODE=redirect but GMAIL_USER / GMAIL_APP_PASSWORD / ALERT_EMAIL_TO not set — skipping');
+      return null;
+    }
+    // Who it WOULD have gone to, surfaced so a redirect run still exercises the
+    // subscriber lookup rather than silently bypassing it.
+    const would = await getRecipients(supabase);
+    console.log(`  ALERT_MODE=redirect — sending to ${selfAddresses.join(', ')} instead of ${would.length} subscriber(s)`);
+    return {
+      mode,
+      from: `TCG Tracker <${gmailUser}>`,
+      recipients: selfAddresses,
+      markNotified: false,
+      transporter: gmail(),
+    };
+  }
+
+  if (mode !== 'dry') {
+    console.warn(`  Unknown ALERT_MODE="${mode}" — falling back to dry (nothing will be sent)`);
+  }
+  const would = await getRecipients(supabase);
+  return { mode: 'dry', from: null, recipients: would, markNotified: false, transporter: null };
+}
+
+async function sendAlerts(insertedProducts) {
   if (insertedProducts.length === 0) {
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: gmailUser, pass: gmailPass },
-  });
   const supabase = initSupabase();
-
-  const recipients = await getRecipients(supabase);
-  if (recipients.length === 0) {
-    console.log('  No active subscribers — skipping email alerts');
-    return;
-  }
+  const channel = await resolveAlertChannel(supabase);
+  if (!channel) return;
+  const { transporter, recipients } = channel;
 
   const productRows = insertedProducts
     .map(
@@ -2493,15 +2646,28 @@ async function sendAlerts(insertedProducts) {
 
   const subject = `TCG Tracker: ${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
 
+  if (channel.mode === 'dry') {
+    console.log(
+      `  ALERT_MODE=dry — would send "${subject}" to ${recipients.length} recipient(s): ${recipients.join(', ') || '(none)'}`,
+    );
+    console.log(`  ${insertedProducts.length} product(s), ${html.length} bytes of HTML — nothing sent, no credits spent`);
+    return; // markNotified is false in dry mode: leave them to alert for real later
+  }
+
   // Send one email per recipient so addresses stay private (no shared To: line).
   let sentCount = 0;
   for (const email of recipients) {
     try {
       await transporter.sendMail({
-        from: `TCG Tracker <${gmailUser}>`,
+        from: channel.from,
         to: email,
-        subject,
+        subject: channel.mode === 'redirect' ? `[redirect] ${subject}` : subject,
         html,
+        // Native unsubscribe button in Gmail/Outlook. Costs nothing and means a
+        // recipient always has an exit even before a hosted endpoint exists.
+        headers: process.env.ALERT_UNSUBSCRIBE_TO
+          ? { 'List-Unsubscribe': `<mailto:${process.env.ALERT_UNSUBSCRIBE_TO}?subject=unsubscribe>` }
+          : undefined,
       });
       sentCount++;
     } catch (sendError) {
@@ -2514,7 +2680,12 @@ async function sendAlerts(insertedProducts) {
     return;
   }
 
-  console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s)`);
+  console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s) [mode=${channel.mode}]`);
+
+  if (!channel.markNotified) {
+    console.log('  Test mode — leaving is_notified untouched so these still alert for real later');
+    return;
+  }
 
   const ids = insertedProducts.map((p) => p.id);
   const { error: updateError } = await supabase
@@ -2576,4 +2747,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, cleanupStaleProducts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts };
