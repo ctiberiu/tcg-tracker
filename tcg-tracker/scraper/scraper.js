@@ -734,6 +734,12 @@ async function scrapeAtuToys(page, store) {
       if (!title || !url || seen.has(url)) continue;
       seen.add(url);
 
+      // Accessories are excluded here rather than downstream: every product
+      // below is marked categoryConfirmed, which bypasses isGameProduct() and
+      // therefore its binder/sleeve/alcove exclusion too. Dropping them at the
+      // source keeps the existing behaviour instead of silently admitting them.
+      if (/binder|sleeve|alcove/i.test(title)) continue;
+
       // Prices render as plain "26 Lei" today, but parse defensively for grouped
       // thousands — decide the decimal separator by whichever comes last.
       let price = null;
@@ -758,7 +764,24 @@ async function scrapeAtuToys(page, store) {
       if (image_url?.startsWith('//')) image_url = 'https:' + image_url;
       else if (image_url?.startsWith('/')) image_url = window.location.origin + image_url;
 
-      results.push({ title, price, url, image_url, store_name: storeName, store_id: storeId, in_stock });
+      // categoryConfirmed: every ATU-Toys store row points at a dedicated
+      // per-game category (/ro/tcg/<game>), so the site's own taxonomy already
+      // guarantees the game — the title heuristic can only lose products here.
+      // It measurably did: of 30 real Magic items, isGameProduct() dropped 13
+      // (Bundle, Prerelease Pack, Secret Lair, Draft Night, Cluedo Edition...)
+      // purely for not containing a keyword like "booster" or "deck". Same
+      // reasoning as the Flamey opt-in documented at the commit() callsite:
+      // trust the source over the heuristic.
+      results.push({
+        title,
+        price,
+        url,
+        image_url,
+        store_name: storeName,
+        store_id: storeId,
+        in_stock,
+        categoryConfirmed: true,
+      });
     }
     return results;
   }, { storeName: store.name, storeId: store.id });
