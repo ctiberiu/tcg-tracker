@@ -81,8 +81,12 @@ jobs:
           # Set to 'live' to switch subscriber alerts onto ZeptoMail.
           ALERT_MODE: ${{ vars.ALERT_MODE || 'gmail' }}
           ZEPTOMAIL_TOKEN: ${{ secrets.ZEPTOMAIL_TOKEN }}
-          ALERT_FROM: ${{ vars.ALERT_FROM }}
-          ALERT_UNSUBSCRIBE_TO: ${{ vars.ALERT_UNSUBSCRIBE_TO }}
+          # Accepted as either a variable or a secret. It is only a From address,
+          # so a variable is the natural home (readable, editable without
+          # rotating) — but it is harmless as a secret and reading both means a
+          # misfiled value doesn't silently blank out and stop `live` sending.
+          ALERT_FROM: ${{ vars.ALERT_FROM || secrets.ALERT_FROM }}
+          ALERT_UNSUBSCRIBE_TO: ${{ vars.ALERT_UNSUBSCRIBE_TO || secrets.ALERT_UNSUBSCRIBE_TO }}
           SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
           SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scraper.js
