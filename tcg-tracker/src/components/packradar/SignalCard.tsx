@@ -30,9 +30,9 @@ export function SignalCard({ game, store, date, title, price, status, imageUrl, 
         flexDirection: 'column',
         minWidth: 0,
         overflow: 'hidden',
-        border: `1px solid ${hover ? 'var(--pr-border-hover)' : 'var(--pr-border)'}`,
+        border: `1px solid ${game.color}`,
         background: 'var(--pr-bg-panel)',
-        boxShadow: `inset 0 2px 0 ${game.color}`,
+        boxShadow: hover ? `0 0 10px ${game.color}4d, inset 0 2px 0 ${game.color}` : `inset 0 2px 0 ${game.color}`,
       }}
     >
       <div style={{ position: 'relative', height: 200, borderBottom: '1px solid var(--pr-border)', background: '#fff' }}>

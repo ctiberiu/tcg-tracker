@@ -27,6 +27,10 @@
   --pr-game-yugioh: #FF8A5C;
   --pr-game-yugioh-dim: #4a3225;
 
+  --pr-popover-bg: #0a130d;
+  --pr-active-bg: #0d1f13;
+  --pr-active-border: #2EE86C66;
+
   --pr-font-mono: 'IBM Plex Mono', monospace;
   --pr-font-display: 'Space Grotesk', sans-serif;
 
@@ -127,32 +131,148 @@
   }
 }
 
-/* FilterRack's store/min/max row — collapsed behind a "FILTERS ▾" disclosure on mobile,
-   always shown on desktop regardless of the toggle state. */
-.pr-filter-extra {
+/* SearchFilterBar — constant-height command bar (search + Channel/Store/Price
+   dropdown buttons). Desktop: single row. Tablet: search takes the full first
+   line, the button group wraps to a second line. Mobile: buttons collapse
+   behind a single "FILTERS · N" trigger that opens a full-height sheet. */
+.pr-searchbar {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
-@media (max-width: 768px) {
-  .pr-filter-extra {
-    display: none;
-  }
+.pr-searchbar-search-input {
+  flex: 1;
+  min-width: 240px;
+}
 
-  .pr-filter-extra.pr-filter-extra--open {
-    display: flex;
+@media (max-width: 1023px) {
+  .pr-searchbar-search-input {
+    min-width: 200px;
   }
 }
 
-.pr-filters-toggle {
+@media (min-width: 640px) and (max-width: 1023px) {
+  .pr-searchbar-search-input {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .pr-searchbar-search-input {
+    min-width: 120px;
+  }
+}
+
+.pr-searchbar-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 639px) {
+  .pr-searchbar-buttons {
+    display: none;
+  }
+}
+
+.pr-filters-trigger {
   display: none;
 }
 
-@media (max-width: 768px) {
-  .pr-filters-toggle {
-    display: block;
+@media (max-width: 639px) {
+  .pr-filters-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 14px;
+    min-height: 44px;
+    background: var(--pr-bg-panel);
+    color: var(--pr-text-mid);
+    font-family: var(--pr-font-mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--pr-border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+}
+
+.pr-dropdown-row:hover {
+  background: #ffffff0d !important;
+}
+
+.pr-active-pills {
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 639px) {
+  .pr-active-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .pr-active-pills::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes pr-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pr-sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.pr-filter-sheet--entering {
+  animation: pr-sheet-in 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.pr-filter-sheet--exiting {
+  animation: pr-sheet-out 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-filter-sheet--entering,
+  .pr-filter-sheet--exiting {
+    animation: none;
+  }
+}
+
+@keyframes pr-shimmer {
+  0% {
+    background-position: -460px 0;
+  }
+  100% {
+    background-position: 460px 0;
+  }
+}
+
+.pr-shimmer {
+  background: linear-gradient(90deg, #0c150f 25%, #152018 50%, #0c150f 75%);
+  background-size: 460px 100%;
+  animation: pr-shimmer 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-shimmer {
+    animation: none;
+    background: #0c150f;
   }
 }
 

@@ -1,16 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
 import { useGameCounts } from '../hooks/useGameCounts'
+import { useStoreCounts } from '../hooks/useStoreCounts'
 import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
   NavBar,
   PageHeader,
-  FilterRack,
+  SearchFilterBar,
   SignalCard,
+  SignalCardSkeleton,
   CtaButton,
   PackRadarFooter,
   MobileTabBar,
@@ -18,23 +20,35 @@ import {
   type GameKey,
 } from '../components/packradar'
 
+const SKELETON_COUNT = 8
+
 export function SignalLogPage() {
   const [searchParams] = useSearchParams()
 
   const { stores } = useStores()
   const { overallLastSweepAt, healthy, storeHealths } = useStoreHealth()
 
-  const [storeFilter, setStoreFilter] = useState(() => {
+  const [storeFilters, setStoreFilters] = useState<string[]>(() => {
     const raw = searchParams.get('store')
-    return raw ? getStoreBaseName(raw) : ''
+    return raw ? [getStoreBaseName(raw)] : []
   })
-  const [gameFilter, setGameFilter] = useState<GameKey | null>((searchParams.get('game') as GameKey) || null)
+  const [gameFilters, setGameFilters] = useState<GameKey[]>(() => {
+    const raw = searchParams.get('game') as GameKey | null
+    return raw ? [raw] : []
+  })
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
-  // Hidden for now — we only show in-stock items until that changes.
+  // No standalone control — the log only ever shows in-stock signals.
   const inStockOnly = true
   const [search, setSearch] = useState('')
+  // Debounced so keystrokes don't each fire a fetch (and re-trigger the loading skeleton).
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sort, setSort] = useState<ProductSort>('newest')
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timeout)
+  }, [search])
 
   // A physical store has one `stores` row per game (see storeName.ts) — the
   // filter dropdown shows one entry per base name, and selecting it resolves
@@ -45,19 +59,22 @@ export function SignalLogPage() {
     [stores],
   )
   const storeIds = useMemo(
-    () => (storeFilter ? stores.filter((s) => getStoreBaseName(s.name) === storeFilter).map((s) => s.id) : undefined),
-    [storeFilter, stores],
+    () =>
+      storeFilters.length > 0
+        ? stores.filter((s) => storeFilters.includes(getStoreBaseName(s.name))).map((s) => s.id)
+        : undefined,
+    [storeFilters, stores],
   )
 
   const filters = useMemo<ProductFilters>(() => ({
     storeIds,
-    game: gameFilter ?? undefined,
+    games: gameFilters.length > 0 ? gameFilters : undefined,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-    search: search.trim() || undefined,
+    search: debouncedSearch.trim() || undefined,
     sort,
-  }), [storeIds, gameFilter, minPrice, maxPrice, inStockOnly, search, sort])
+  }), [storeIds, gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
 
@@ -66,8 +83,8 @@ export function SignalLogPage() {
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     inStockOnly,
-    search: search.trim() || undefined,
-  }), [storeIds, minPrice, maxPrice, inStockOnly, search])
+    search: debouncedSearch.trim() || undefined,
+  }), [storeIds, minPrice, maxPrice, inStockOnly, debouncedSearch])
 
   const { counts } = useGameCounts(countFilters)
 
@@ -76,6 +93,35 @@ export function SignalLogPage() {
       .filter((key) => (counts[key] ?? 0) > 0)
       .map((key) => ({ game: GAMES[key], count: counts[key] ?? 0 }))
   }, [counts])
+
+  const storeCountFilters = useMemo(() => ({
+    games: gameFilters.length > 0 ? gameFilters : undefined,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    inStockOnly,
+    search: debouncedSearch.trim() || undefined,
+  }), [gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch])
+
+  const { counts: storeCounts } = useStoreCounts(stores, storeCountFilters)
+
+  const storeOptions = useMemo(
+    () =>
+      storeBaseNames
+        .map((name) => ({ name, count: storeCounts[name] ?? 0 }))
+        .sort((a, b) => b.count - a.count),
+    [storeBaseNames, storeCounts],
+  )
+
+  const hasActiveFilters = Boolean(search || gameFilters.length || storeFilters.length || minPrice || maxPrice)
+
+  const clearAllFilters = () => {
+    setSearch('')
+    setDebouncedSearch('')
+    setGameFilters([])
+    setStoreFilters([])
+    setMinPrice('')
+    setMaxPrice('')
+  }
 
   const lastSweepLabel = overallLastSweepAt
     ? `${Math.max(0, Math.round((Date.now() - new Date(overallLastSweepAt).getTime()) / 60000))} MIN AGO`
@@ -93,27 +139,37 @@ export function SignalLogPage() {
         meta={`${totalCount ?? products.length} SIGNALS · ${respondingCount}/${stores.length} STORES RESPONDING · LAST SWEEP ${lastSweepLabel}`}
       />
 
-      <div style={{ padding: '0 var(--pr-gutter)' }}>
-        <FilterRack
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 30,
+          background: 'var(--pr-bg)',
+          padding: '14px var(--pr-gutter)',
+          borderBottom: '1px solid var(--pr-border)',
+        }}
+      >
+        <SearchFilterBar
           search={search}
           onSearchChange={setSearch}
-          store={storeFilter}
-          onStoreChange={setStoreFilter}
-          storeOptions={storeBaseNames}
-          minPrice={minPrice}
-          onMinPriceChange={setMinPrice}
-          maxPrice={maxPrice}
-          onMaxPriceChange={setMaxPrice}
           channels={channels}
-          activeGame={gameFilter}
-          onGameChange={setGameFilter}
+          selectedChannels={gameFilters}
+          onChannelsChange={setGameFilters}
+          stores={storeOptions}
+          selectedStores={storeFilters}
+          onStoresChange={setStoreFilters}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onPriceChange={(min, max) => {
+            setMinPrice(min)
+            setMaxPrice(max)
+          }}
+          resultCount={totalCount ?? products.length}
         />
-      </div>
 
-      <div style={{ padding: '28px var(--pr-gutter) 0', flex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2 }}>
-            SHOWING {products.length} OF {totalCount ?? products.length} SIGNALS
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+          <span style={{ fontSize: 10, color: loading ? 'var(--pr-signal)' : 'var(--pr-text-dim)', letterSpacing: 2 }}>
+            {loading ? '● SWEEPING RADAR…' : `SHOWING ${products.length} OF ${totalCount ?? products.length} SIGNALS`}
           </span>
           <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
             SORT:
@@ -140,9 +196,15 @@ export function SignalLogPage() {
             </span>
           </span>
         </div>
+      </div>
 
+      <div style={{ padding: '20px var(--pr-gutter) 0', flex: 1 }}>
         {loading && (
-          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading signals…</p>
+          <div className="pr-signal-grid">
+            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <SignalCardSkeleton key={i} />
+            ))}
+          </div>
         )}
 
         {error && (
@@ -152,7 +214,31 @@ export function SignalLogPage() {
         )}
 
         {!loading && !error && products.length === 0 && (
-          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>No signals found.</p>
+          <p style={{ color: 'var(--pr-text-dim)', fontSize: 13, letterSpacing: 0.5 }}>
+            {hasActiveFilters ? (
+              <>
+                NO SIGNALS MATCH THESE FILTERS ·{' '}
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'var(--pr-signal)',
+                    fontSize: 13,
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  CLEAR ALL
+                </button>
+              </>
+            ) : (
+              'No signals found.'
+            )}
+          </p>
         )}
 
         {!loading && !error && products.length > 0 && (
