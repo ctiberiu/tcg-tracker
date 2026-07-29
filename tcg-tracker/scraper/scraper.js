@@ -2599,14 +2599,52 @@ async function resolveAlertChannel(supabase) {
     .filter(Boolean);
 
   if (mode === 'redirect') {
-    if (!gmailUser || !gmailPass || selfAddresses.length === 0) {
-      console.log('  ALERT_MODE=redirect but GMAIL_USER / GMAIL_APP_PASSWORD / ALERT_EMAIL_TO not set — skipping');
+    if (selfAddresses.length === 0) {
+      console.log('  ALERT_MODE=redirect but ALERT_EMAIL_TO not set — nowhere safe to send, skipping');
       return null;
     }
     // Who it WOULD have gone to, surfaced so a redirect run still exercises the
     // subscriber lookup rather than silently bypassing it.
     const would = await getRecipients(supabase);
-    console.log(`  ALERT_MODE=redirect — sending to ${selfAddresses.join(', ')} instead of ${would.length} subscriber(s)`);
+
+    // Prefer the REAL production transport. A redirect run's whole purpose is to
+    // rehearse a live send safely, and routing it over Gmail would exercise the
+    // one path that was never in doubt — the recipient would see a gmail.com DKIM
+    // signature and learn nothing about whether the ZeptoMail domain setup works.
+    // Sending over ZeptoMail to your own address costs a single credit and is the
+    // only way to verify authentication (dkim/dmarc pass, correct From, bounce
+    // path) before a subscriber is ever involved.
+    const zeptoPass = process.env.ZEPTOMAIL_TOKEN;
+    const zeptoFrom = process.env.ALERT_FROM;
+    if (zeptoPass && zeptoFrom) {
+      console.log(
+        `  ALERT_MODE=redirect — ZeptoMail → ${selfAddresses.join(', ')} instead of ${would.length} subscriber(s) (costs 1 credit per recipient)`,
+      );
+      return {
+        mode,
+        from: zeptoFrom,
+        recipients: selfAddresses,
+        markNotified: false,
+        transporter: nodemailer.createTransport({
+          host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
+          port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
+          secure: false,
+          auth: { user: process.env.ZEPTOMAIL_USER ?? 'emailapikey', pass: zeptoPass },
+        }),
+      };
+    }
+
+    // ZeptoMail not configured yet — fall back to Gmail so the mode still works
+    // as a pure content/formatting check. Says so explicitly, because the sender
+    // domain differs and the authentication headers will NOT be meaningful.
+    if (!gmailUser || !gmailPass) {
+      console.log('  ALERT_MODE=redirect but neither ZeptoMail nor Gmail is configured — skipping');
+      return null;
+    }
+    console.log(
+      `  ALERT_MODE=redirect — ZeptoMail not configured, falling back to Gmail → ${selfAddresses.join(', ')}. ` +
+        'Content check only: DKIM/DMARC headers will show gmail.com, not your domain.',
+    );
     return {
       mode,
       from: `TCG Tracker <${gmailUser}>`,
