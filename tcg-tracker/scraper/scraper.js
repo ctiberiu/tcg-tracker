@@ -2530,6 +2530,11 @@ async function getRecipients(supabase) {
  *   redirect send the REAL rendered email over Gmail to ALERT_EMAIL_TO — full
  *            end-to-end verification of content/links/formatting with ZeptoMail
  *            never touched
+ *   gmail    real subscribers, over Gmail — i.e. exactly the pre-ZeptoMail
+ *            behaviour. Free, and keeps a small known tester audience receiving
+ *            alerts while the ZeptoMail path is still being set up. Only
+ *            appropriate while every subscriber is someone you know: Gmail SMTP
+ *            is not a bulk sender and will throttle/flag a real audience.
  *   live     ZeptoMail → the real subscribers table
  *
  * `markNotified` is false in both test modes on purpose: marking products notified
@@ -2570,6 +2575,21 @@ async function resolveAlertChannel(supabase) {
         auth: { user, pass },
       }),
     };
+  }
+
+  if (mode === 'gmail') {
+    if (!gmailUser || !gmailPass) {
+      console.log('  ALERT_MODE=gmail but GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping');
+      return null;
+    }
+    const recipients = await getRecipients(supabase);
+    if (recipients.length === 0) {
+      console.log('  No active subscribers — skipping email alerts');
+      return null;
+    }
+    // Real audience, so is_notified IS set: these are genuine alerts and must not
+    // re-fire on the next run.
+    return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
   }
 
   // Both test modes need somewhere safe to land: the admin address, over Gmail.

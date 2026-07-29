@@ -73,6 +73,16 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          # Which transport subscriber restock alerts use. A repo VARIABLE (not a
+          # secret) so it can be read and flipped from the Actions UI without
+          # rotating anything. Defaults to 'gmail' — the pre-ZeptoMail behaviour —
+          # so that forgetting to set it keeps alerts working rather than silently
+          # stopping them (the scraper's own default is the safer 'dry').
+          # Set to 'live' to switch subscriber alerts onto ZeptoMail.
+          ALERT_MODE: ${{ vars.ALERT_MODE || 'gmail' }}
+          ZEPTOMAIL_TOKEN: ${{ secrets.ZEPTOMAIL_TOKEN }}
+          ALERT_FROM: ${{ vars.ALERT_FROM }}
+          ALERT_UNSUBSCRIBE_TO: ${{ vars.ALERT_UNSUBSCRIBE_TO }}
           SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
           SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scraper.js
