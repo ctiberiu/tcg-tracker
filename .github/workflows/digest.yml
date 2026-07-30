@@ -1,0 +1,58 @@
+name: Weekly Scraper Health Digest
+
+# Deliberately a SEPARATE workflow from scraper.yml. That one runs every 2
+# minutes; a digest on that schedule would send ~5,000 emails a week. Giving the
+# digest its own cron means no day/hour guard has to be threaded through the
+# scraper's hot path, and no future edit to the scraper can accidentally start
+# sending it.
+on:
+  schedule:
+    # 07:00 UTC every Monday — a Monday-morning read of the week just gone.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Render and log the digest without emailing it'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tcg-tracker/scraper
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tcg-tracker/scraper/package-lock.json
+
+      # No `npx playwright install` step: digest.js is standalone and never
+      # launches a browser, so the job needs only the npm deps.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send digest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          # Admin ops mail: Gmail to ALERT_EMAIL_TO only. ALERT_MODE, ZeptoMail
+          # and the subscribers table are the metered commercial path and are
+          # intentionally absent here.
+          DIGEST_DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node digest.js
