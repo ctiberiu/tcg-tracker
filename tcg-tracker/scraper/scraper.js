@@ -2089,9 +2089,157 @@ async function notifyStoreDisabled(store, count) {
   }
 }
 
+/** Ceiling on the walk. Purely a LOAD/blast-radius guard, not a safety one:
+ *  under the no-new-URLs stop every store terminates at the end of its own
+ *  catalogue, so nothing can walk forever and termination does not depend on
+ *  this number. (That was not true of the earlier stock-boundary stop, where a
+ *  shop hiding out-of-stock product would never show a boundary.)
+ *
+ *  Because it is only a load guard, raising it for a specific platform is safe
+ *  — and the stop-reason log says when to: a cap-hit whose LAST page still has
+ *  in-stock product means the cap is cutting off real stock there.
+ *
+ *  Measured: Krit (Yu-Gi-Oh!) serves 122 products over 6 pages and does NOT
+ *  terminate before this cap — it stops at 5 with its in-stock run (48, pages
+ *  1-2) fully captured, which is the benign case. */
+const PAGINATION_MAX_PAGES = 5;
+
+/** Don't walk a page 1 that is too small to BE a full page. The truncating
+ *  stores serve 14-34 products on page 1; the genuinely small catalogues
+ *  (Foon 3, Hobby-Planet Riftbound 2) serve a handful and are complete as-is.
+ *  Below this we treat page 1 as the whole catalogue and spend no extra
+ *  request — "costs nothing where nothing is wrong". */
+const PAGINATION_MIN_PAGE_1 = 10;
+
+/** Scrapers that already walk their own pagination. Left alone entirely. The
+ *  browserless types (shopify/ozone/*_api) never reach here — fetchStoreData
+ *  special-cases them before the browser branch. */
+const SELF_PAGINATING_TYPES = new Set(['pokemania', 'woocommerce']);
+
 /**
- * Main scraper — fetches stores from DB, iterates, collects products.
+ * Page N of a store's listing. `?page=N` is the default because it is what Krit
+ * uses and what most of these platforms accept; setting it via URLSearchParams
+ * also correctly REPLACES an existing page param (five Krit rows already carry
+ * `?page=1&sort=...`) rather than appending a second one.
+ *
+ * Per-type overrides belong here as they are discovered. Deliberately not a
+ * `stores` column: this is scraper mechanics, not per-store data, and a column
+ * would have to be maintained on every row.
  */
+function buildPageUrl(store, pageNum) {
+  const url = new URL(store.url);
+  url.searchParams.set('page', String(pageNum));
+  return url.toString();
+}
+
+/**
+ * Keep fetching pages while every product on the page is in stock.
+ *
+ * Why: most scrapers fetch page 1 and stop. If page 1 is 100% in stock you have
+ * never observed the boundary where stock ends, so there is probably more
+ * in-stock product beyond it. Measured on Krit (Yu-Gi-Oh!): page 1 served 24
+ * in-stock products, page 2 another 24, and only page 3 reached out-of-stock
+ * product — the scraper was capturing a quarter of that store's live inventory.
+ * Where page 1 already contains an out-of-stock item the boundary HAS been seen,
+ * so nothing extra is fetched and unaffected stores pay nothing.
+ *
+ * IMPORTANT — saturation is evaluated on the page just fetched, never against
+ * the `products` table. The table accumulates history and flips items to
+ * out-of-stock once they disappear, so a store whose live page 1 is 100% in
+ * stock can still show out-of-stock rows in the DB. Those are two different
+ * measurements and only the live one detects truncation. (The weekly digest's
+ * saturation section necessarily reads the table, so it is a weak hint and is
+ * NOT expected to agree with this.)
+ *
+ * CRITICAL — stock state is the ENTRY trigger only, never the stop condition.
+ * The authoritative stop is "this page yielded no new product URLs", i.e. depth
+ * tracks catalogue size, which is stable run to run. An earlier draft stopped on
+ * the first page containing out-of-stock product, which would have made depth a
+ * function of live stock: a store whose page 1 went from 24/24 to 23/24 in stock
+ * would stop at page 1 that run, pages 2+ would be absent, the staleness sweep
+ * would mark them out-of-stock, and the next run that walked further would
+ * "restock" them. That is exactly the false-restock incident documented at
+ * scrapePokemania (see the comment on its null-page retry) — reached by design
+ * intent rather than by render failure. One stop condition, not two that
+ * disagree under stock churn.
+ *
+ * Stops on: a page yielding no new URLs (real last page, a wrong page param, or
+ * the site clamping an out-of-range page back to the last valid one — all three
+ * look the same and all three should stop), a nav error, or the page cap.
+ * The stop REASON is logged: it is the diagnostic that tells us, from the first
+ * week of Actions logs, which of the unvalidated platforms actually paginate.
+ */
+async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) {
+  const all = [...firstPageProducts];
+  if (SELF_PAGINATING_TYPES.has(store.scraper_type)) return all;
+  if (all.length < PAGINATION_MIN_PAGE_1) return all;
+  // Entry trigger only — see the note above on why this must not also stop us.
+  if (!all.every((p) => p.in_stock === true)) return all;
+
+  const seen = new Set(all.map((p) => normalizeProductUrl(p.url)));
+  const done = (reason, pagesFetched) => {
+    console.log(
+      `  ${store.name}: pagination stopped (${reason}) after ${pagesFetched} page(s), ${all.length} products`,
+    );
+    return all;
+  };
+
+  // Per-page in-stock counts make `cap-hit` actionable at zero extra cost. The
+  // ONLY question worth asking on a cap-hit is whether the cap cut off real
+  // stock, and the last page's in-stock count answers it directly:
+  //   last page 0 in stock    → the in-stock run ended before the cap; the
+  //                             catalogue is merely deeper. Benign (Krit).
+  //   last page HAS in stock  → the cap may be truncating real stock on this
+  //                             platform. Investigate; raising the cap for it
+  //                             is safe (see the note on PAGINATION_MAX_PAGES).
+  // Deliberately NOT inferring shop type from this. "Every page 100% in stock"
+  // cannot distinguish a shop that hides out-of-stock product (benign) from one
+  // whose in-stock catalogue is genuinely deeper than the cap (real truncation),
+  // and those want opposite responses — so classifying it would file the second
+  // as the first, hiding exactly the failure this epic exists to fix. The
+  // observation above holds for sorted and unsorted stores alike without it.
+  // A clamped page can't reach cap-hit at all — no-new-urls fires first.
+  let lastPageInStock = all.length;
+
+  console.log(`  ${store.name}: page 1 fully in stock (${all.length}) — walking for more`);
+
+  for (let pageNum = 2; pageNum <= PAGINATION_MAX_PAGES; pageNum++) {
+    // Same 2-5s band as the inter-store jitter. Pagination multiplies requests
+    // per store, and the 2026-07-04 mass-auto-disable (see the loop in
+    // scrapeAll) is why bursts from one runner IP are avoided.
+    await new Promise((r) => setTimeout(r, 2000 + Math.floor(Math.random() * 3000)));
+
+    let pageProducts;
+    try {
+      await page.goto(buildPageUrl(store, pageNum), { waitUntil: 'load', timeout: 30000 });
+      const result = await scrapeFn(page, store);
+      pageProducts = Array.isArray(result) ? result : (result?.products ?? []);
+    } catch (err) {
+      return done(`page ${pageNum} error: ${err.message.split('\n')[0]}`, pageNum - 1);
+    }
+
+    const fresh = pageProducts.filter((p) => !seen.has(normalizeProductUrl(p.url)));
+    if (fresh.length === 0) return done('no-new-urls', pageNum - 1);
+
+    for (const p of fresh) seen.add(normalizeProductUrl(p.url));
+    all.push(...fresh);
+
+    lastPageInStock = pageProducts.filter((p) => p.in_stock === true).length;
+    console.log(
+      `  ${store.name}: page ${pageNum} +${fresh.length} new, ${lastPageInStock}/${pageProducts.length} in stock (${all.length} so far)`,
+    );
+  }
+
+  // The actionable case: we stopped at the cap while the last page STILL had
+  // in-stock product, so the cap is cutting off real stock and should go up for
+  // this platform. The other two are benign and self-explanatory.
+  const capDiagnosis =
+    lastPageInStock > 0
+      ? `⚠ ${lastPageInStock} still in stock on the last page — the cap may be truncating real stock here, raise it for this platform`
+      : 'last page had no in-stock product — catalogue is just deeper than the cap, benign';
+  return done(`cap-hit: ${capDiagnosis}`, PAGINATION_MAX_PAGES);
+}
+
 /**
  * Fetch a store's raw products + block signals. Shopify stores SKIP the wasted
  * Playwright page load entirely (scrapeShopify does its own JSON fetch and never
@@ -2149,14 +2297,21 @@ async function fetchStoreData(store, browser) {
     // Scrapers return either a plain products array or, if they opt into the
     // confirmed-empty signal (e.g. scrapeSmyk), { products, confirmedEmpty }.
     const result = await scrapeFn(page, store);
-    const raw = Array.isArray(result) ? result : (result?.products ?? []);
+    const firstPage = Array.isArray(result) ? result : (result?.products ?? []);
     const confirmedEmpty = Array.isArray(result) ? false : result?.confirmedEmpty === true;
+    // status/challenged stay as read from page 1 — they are the store's block
+    // signals, and re-reading them per page would let a later page's transient
+    // hiccup reclassify an otherwise healthy scrape.
+    const raw = await paginateWhileSaturated(page, store, scrapeFn, firstPage);
     return { raw, status, challenged, confirmedEmpty };
   } finally {
     await context.close();
   }
 }
 
+/**
+ * Main scraper — fetches stores from DB, iterates, collects products.
+ */
 async function scrapeAll() {
   // Startup jitter (0–20s): runs triggered close together (GitHub's native cron +
   // an external cron-job.org dispatch) then don't check due stores in lockstep.
@@ -2513,7 +2668,12 @@ function sanitizeUrl(url) {
 
 /**
  * Send email alerts for newly inserted products via Gmail SMTP (nodemailer).
- * Sends one message per recipient, then updates is_notified=true on success.
+ * Sends one message per recipient, then stamps is_notified=true on success.
+ *
+ * is_notified is BOOKKEEPING ONLY — it is written here and never read back
+ * anywhere in the codebase. It does not suppress anything. Repeat alerts are
+ * prevented by the transition check in syncToSupabase: a product alerts when it
+ * is newly inserted and in stock, or when it moves out-of-stock -> in-stock.
  */
 /**
  * Resolve the list of recipient emails for alerts.
@@ -2610,8 +2770,12 @@ async function resolveAlertChannel(supabase) {
       console.log('  No active subscribers — skipping email alerts');
       return null;
     }
-    // Real audience, so is_notified IS set: these are genuine alerts and must not
-    // re-fire on the next run.
+    // Real audience, so is_notified IS set. NOTE: that flag is bookkeeping only —
+    // nothing ever reads it back (its only use is the write in sendAlerts). What
+    // actually stops an alert re-firing is the transition test in syncToSupabase:
+    // a product alerts when it is newly inserted and in stock, or when it goes
+    // out-of-stock -> in-stock. On the next run it is already present with
+    // in_stock=true, so there is no transition and no second alert.
     return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
   }
 
@@ -2764,7 +2928,12 @@ async function sendAlerts(insertedProducts) {
   console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s) [mode=${channel.mode}]`);
 
   if (!channel.markNotified) {
-    console.log('  Test mode — leaving is_notified untouched so these still alert for real later');
+    // Bookkeeping only: is_notified is never read, so leaving it unset changes
+    // nothing about what alerts later. Whether a product alerts again is decided
+    // by the in-stock transition check in syncToSupabase, not by this flag — a
+    // product seeded during a test run is already in_stock=true next run, so
+    // there is no transition and it does NOT re-alert.
+    console.log('  Test mode — leaving is_notified untouched');
     return;
   }
 
@@ -2828,4 +2997,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts };
+export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
