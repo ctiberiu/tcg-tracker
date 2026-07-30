@@ -764,11 +764,20 @@ async function scrapeAtuToys(page, store) {
       if (!title || !url || seen.has(url)) continue;
       seen.add(url);
 
-      // Accessories are excluded here rather than downstream: every product
-      // below is marked categoryConfirmed, which bypasses isGameProduct() and
-      // therefore its binder/sleeve/alcove exclusion too. Dropping them at the
-      // source keeps the existing behaviour instead of silently admitting them.
-      if (/binder|sleeve|alcove/i.test(title)) continue;
+      // Accessories are RETURNED, not skipped — they just don't get the
+      // categoryConfirmed pass, so isGameProduct() drops them downstream exactly
+      // as it always has.
+      //
+      // Skipping them here instead cost a store: ATU-Toys' One Piece category is
+      // 15 products and every one is a card sleeve, so `continue` returned an
+      // empty array. An empty array is indistinguishable from a total scrape
+      // failure — classifyOutcome saw rawCount 0, called it a block, and 17
+      // strikes later the store auto-disabled while the page was serving fine.
+      //
+      // Returning them keeps rawCount honest (15 products WERE found), so the
+      // outcome is `success` with nothing kept — which is the truth: the scraper
+      // works, the category has no TCG product in it.
+      const isAccessory = /binder|sleeve|alcove/i.test(title);
 
       // Prices render as plain "26 Lei" today, but parse defensively for grouped
       // thousands — decide the decimal separator by whichever comes last.
@@ -802,7 +811,13 @@ async function scrapeAtuToys(page, store) {
       // purely for not containing a keyword like "booster" or "deck". Same
       // reasoning as the Flamey opt-in documented at the commit() callsite:
       // trust the source over the heuristic.
+      //
+      // Accessories are the one exception: they get categoryConfirmed=false so
+      // isGameProduct() still drops them, but they remain in `raw` so an
+      // all-accessory category reads as "scraper worked, nothing to keep"
+      // rather than as a scrape failure.
       results.push({
+        categoryConfirmed: !isAccessory,
         title,
         price,
         url,
@@ -810,7 +825,6 @@ async function scrapeAtuToys(page, store) {
         store_name: storeName,
         store_id: storeId,
         in_stock,
-        categoryConfirmed: true,
       });
     }
     return results;
@@ -1402,7 +1416,6 @@ async function scrapeFlameyApi(_page, store) {
         // Matched an exact category id (Flamey's own taxonomy), not a text
         // search — skip the generic TCG-keyword title heuristic, which would
         // wrongly drop things like "Premium Collection"/"Coin Set".
-        categoryConfirmed: true,
       });
     }
 
@@ -1477,7 +1490,6 @@ async function scrapeSecretCardsApi(_page, store) {
         // filter — skip the generic TCG-keyword title heuristic (like Flamey),
         // which would wrongly drop items that don't repeat "Pokemon" in their
         // own name (e.g. a set/box name alone).
-        categoryConfirmed: true,
       });
     }
 
