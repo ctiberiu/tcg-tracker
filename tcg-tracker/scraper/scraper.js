@@ -2089,13 +2089,19 @@ async function notifyStoreDisabled(store, count) {
   }
 }
 
-/**
- * Main scraper — fetches stores from DB, iterates, collects products.
- */
-/** Hard ceiling on the saturation walk. A shop that hides out-of-stock product
- *  entirely always looks saturated, so the walk can never rely on finding a
- *  boundary — this is what makes it safe. Krit terminates naturally after 3
- *  (two full in-stock pages plus the boundary page), so 5 has headroom. */
+/** Ceiling on the walk. Purely a LOAD/blast-radius guard, not a safety one:
+ *  under the no-new-URLs stop every store terminates at the end of its own
+ *  catalogue, so nothing can walk forever and termination does not depend on
+ *  this number. (That was not true of the earlier stock-boundary stop, where a
+ *  shop hiding out-of-stock product would never show a boundary.)
+ *
+ *  Because it is only a load guard, raising it for a specific platform is safe
+ *  — and the stop-reason log says when to: a cap-hit whose LAST page still has
+ *  in-stock product means the cap is cutting off real stock there.
+ *
+ *  Measured: Krit (Yu-Gi-Oh!) serves 122 products over 6 pages and does NOT
+ *  terminate before this cap — it stops at 5 with its in-stock run (48, pages
+ *  1-2) fully captured, which is the benign case. */
 const PAGINATION_MAX_PAGES = 5;
 
 /** Don't walk a page 1 that is too small to BE a full page. The truncating
@@ -2178,6 +2184,23 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
     return all;
   };
 
+  // Per-page in-stock counts make `cap-hit` actionable at zero extra cost. The
+  // ONLY question worth asking on a cap-hit is whether the cap cut off real
+  // stock, and the last page's in-stock count answers it directly:
+  //   last page 0 in stock    → the in-stock run ended before the cap; the
+  //                             catalogue is merely deeper. Benign (Krit).
+  //   last page HAS in stock  → the cap may be truncating real stock on this
+  //                             platform. Investigate; raising the cap for it
+  //                             is safe (see the note on PAGINATION_MAX_PAGES).
+  // Deliberately NOT inferring shop type from this. "Every page 100% in stock"
+  // cannot distinguish a shop that hides out-of-stock product (benign) from one
+  // whose in-stock catalogue is genuinely deeper than the cap (real truncation),
+  // and those want opposite responses — so classifying it would file the second
+  // as the first, hiding exactly the failure this epic exists to fix. The
+  // observation above holds for sorted and unsorted stores alike without it.
+  // A clamped page can't reach cap-hit at all — no-new-urls fires first.
+  let lastPageInStock = all.length;
+
   console.log(`  ${store.name}: page 1 fully in stock (${all.length}) — walking for more`);
 
   for (let pageNum = 2; pageNum <= PAGINATION_MAX_PAGES; pageNum++) {
@@ -2200,10 +2223,21 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
 
     for (const p of fresh) seen.add(normalizeProductUrl(p.url));
     all.push(...fresh);
-    console.log(`  ${store.name}: page ${pageNum} +${fresh.length} new (${all.length} so far)`);
+
+    lastPageInStock = pageProducts.filter((p) => p.in_stock === true).length;
+    console.log(
+      `  ${store.name}: page ${pageNum} +${fresh.length} new, ${lastPageInStock}/${pageProducts.length} in stock (${all.length} so far)`,
+    );
   }
 
-  return done('cap-hit', PAGINATION_MAX_PAGES);
+  // The actionable case: we stopped at the cap while the last page STILL had
+  // in-stock product, so the cap is cutting off real stock and should go up for
+  // this platform. The other two are benign and self-explanatory.
+  const capDiagnosis =
+    lastPageInStock > 0
+      ? `⚠ ${lastPageInStock} still in stock on the last page — the cap may be truncating real stock here, raise it for this platform`
+      : 'last page had no in-stock product — catalogue is just deeper than the cap, benign';
+  return done(`cap-hit: ${capDiagnosis}`, PAGINATION_MAX_PAGES);
 }
 
 /**
@@ -2275,6 +2309,9 @@ async function fetchStoreData(store, browser) {
   }
 }
 
+/**
+ * Main scraper — fetches stores from DB, iterates, collects products.
+ */
 async function scrapeAll() {
   // Startup jitter (0–20s): runs triggered close together (GitHub's native cron +
   // an external cron-job.org dispatch) then don't check due stores in lockstep.
