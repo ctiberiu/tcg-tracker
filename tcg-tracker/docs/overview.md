@@ -9,7 +9,8 @@ TCG Tracker monitors Romanian online stores for Pokemon TCG product availability
 - **Automated scraping** of 5 Romanian TCG stores (Pokemonia, RedGoblin, TCGarena, Hobby-Planet, RegatulJocurilor)
 - **Product dashboard** with filtering by store, price range, stock status, and text search
 - **Admin panel** for managing store configurations and triggering manual scrapes
-- **Email alerts** via Resend API for newly discovered products
+- **Email alerts** for newly discovered products, sent via nodemailer — ZeptoMail for
+  subscribers (gated by `ALERT_MODE`), Gmail for admin/operational mail
 - **Single-user auth** via Supabase Auth with email whitelist
 
 ## Primary Entry Points

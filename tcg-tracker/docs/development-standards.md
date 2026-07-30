@@ -147,7 +147,8 @@ Each scrape function must return `Array<{ title, price, url, image_url, store_na
 
 ### Naming Conventions
 - Frontend env vars: `VITE_` prefix (exposed to client)
-- Scraper env vars: `SUPABASE_URL`, `SUPABASE_KEY`, `RESEND_API_KEY`, `ALERT_EMAIL_TO`
+- Scraper env vars: `SUPABASE_URL`, `SUPABASE_KEY`, `GMAIL_USER`, `GMAIL_APP_PASSWORD`,
+  `ALERT_EMAIL_TO`, `ALERT_MODE`, `ZEPTOMAIL_TOKEN`, `ALERT_FROM` (see `setup.md`)
 - Edge function: Deno `Deno.env.get()`
 
 ### Sensitive Data
@@ -160,11 +161,17 @@ Each scrape function must return `Array<{ title, price, url, image_url, store_na
 ## 8. Testing Standards
 
 ### Current State
-- No test framework configured
-- ESLint is the only automated quality check
+- `vitest ^4.1.10` and `storybook ^10.4.6` are installed — the framework is **not** missing
+- But `vite.config.ts` defines only a browser-mode `storybook` Vitest project, and
+  `scraper/package.json` has no vitest, so there is **no node-environment runner**: a plain
+  `.test.js` against non-DOM code has nowhere to run. See `testing.md` for detail
+- Consequence: pure scraper logic is exported and unit-testable, but gets verified with
+  throwaway `node` harnesses instead of committed tests
+- No `test` script in `package.json`; ESLint is the only automated quality check wired up
 
 ### Recommended Approach (when implemented)
-- **Unit tests**: Vitest for frontend hooks and scraper utility functions
+- **Unit tests**: add a node-environment Vitest project alongside the existing browser one,
+  then cover frontend hooks and scraper utility functions
 - **Integration tests**: Test Supabase queries against a test database
 - **E2E tests**: Playwright Test for critical user flows
 - **Test structure**: Arrange-Act-Assert pattern

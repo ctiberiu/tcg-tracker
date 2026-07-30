@@ -24,5 +24,5 @@
 | Database         | Supabase (PostgreSQL)                        |
 | Deployment       | Vercel (frontend), GitHub Actions (scraper)  |
 | Auth             | Supabase Auth (email/password, single user)  |
-| Notifications    | Resend (email API)                           |
+| Notifications    | nodemailer — ZeptoMail (subscribers), Gmail (admin) |
 | Scraping Engine  | Playwright + stealth plugin                  |

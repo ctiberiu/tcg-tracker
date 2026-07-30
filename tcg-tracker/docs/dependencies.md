@@ -30,7 +30,7 @@
 | `playwright` + `playwright-extra`  | Headless browser automation   | Apache-2.0 |
 | `puppeteer-extra-plugin-stealth`   | Anti-bot detection evasion    | MIT     |
 | `@supabase/supabase-js`           | Database client               | MIT     |
-| `resend`                           | Transactional email API       | MIT     |
+| `nodemailer`                       | SMTP client (Gmail + ZeptoMail)| MIT-0  |
 | `pg` (devDependency)              | PostgreSQL client (migrations)| MIT     |
 
 ## Critical Runtime Dependencies
@@ -38,5 +38,9 @@
 - **Supabase PostgreSQL** — all persistent data (products, stores, scrape_runs)
 - **GitHub Actions** — scraper execution environment
 - **Vercel** — frontend hosting
-- **Resend API** — email notifications (optional; degrades gracefully if not configured)
+- **Gmail SMTP** — admin/operational mail (store auto-disabled, weekly health digest). Not
+  gated by `ALERT_MODE`; skipped silently if `GMAIL_USER`/`GMAIL_APP_PASSWORD`/`ALERT_EMAIL_TO`
+  are unset
+- **ZeptoMail** — subscriber restock alerts, the only metered path. Reached only when
+  `ALERT_MODE=live`
 - **Target store websites** — scraper depends on specific DOM structures of 5 Romanian stores
