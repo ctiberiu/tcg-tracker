@@ -2631,7 +2631,12 @@ function sanitizeUrl(url) {
 
 /**
  * Send email alerts for newly inserted products via Gmail SMTP (nodemailer).
- * Sends one message per recipient, then updates is_notified=true on success.
+ * Sends one message per recipient, then stamps is_notified=true on success.
+ *
+ * is_notified is BOOKKEEPING ONLY — it is written here and never read back
+ * anywhere in the codebase. It does not suppress anything. Repeat alerts are
+ * prevented by the transition check in syncToSupabase: a product alerts when it
+ * is newly inserted and in stock, or when it moves out-of-stock -> in-stock.
  */
 /**
  * Resolve the list of recipient emails for alerts.
@@ -2728,8 +2733,12 @@ async function resolveAlertChannel(supabase) {
       console.log('  No active subscribers — skipping email alerts');
       return null;
     }
-    // Real audience, so is_notified IS set: these are genuine alerts and must not
-    // re-fire on the next run.
+    // Real audience, so is_notified IS set. NOTE: that flag is bookkeeping only —
+    // nothing ever reads it back (its only use is the write in sendAlerts). What
+    // actually stops an alert re-firing is the transition test in syncToSupabase:
+    // a product alerts when it is newly inserted and in stock, or when it goes
+    // out-of-stock -> in-stock. On the next run it is already present with
+    // in_stock=true, so there is no transition and no second alert.
     return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
   }
 
@@ -2882,7 +2891,12 @@ async function sendAlerts(insertedProducts) {
   console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s) [mode=${channel.mode}]`);
 
   if (!channel.markNotified) {
-    console.log('  Test mode — leaving is_notified untouched so these still alert for real later');
+    // Bookkeeping only: is_notified is never read, so leaving it unset changes
+    // nothing about what alerts later. Whether a product alerts again is decided
+    // by the in-stock transition check in syncToSupabase, not by this flag — a
+    // product seeded during a test run is already in_stock=true next run, so
+    // there is no transition and it does NOT re-alert.
+    console.log('  Test mode — leaving is_notified untouched');
     return;
   }
 
