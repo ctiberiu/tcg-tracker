@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
 import { useStoreHealth } from '../hooks/useStoreHealth'
@@ -164,11 +164,7 @@ export function RadarFloorPage() {
           }}
         >
           <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>NO NEW SIGNALS. RADAR IS LIVE.</span>
-          <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>
-            <Link to="/privacy" style={{ color: 'var(--pr-text-dim)' }}>PRIVACY</Link>
-            {' · '}
-            PACKRADAR · RO SWEEP · 2026
-          </span>
+          <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>PACKRADAR · RO SWEEP · 2026</span>
         </div>
       </div>
 
