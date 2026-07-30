@@ -19,7 +19,7 @@
 ## Fragile Areas
 
 - **Store scraper functions** — tightly coupled to each store's current HTML structure
-- **`isTcgProduct()` keyword filter** — hardcoded keyword lists; false positives/negatives for new product naming patterns
+- **`isGameProduct()` keyword filter** — hardcoded keyword lists; false positives/negatives for new product naming patterns
 - **Edge Function CORS** — hardcoded default origin; must be updated for new deployment URLs
 - **Polling in AdminPage** — 5-second interval polling for scrape run status with 5-minute timeout; no WebSocket/realtime fallback
 

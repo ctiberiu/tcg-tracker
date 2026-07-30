@@ -34,7 +34,7 @@ Adding a node project to `vite.config.ts` is the unblocking step.
 - Test component rendering with `@testing-library/react`
 
 ### Scraper (recommended: Vitest or Node test runner)
-- Unit test `isTcgProduct()` filter function
+- Unit test `isGameProduct(game, title)` filter function
 - Mock `page.evaluate()` results for each scraper function
 
 ### E2E (recommended: Playwright Test)

@@ -18,7 +18,7 @@ Monolith with two independently deployed runtimes sharing a Supabase PostgreSQL 
 ### Scraper (`scraper/`)
 - **scraper.js** — main script that fetches store configs from DB, launches Playwright, runs store-specific scrape functions, upserts products, and sends email alerts
 - **Store scrapers**: pokemonia (Gomag), shopify, hobby_planet (MerchantPro), regatul_jocurilor (PrestaShop) — each uses `page.evaluate()` to extract products from DOM
-- **isTcgProduct filter** — keyword-based filter to exclude non-TCG merchandise
+- **isGameProduct filter** — keyword-based filter to exclude non-TCG merchandise
 
 ### Supabase Edge Function (`supabase/functions/trigger-scrape/`)
 - Deno function that authenticates requests, then dispatches a GitHub Actions workflow via GitHub PAT
