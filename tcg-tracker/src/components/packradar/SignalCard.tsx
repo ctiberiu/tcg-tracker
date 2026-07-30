@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { track } from '@vercel/analytics'
 import { GameBadge } from './GameBadge'
 import { Price } from './Price'
 import { StatusBadge } from './StatusBadge'
@@ -23,6 +24,19 @@ export function SignalCard({ game, store, date, title, price, status, imageUrl, 
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      // The only measure of whether this product actually works: someone saw a
+      // restock and left for the store to buy it. Fired on click rather than via
+      // a beforeunload/sendBeacon dance because target="_blank" keeps this page
+      // alive, so the request is not racing a navigation.
+      //
+      // Deliberately carries no product title or URL — those are free-text and
+      // would put arbitrary strings into analytics. Store, game and status are
+      // low-cardinality and are what the questions are actually about ("which
+      // stores convert", "which games do people click"). Nothing here is
+      // personal data, so this stays consent-free.
+      onClick={() => {
+        track('outbound_click', { store, game: game.key, status })
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
