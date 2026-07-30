@@ -9,7 +9,7 @@ import {
   classifyOutcome,
   applyFailureOutcome,
 } from './block-detection.js';
-import { isStoreDue } from './schedule.js';
+import { isStoreDue, capOnePerDomain, storeHost } from './schedule.js';
 import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
 
 chromium.use(StealthPlugin());
@@ -83,8 +83,38 @@ async function fetchStores(supabase) {
   // count is small and an interval SQL expression is awkward in the JS builder.
   const now = Date.now();
   const due = (data ?? []).filter((s) => isStoreDue(s, now));
-  console.log(`Stores: ${data?.length ?? 0} enabled, ${due.length} due this run`);
-  return due;
+
+  // Domain-aware pacing: `stores` is one row per shop PER GAME, so lexshop.ro is
+  // 9 rows and ramcards/atu-toys/tcgarena are 8 each. The 2-5s inter-store jitter
+  // below spaces requests between ROWS, which achieves nothing when nine of them
+  // are one server — the shop saw nine hits in ~30s then silence, on a precise
+  // cycle. Taking at most one row per domain per run spreads the same work across
+  // runs instead of bunching it, and makes that jitter meaningful again because
+  // consecutive requests now go to different servers.
+  //
+  // Deferred rows are not dropped: they age, so they win their domain on a later
+  // run. Simulated over 60 runs from a cold start (all 67 rows due at once), no
+  // row starves and the worst period is lexshop.ro at 18 min against a 15-min
+  // interval — every other domain sits at the 16-min floor that a 15-min interval
+  // on a 2-minute cron produces anyway, so pacing costs them nothing.
+  const { selected, deferred } = capOnePerDomain(due);
+  if (deferred.length > 0) {
+    // Logged so the reordering is observable rather than assumed.
+    const byHost = new Map();
+    for (const s of deferred) {
+      const host = storeHost(s.url) ?? 'unparseable';
+      byHost.set(host, (byHost.get(host) ?? 0) + 1);
+    }
+    const summary = [...byHost.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([host, n]) => `${host} +${n}`)
+      .join(', ');
+    console.log(`  Deferred ${deferred.length} row(s) whose domain was already claimed this run: ${summary}`);
+  }
+  console.log(
+    `Stores: ${data?.length ?? 0} enabled, ${due.length} due, ${selected.length} scraping this run (max 1 per domain)`,
+  );
+  return selected;
 }
 
 /**
@@ -2089,6 +2119,11 @@ async function notifyStoreDisabled(store, count) {
   }
 }
 
+/** Warn when a run gets close to the 2-minute cron interval. Not a limit —
+ *  nothing is aborted — just the one signal that would otherwise be missing when
+ *  cadence starts to stretch. See the note where it is used. */
+const RUN_DURATION_WARN_SECONDS = 90;
+
 /** Ceiling on the walk. Purely a LOAD/blast-radius guard, not a safety one:
  *  under the no-new-URLs stop every store terminates at the end of its own
  *  catalogue, so nothing can walk forever and termination does not depend on
@@ -2313,6 +2348,7 @@ async function fetchStoreData(store, browser) {
  * Main scraper — fetches stores from DB, iterates, collects products.
  */
 async function scrapeAll() {
+  const runStartedAt = Date.now();
   // Startup jitter (0–20s): runs triggered close together (GitHub's native cron +
   // an external cron-job.org dispatch) then don't check due stores in lockstep.
   const jitterMs = Math.floor(Math.random() * 20_000);
@@ -2396,7 +2432,23 @@ async function scrapeAll() {
 
   await browser?.close();
 
-  console.log(`\nTotal: ${allProducts.length} products scraped`);
+  // Run duration is the input to scheduling cadence, not just a curiosity.
+  // scraper.yml uses `concurrency: group: scraper, cancel-in-progress: false`,
+  // so a run overlapping the next cron tick makes the follow-up queue rather
+  // than run — the effective interval becomes max(cron, run duration). Since
+  // domain-aware pacing gives each row a period of roughly
+  // `rows on its domain x effective interval`, a run creeping past the 2-minute
+  // cron silently stretches every domain's cadence proportionally: lexshop.ro
+  // goes from ~18 min to ~36 min at a 4-minute effective interval. Nothing else
+  // would report that, hence the warning.
+  const runSeconds = (Date.now() - runStartedAt) / 1000;
+  console.log(`\nTotal: ${allProducts.length} products scraped in ${runSeconds.toFixed(1)}s`);
+  if (runSeconds > RUN_DURATION_WARN_SECONDS) {
+    console.warn(
+      `  ⚠ Run took ${runSeconds.toFixed(1)}s, past the ${RUN_DURATION_WARN_SECONDS}s warning threshold and close to the 120s cron interval. ` +
+        `Runs that overlap the next tick queue instead of starting, which stretches every store's effective check interval.`,
+    );
+  }
   return { products: allProducts, scrapedStoreIds };
 }
 
