@@ -11,9 +11,24 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 // Stores sweep on a ~15 min cycle — give some slack before calling a store SLOW/DOWN.
 const SLOW_THRESHOLD_MIN = 25
 const DOWN_THRESHOLD_MIN = 90
-// Recent-products dataset used to derive both "signals in the last 7 days" and
-// "latest signal per store" from a single query, instead of one query per store.
-const RECENT_PRODUCTS_LIMIT = 1000
+
+// PostgREST caps a single response at 1000 rows, so this dataset is paged.
+//
+// It used to be one `.limit(1000)` newest-first slice, which is a GLOBAL budget
+// rather than a time window — and the derived values (signals in the last 7 days,
+// latest signal per store, channel badges) are all per-store. Once total products
+// passed ~1000 the slice stopped reaching every store: measured at 2385 products
+// it covered only 7.2 days and 57 of the 67 stores that have products, so 12
+// stores rendered with 0 signals and no latest signal despite having data.
+//
+// It also degraded silently and continuously — the window shrinks as volume grows,
+// so `signals7d` would have quietly become a 5- then 3-day count with no error, and
+// it crowded out low-volume stores first, which are exactly the ones a health page
+// exists to surface. Paging by time-independent chunks decouples the window from
+// total volume.
+const PAGE_SIZE = 1000
+// Safety ceiling on paging, so a runaway table can't hang a public page.
+const MAX_PRODUCT_PAGES = 20
 
 export interface StoreHealth {
   id: string
@@ -27,6 +42,40 @@ export interface StoreHealth {
   latest: string
   channels: GameInfo[]
   inStockCount: number
+}
+
+interface RecentProduct {
+  store_id: string
+  title: string
+  first_seen: string
+  game: string
+}
+
+/**
+ * Every product row, newest first, paged past PostgREST's 1000-row cap. Stops at
+ * MAX_PRODUCT_PAGES; the resulting slice is still newest-first, so a table that
+ * ever outgrows the ceiling degrades the same way the old code did rather than
+ * worse — but at 20x the headroom, and loudly (see the console warning).
+ */
+async function fetchRecentProducts(): Promise<{ data: RecentProduct[]; error: string | null }> {
+  const rows: RecentProduct[] = []
+  for (let page = 0; page < MAX_PRODUCT_PAGES; page++) {
+    const from = page * PAGE_SIZE
+    const { data, error } = await supabase
+      .from('products')
+      .select('store_id, title, first_seen, game')
+      .order('first_seen', { ascending: false })
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) return { data: [], error: error.message }
+    rows.push(...(data as RecentProduct[]))
+    if (!data || data.length < PAGE_SIZE) return { data: rows, error: null }
+  }
+  console.warn(
+    `useStoreHealth: hit the ${MAX_PRODUCT_PAGES}-page ceiling (${MAX_PRODUCT_PAGES * PAGE_SIZE} products). ` +
+      `Store signal counts may be under-reported — raise MAX_PRODUCT_PAGES or scope this query by time.`,
+  )
+  return { data: rows, error: null }
 }
 
 function formatElapsed(fromIso: string, now: number): string {
@@ -53,11 +102,7 @@ export function useStoreHealth() {
     const [storesRes, runsRes, productsRes, inStockRes] = await Promise.all([
       supabase.from('stores').select('id, name, url').order('name'),
       supabase.from('scrape_runs').select('store_id, status, started_at').order('started_at', { ascending: false }).limit(500),
-      supabase
-        .from('products')
-        .select('store_id, title, first_seen, game')
-        .order('first_seen', { ascending: false })
-        .limit(RECENT_PRODUCTS_LIMIT),
+      fetchRecentProducts(),
       // Explicit wide range rather than a default-limited select — this needs the
       // true total, not just a recent slice (Supabase defaults to a 1000-row cap).
       supabase.from('products').select('store_id').eq('in_stock', true).range(0, 9999),
@@ -74,7 +119,8 @@ export function useStoreHealth() {
       return
     }
     if (productsRes.error) {
-      setError(productsRes.error.message)
+      // fetchRecentProducts returns a plain message string, not a PostgrestError.
+      setError(productsRes.error)
       setLoading(false)
       return
     }
