@@ -70,6 +70,27 @@ async function countRows(queryFactory) {
   return count ?? 0;
 }
 
+/**
+ * A single physical store gets one `stores` row per game it's scraped for
+ * ("RedGoblin" for Pokémon, "RedGoblin (One Piece)" for One Piece — migrations
+ * 025/026), so a row count is roughly 3x the shop count: ATU-Toys is 9 rows and
+ * one shop; RamCards, LexShop and TCGarena are 8 each; Krit is 7.
+ *
+ * SOURCE OF TRUTH is `getStoreBaseName()` in `src/lib/storeName.ts`, used by
+ * useStoreHealth.ts and useStoreCounts.ts to merge rows on the stores page.
+ * digest.js is ESM under scraper/ and cannot import across into src/, so the
+ * regex is duplicated here deliberately. Keep the two identical — a digest that
+ * disagrees with the stores page is worse than one that overstates.
+ */
+function storeBaseName(name) {
+  return String(name ?? '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+/** How many distinct shops a set of rows represents. */
+function countStores(rows) {
+  return new Set(rows.map((r) => storeBaseName(r.name))).size;
+}
+
 function formatDuration(ms) {
   if (!Number.isFinite(ms) || ms < 0) return '—';
   const hours = ms / (60 * 60 * 1000);
@@ -234,11 +255,26 @@ function storeList(items, renderDetail) {
 function renderDigest(data) {
   const { newlyDisabled, flagged, zeroProducts, saturated, totals, storeCounts, now } = data;
 
+  // Every number here is explicitly labelled "stores" or "rows". The old header
+  // said "67 enabled / 89 stores", which were both ROW counts — overstating the
+  // shop count by ~3x — and "22 flagged", which read as contradicting the
+  // "No stores are currently flagged" section below (all 22 flagged rows were
+  // also disabled, and that section deliberately lists only the enabled ones).
+  const flaggedText = storeCounts.flaggedRows === 0
+    ? 'none flagged'
+    : storeCounts.flaggedEnabledRows === 0
+      ? `${storeCounts.flaggedRows} rows flagged, all already disabled`
+      : `${storeCounts.flaggedEnabledRows} of ${storeCounts.flaggedRows} flagged rows still enabled`;
+
   const headline =
     `<p style="font:13px/1.6 -apple-system,Segoe UI,sans-serif;color:#444;margin:0 0 4px">` +
     `Week ending ${escapeHtml(formatDate(new Date(now).toISOString()))} · ` +
-    `${storeCounts.enabled} enabled / ${storeCounts.total} stores · ` +
-    `${storeCounts.flagged} flagged · ${storeCounts.disabled} disabled</p>`;
+    `<strong>${storeCounts.enabledStores} of ${storeCounts.stores} stores enabled</strong> ` +
+    `(${storeCounts.enabledRows} of ${storeCounts.rows} game rows) · ` +
+    `${escapeHtml(flaggedText)}</p>` +
+    `<p style="font:12px/1.5 -apple-system,Segoe UI,sans-serif;color:#777;margin:0 0 4px">` +
+    `Sections below are per <strong>row</strong> — one row per shop per game, so a single ` +
+    `game category can fail while its siblings stay healthy.</p>`;
 
   const disabledHtml = newlyDisabled.length
     ? storeList(
@@ -247,7 +283,7 @@ function renderDigest(data) {
           `disabled ${escapeHtml(formatDate(s.last_scraped_at))} after ` +
           `${s.consecutive_failures} consecutive block-like failures`,
       )
-    : emptyNote(`No stores disabled in the last ${WINDOW_DAYS} days.`);
+    : emptyNote(`No rows disabled in the last ${WINDOW_DAYS} days.`);
 
   const flaggedHtml = flagged.length
     ? storeList(
@@ -256,7 +292,7 @@ function renderDigest(data) {
           `flagged ${escapeHtml(formatDuration(s.flaggedMs))} (${s.consecutive_failures} failures)` +
           (s.pastGrace ? ' <strong style="color:#a94442">— past the 12h grace, will disable on next failure</strong>' : ''),
       )
-    : emptyNote('No stores are currently flagged.');
+    : emptyNote('No enabled rows are currently flagged.');
 
   const neverHtml = zeroProducts.never.length
     ? storeList(zeroProducts.never, () => 'no product has <strong>ever</strong> been recorded')
@@ -267,16 +303,16 @@ function renderDigest(data) {
   const zeroHtml =
     zeroProducts.never.length || zeroProducts.stale.length
       ? `<p style="margin:0 0 8px;font:13px/1.5 -apple-system,Segoe UI,sans-serif;color:#a94442">` +
-        `These stores are <strong>enabled and not flagged</strong>, so nothing else reports them. ` +
+        `These rows are <strong>enabled and not flagged</strong>, so nothing else reports them. ` +
         `They are producing no data.</p>${neverHtml}${staleHtml}`
-      : emptyNote(`Every enabled store has produced product data in the last ${WINDOW_DAYS} days.`);
+      : emptyNote(`Every enabled row has produced product data in the last ${WINDOW_DAYS} days.`);
 
   const saturatedHtml = saturated.length
     ? `<p style="margin:0 0 8px;font:13px/1.5 -apple-system,Segoe UI,sans-serif;color:#666">` +
       `Every recently-seen product is in stock, so the end of the catalogue was never observed — ` +
       `these are likely truncating at page 1. Measured against current (pre-pagination-fix) behaviour.</p>` +
       storeList(saturated, (s) => `${s.recentCount} products, all in stock`)
-    : emptyNote('No enabled store looks truncated.');
+    : emptyNote('No enabled row looks truncated.');
 
   const delta = totals.addedThisWeek - totals.addedPrevWeek;
   const deltaSign = delta > 0 ? '+' : '';
@@ -292,10 +328,10 @@ function renderDigest(data) {
     `<div style="max-width:680px">` +
     `<h1 style="font:700 18px/1.3 -apple-system,Segoe UI,sans-serif;margin:0 0 2px">PackRadar — weekly scraper health</h1>` +
     headline +
-    section('Producing nothing (enabled, unflagged, invisible)', zeroHtml) +
-    section(`Newly disabled (last ${WINDOW_DAYS} days)`, disabledHtml) +
-    section('Currently flagged', flaggedHtml) +
-    section('Likely truncating at page 1', saturatedHtml) +
+    section('Rows producing nothing (enabled, unflagged, invisible)', zeroHtml) +
+    section(`Rows newly disabled (last ${WINDOW_DAYS} days)`, disabledHtml) +
+    section('Rows currently flagged (enabled only)', flaggedHtml) +
+    section('Rows likely truncating at page 1', saturatedHtml) +
     section('Totals', totalsHtml) +
     `</div>`
   );
@@ -341,11 +377,23 @@ async function collectDigest(supabase, now = Date.now()) {
 
   return {
     now,
+    // Rows and stores are both reported, never interchanged. The header speaks in
+    // stores because that is what a reader means by "store"; the detail sections
+    // below stay in rows because a single game category can fail while its
+    // siblings are healthy — ATU-Toys (One Piece) auto-disabled while its 8
+    // siblings sat at zero failures, which is the signal this digest exists for.
     storeCounts: {
-      total: stores.length,
-      enabled: stores.filter((s) => s.is_enabled !== false).length,
-      disabled: stores.filter((s) => s.is_enabled === false).length,
-      flagged: stores.filter((s) => s.is_flagged === true).length,
+      rows: stores.length,
+      enabledRows: stores.filter((s) => s.is_enabled !== false).length,
+      disabledRows: stores.filter((s) => s.is_enabled === false).length,
+      flaggedRows: stores.filter((s) => s.is_flagged === true).length,
+      // A flagged row that is ALSO disabled is history, not a warning. The
+      // flagged SECTION lists only flagged-and-still-enabled rows (the
+      // early-warning case), so the header must distinguish the two or it reads
+      // as contradicting the section below it.
+      flaggedEnabledRows: stores.filter((s) => s.is_flagged === true && s.is_enabled !== false).length,
+      stores: countStores(stores),
+      enabledStores: countStores(stores.filter((s) => s.is_enabled !== false)),
     },
     newlyDisabled: selectNewlyDisabled(stores, windowStart),
     flagged: selectFlagged(stores, now),
@@ -390,11 +438,14 @@ async function sendDigest(html, subject) {
 
 /** Short subject-line summary so the inbox shows severity without opening. */
 function buildSubject(data) {
+  // Every count in the subject is a ROW count, so each says so — the subject is
+  // read before anything that could give it context.
+  const rows = (n) => `${n} row${n === 1 ? '' : 's'}`;
   const silent = data.zeroProducts.never.length + data.zeroProducts.stale.length;
   const parts = [];
-  if (silent) parts.push(`${silent} silent`);
-  if (data.newlyDisabled.length) parts.push(`${data.newlyDisabled.length} disabled`);
-  if (data.flagged.length) parts.push(`${data.flagged.length} flagged`);
+  if (silent) parts.push(`${rows(silent)} silent`);
+  if (data.newlyDisabled.length) parts.push(`${rows(data.newlyDisabled.length)} disabled`);
+  if (data.flagged.length) parts.push(`${rows(data.flagged.length)} flagged`);
   return parts.length
     ? `PackRadar weekly health — ${parts.join(', ')}`
     : 'PackRadar weekly health — all clear';
@@ -406,13 +457,18 @@ async function main() {
   const html = renderDigest(data);
   const subject = buildSubject(data);
 
+  // Counts are labelled row/store here for the same reason they are in the email:
+  // `stores` is one row per shop per game, so the two differ by roughly 3x.
+  const c = data.storeCounts;
   console.log(subject);
+  console.log(`  stores: ${c.enabledStores} of ${c.stores} enabled`);
+  console.log(`  rows:   ${c.enabledRows} of ${c.rows} enabled, ${c.flaggedRows} flagged (${c.flaggedEnabledRows} still enabled)`);
   console.log(
-    `  producing nothing: ${data.zeroProducts.never.length} never, ${data.zeroProducts.stale.length} stale`,
+    `  rows producing nothing: ${data.zeroProducts.never.length} never, ${data.zeroProducts.stale.length} stale`,
   );
-  console.log(`  newly disabled: ${data.newlyDisabled.length}`);
-  console.log(`  flagged: ${data.flagged.length}`);
-  console.log(`  likely truncating: ${data.saturated.length}`);
+  console.log(`  rows newly disabled: ${data.newlyDisabled.length}`);
+  console.log(`  rows flagged and still enabled: ${data.flagged.length}`);
+  console.log(`  rows likely truncating: ${data.saturated.length}`);
   console.log(`  products: ${data.totals.total} total, ${data.totals.addedThisWeek} new this week`);
 
   // DIGEST_DRY_RUN=1 renders and logs without sending — used to verify the
