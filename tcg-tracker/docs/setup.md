@@ -36,8 +36,29 @@ npx playwright install --with-deps chromium
 |--------------------|------------------------------------------|----------|
 | `SUPABASE_URL`     | Supabase project URL                     | Yes      |
 | `SUPABASE_KEY`     | Supabase service role key (for inserts)  | Yes      |
-| `RESEND_API_KEY`   | Resend API key for email alerts          | No       |
-| `ALERT_EMAIL_TO`   | Email address for alert notifications    | No       |
+| `GMAIL_USER`       | Gmail address used as the SMTP sender    | No       |
+| `GMAIL_APP_PASSWORD` | Gmail app password (16 chars)          | No       |
+| `ALERT_EMAIL_TO`   | Admin recipient(s), comma-separated. Also the fallback/redirect inbox | No |
+| `ALERT_MODE`       | Which transport subscriber alerts use — see below. Defaults to `dry` | No |
+| `ZEPTOMAIL_TOKEN`  | Required only when `ALERT_MODE=live`     | No       |
+| `ALERT_FROM`       | From address, required when `ALERT_MODE=live` | No  |
+
+There are **two independent mail paths**, and only one of them can spend money:
+
+- **Admin/operational mail** — store auto-disabled notices and the weekly health digest.
+  Always Gmail, always to `ALERT_EMAIL_TO`, and deliberately **not** gated by `ALERT_MODE`.
+  If the Gmail vars are unset it is skipped silently; the console log is the fallback.
+- **Subscriber restock alerts** — the only metered path, gated by `ALERT_MODE`:
+
+| `ALERT_MODE` | Behaviour |
+|--------------|-----------|
+| `dry` (default) | Render and log only. Sends nothing, spends nothing |
+| `redirect`   | Sends the real rendered email over Gmail to `ALERT_EMAIL_TO`. Full end-to-end check without touching ZeptoMail |
+| `gmail`      | Real subscribers, over Gmail. Free, but Gmail is not a bulk sender |
+| `live`       | ZeptoMail to the real `subscribers` table |
+
+Anything unrecognised falls back to `dry`. In GitHub Actions this is a **repo variable**, not a
+secret — editing `scraper/.env` has no effect on the scheduled run.
 
 ### Supabase Edge Function (set in Supabase dashboard)
 | Variable           | Description                              |

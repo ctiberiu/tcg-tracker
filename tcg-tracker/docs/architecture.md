@@ -37,7 +37,8 @@ Monolith with two independently deployed runtimes sharing a Supabase PostgreSQL 
 [Supabase DB] <-- upsert products ---- [Scraped Data]
        |
        v
-[Resend API] --> Email alerts (new products)
+[nodemailer] --> ZeptoMail --> Subscriber restock alerts (gated by ALERT_MODE)
+       |     \-> Gmail ------> Admin alerts (store auto-disabled, weekly digest)
        |
        v
 [React SPA] <-- reads products/stores from Supabase

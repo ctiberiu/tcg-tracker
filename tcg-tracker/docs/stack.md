@@ -19,7 +19,9 @@
 
 ### Scraper
 - **Playwright** 1.58 + `playwright-extra` — headless browser automation with stealth
-- **Resend** 6.9 — transactional email API for alerts
+- **nodemailer** 6.10 — SMTP client for all outbound mail. Two distinct paths: admin
+  operational mail always goes over Gmail to `ALERT_EMAIL_TO`, and subscriber restock
+  alerts go over ZeptoMail (or Gmail, depending on `ALERT_MODE`)
 
 ### Shared
 - **@supabase/supabase-js** 2.100 — Supabase client (used by both frontend and scraper)

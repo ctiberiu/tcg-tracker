@@ -11,7 +11,7 @@
 | `src/lib/`                              | Supabase client init, TypeScript type definitions|
 | `src/assets/`                           | Static images (hero.png, SVGs)                   |
 | `scraper/`                              | Node.js web scraper script and dependencies      |
-| `supabase/migrations/`                  | SQL migration files (001–006)                    |
+| `supabase/migrations/`                  | SQL migration files (001–029)                    |
 | `supabase/functions/trigger-scrape/`    | Supabase Edge Function (Deno)                    |
 | `.github/workflows/`                    | GitHub Actions workflow for scraper               |
 | `public/`                               | Vite static assets                               |
