@@ -5,6 +5,7 @@ import { SnipePage } from './pages/SnipePage'
 import { RadarFloorPage } from './pages/RadarFloorPage'
 import { SignalLogPage } from './pages/SignalLogPage'
 import { StoresPage } from './pages/StoresPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<RadarFloorPage />} />
         <Route path="/view" element={<SignalLogPage />} />
         <Route path="/stores" element={<StoresPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route
           path="/admin"
           element={
