@@ -94,7 +94,6 @@
 | `url`        | string                | No       | Unique; used for upsert      |
 | `image_url`  | string                | Yes      |                              |
 | `in_stock`   | boolean               | No       |                              |
-| `is_notified`| boolean               | No       | Default false                |
 | `first_seen` | ISO 8601 timestamp    | No       | Preserved across upserts     |
 
 ### Scraper Output Format
