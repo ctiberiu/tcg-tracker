@@ -11,7 +11,10 @@
     "package:extension": "node scripts/package-extension.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "vercel-build": "npm run build && npm run build-storybook -- --output-dir dist/storybook"
+    "vercel-build": "npm run build && npm run build-storybook -- --output-dir dist/storybook",
+    "test": "vitest run --project node",
+    "test:watch": "vitest --project node",
+    "test:all": "vitest run"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",
