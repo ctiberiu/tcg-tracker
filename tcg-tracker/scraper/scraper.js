@@ -43,7 +43,6 @@ const SCRAPER_MAP = {
   regatul_jocurilor: scrapeRegatulJocurilor,
   magento: scrapeMagento,
   krit: scrapeKrit,
-  smyk: scrapeSmyk,
   ozone: scrapeOzone,
   woocommerce: scrapeWooCommerce,
   woocommerce_api: scrapeDexHitApi, // never actually called via this map — fetchStoreData
@@ -728,7 +727,7 @@ async function scrapeOpenCart(page, store) {
  * plain fetch sees zero products. Playwright runs the JS, so scraping still
  * works, but none of the OpenCart selectors (`.product-thumb`) survive.
  *
- * Returns { products, confirmedEmpty } like scrapeSmyk. ATU-Toys keeps category
+ * Returns { products, confirmedEmpty } — the confirmed-empty opt-in. ATU-Toys keeps category
  * pages published even when they carry no stock (verified live: magic-the-gathering
  * has 30 products and riftbound-tcg has 8, while pokemon / yu-gi-oh / weiss-schwarz
  * are legitimately empty). Without the confirmed-empty signal those three would
@@ -897,125 +896,6 @@ async function scrapeKrit(page, store) {
 
     return results;
   }, { storeName: store.name, storeId: store.id });
-}
-
-/**
- * Smyk — custom React platform. The site migrated smyk.ro -> www.smyk.com (the old
- * URL 301-redirects; markup is unchanged). Each product is a `.complex-product`
- * container that holds TWO `a.complex-product__link-wrapper` anchors (image + info),
- * so we iterate the container — not the anchors — to read name, price and image
- * (which live in different anchors) as one unit.
- *
- * Returns { products, confirmedEmpty }: `confirmedEmpty` is true when smyk.com
- * positively reports a legitimately empty search (its dedicated /search-empty
- * route, title "Niciun rezultat"), so classifyOutcome can treat it as 'success'
- * instead of a rawCount===0 'block'. A genuine failure (block/challenge/timeout,
- * layout change) leaves confirmedEmpty false so it still classifies as a block.
- */
-async function scrapeSmyk(page, store) {
-  // Positively detect smyk.com's own "no results" state up front. Two live markers:
-  // the SSR body carries "Niciun rezultat" at the /search URL, and the client JS
-  // then redirects to a dedicated /search-empty route — accept EITHER. Require the
-  // product grid to be absent too, so a results page that happens to contain the
-  // phrase can never be misread as empty. A confirmed-empty search is a normal
-  // outcome (classifyOutcome → 'success'), not a failure that counts toward disable.
-  const confirmedEmpty = await page.evaluate(() => {
-    const noGrid = document.querySelectorAll('.complex-product').length === 0;
-    const emptyRoute = /\/search-empty(\/|$)/.test(location.pathname);
-    // textContent (not innerText) + title: the "Niciun rezultat" marker sits in a
-    // node that's only made visible / promoted to the page title once the client JS
-    // runs, but it is present in the SSR DOM immediately either way.
-    const haystack = `${document.title ?? ''} ${document.body?.textContent ?? ''}`;
-    const emptyMsg = /niciun rezultat|nu am g[ăa]sit|no results found/i.test(haystack);
-    return noGrid && (emptyRoute || emptyMsg);
-  }).catch(() => false);
-  if (confirmedEmpty) {
-    console.log(`  ${store.name}: confirmed empty search (no results) — healthy, not a failure`);
-    return { products: [], confirmedEmpty: true };
-  }
-
-  try {
-    await page.waitForSelector('.complex-product', { timeout: 15000 });
-  } catch {
-    // No grid and no confirmed-empty marker → a genuine failure (block/challenge/
-    // layout change/timeout). Leave confirmedEmpty false so it classifies as a block.
-    console.log(`  ${store.name}: No products found or page timed out`);
-    return { products: [], confirmedEmpty: false };
-  }
-
-  const products = await page.evaluate(({ storeName, storeId }) => {
-    function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('.complex-product');
-    const results = [];
-    const seen = new Set();
-
-    for (const card of cards) {
-      const title = card.querySelector('.complex-product__name')?.textContent?.trim();
-      if (!title) continue;
-
-      // Prefer the product-page anchor (/…/p/…) — some cards lead with a shared
-      // promo/category link that would collide across products under dedup. A
-      // comma selector returns first-in-DOM-order, not by priority, so query in
-      // explicit fallback order.
-      const linkEl = card.querySelector('a[href*="/p/"]')
-        || card.querySelector('a.complex-product__link-wrapper[href]')
-        || card.querySelector('a[href]');
-      const url = linkEl?.href;
-      if (!url || seen.has(url)) continue;
-      seen.add(url);
-
-      let price = null;
-      const priceEl = card.querySelector('.price--new, .complex-product__price');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
-        if (match) {
-          // Locale-agnostic: whichever separator appears LAST is the decimal
-          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
-          // fixed "dot=thousands" assumption silently produced 10158).
-          price = parseFloat(
-            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
-              ? match[1].replace(/\./g, '').replace(',', '.')
-              : match[1].replace(/,/g, ''),
-          );
-        }
-      }
-
-      const imgEl = card.querySelector('img[data-testid="image"], img');
-      // Product images are lazy-loaded: the real URL sits in data-src while `src`
-      // holds a shared "/images/product-cover.jpeg" placeholder until the lazyload
-      // script fires. A headless scrape never scrolls, so prefer data-src.
-      const imgSrc = imgEl?.getAttribute('data-src') || imgEl?.getAttribute('src');
-
-      // Smyk search results include both available and unavailable products;
-      // check for unavailability indicators in the card
-      const cardText = card.textContent ?? '';
-      const unavailable = !!card.querySelector('[class*="unavailable"], button[disabled]')
-        || /indisponibil|stoc epuizat|sold\s*out/i.test(cardText);
-
-      results.push({
-        title,
-        price,
-        url,
-        image_url: normalizeImageUrl(imgSrc, baseUrl),
-        store_name: storeName,
-        store_id: storeId,
-        in_stock: !unavailable,
-      });
-    }
-
-    return results;
-  }, { storeName: store.name, storeId: store.id });
-
-  return { products, confirmedEmpty: false };
 }
 
 /**
@@ -2342,7 +2222,7 @@ async function fetchStoreData(store, browser) {
         .catch(() => false));
 
     // Scrapers return either a plain products array or, if they opt into the
-    // confirmed-empty signal (e.g. scrapeSmyk), { products, confirmedEmpty }.
+    // confirmed-empty signal (e.g. scrapeAtuToys), { products, confirmedEmpty }.
     const result = await scrapeFn(page, store);
     const firstPage = Array.isArray(result) ? result : (result?.products ?? []);
     const confirmedEmpty = Array.isArray(result) ? false : result?.confirmedEmpty === true;
@@ -3142,4 +3022,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
+export { scrapeAll, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };

@@ -25,7 +25,6 @@ const SCRAPER_TYPES: { value: ScraperType; label: string }[] = [
   { value: 'magento', label: 'Magento' },
   { value: 'opencart', label: 'OpenCart' },
   { value: 'krit', label: 'Krit (Next.js)' },
-  { value: 'smyk', label: 'Smyk (custom)' },
   { value: 'ozone', label: 'Ozone (FastSimon)' },
   { value: 'woocommerce', label: 'WooCommerce' },
   { value: 'woocommerce_api', label: 'WooCommerce (Store API)' },

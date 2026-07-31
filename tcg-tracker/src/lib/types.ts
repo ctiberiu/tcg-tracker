@@ -28,7 +28,6 @@ export type ScraperType =
   | 'regatul_jocurilor'
   | 'magento'
   | 'krit'
-  | 'smyk'
   | 'ozone'
   | 'woocommerce'
   | 'woocommerce_api'
