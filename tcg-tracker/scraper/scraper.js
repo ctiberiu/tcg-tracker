@@ -2797,6 +2797,74 @@ async function resolveAlertChannel(supabase) {
   const gmail = () =>
     nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
 
+  // ---------------------------------------------------------------------------
+  // HARD GATE — runs before any mode handling and overrides every mode, `live`
+  // included. Not a default, not a fallback: a local run must be INCAPABLE of
+  // reaching a subscriber or of sending as the official identity.
+  //
+  // It keys off the RUNTIME, not off configuration. ALERT_MODE is a value that
+  // can be inherited — a shell with ALERT_MODE=live exported, or a .env copied
+  // out of the workflow, and a laptop emails real subscribers as
+  // signals@packradar.info. A safety property that depends on remembering to set
+  // something is not a safety property.
+  //
+  // GITHUB_ACTIONS is set by the runner and absent everywhere else, so FORGETTING
+  // IT FAILS CLOSED. That is the whole argument for it over an APP_ENV-style flag,
+  // where forgetting to set it fails open.
+  //
+  // ALLOW_LOCAL_EMAIL=1 is the deliberate escape hatch: verifying the real
+  // ZeptoMail path (DKIM/DMARC) from a laptop is how that was set up originally,
+  // so the capability has to survive — just opt-in and obvious.
+  // ---------------------------------------------------------------------------
+  const isLocalRun = !process.env.GITHUB_ACTIONS && !process.env.ALLOW_LOCAL_EMAIL;
+
+  // `dry` is exempt because it already sends nothing — there is no blast radius to
+  // cap, and overriding it would make every local scrape start emailing the
+  // operator, which is a new behaviour rather than a safety improvement. The gate
+  // constrains modes that WOULD send; it never causes a send that wasn't going to
+  // happen. (See handback note — this is the one precedence call the epic left open.)
+  if (isLocalRun && mode !== 'dry') {
+    const selfAddresses = (process.env.ALERT_EMAIL_TO ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    // Missing config locally means send NOTHING. Explicitly does not fall through
+    // to any other path — falling through is how a safety gate becomes a suggestion.
+    if (selfAddresses.length === 0) {
+      console.warn(
+        `  🔒 LOCAL RUN — ALERT_MODE=${mode} overridden, but ALERT_EMAIL_TO is not set. ` +
+          'Nowhere safe to send, so sending nothing.',
+      );
+      return null;
+    }
+    if (!gmailUser || !gmailPass) {
+      console.warn(
+        `  🔒 LOCAL RUN — ALERT_MODE=${mode} overridden, but GMAIL_USER / GMAIL_APP_PASSWORD are not set. ` +
+          'Refusing to fall back to any other transport, so sending nothing.',
+      );
+      return null;
+    }
+
+    // Loud on purpose. A silent safety net teaches people it isn't there.
+    console.warn(
+      `  🔒 LOCAL RUN (GITHUB_ACTIONS unset) — ALERT_MODE=${mode} OVERRIDDEN. ` +
+        `Sending over Gmail as ${gmailUser} to ${selfAddresses.join(', ')} only. ` +
+        'ZeptoMail, ALERT_FROM and the subscribers table are all unreachable from here. ' +
+        'Set ALLOW_LOCAL_EMAIL=1 to use the real path deliberately.',
+    );
+
+    return {
+      mode: 'local',
+      overriddenMode: mode,
+      from: `TCG Tracker <${gmailUser}>`,
+      recipients: selfAddresses,
+      markNotified: false,
+      transporter: gmail(),
+      subjectPrefix: '[local] ',
+    };
+  }
+
   if (mode === 'live') {
     const user = process.env.ZEPTOMAIL_USER ?? 'emailapikey';
     const pass = process.env.ZEPTOMAIL_TOKEN;
@@ -2953,7 +3021,11 @@ async function sendAlerts(insertedProducts) {
     </table>
   `;
 
-  const subject = `TCG Tracker: ${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
+  // subjectPrefix is set only by the local-run hard gate, so a message that
+  // escaped a laptop is identifiable in the inbox without opening it.
+  const subject =
+    `${channel.subjectPrefix ?? ''}TCG Tracker: ` +
+    `${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
 
   if (channel.mode === 'dry') {
     console.log(
