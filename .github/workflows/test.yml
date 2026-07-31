@@ -67,9 +67,14 @@ jobs:
           NODE_ENV: development
         run: npm run lint
 
+      # NODE_ENV is deliberately NOT set here, unlike the install steps above.
+      # It is needed for `npm ci` (production makes npm omit devDependencies),
+      # but setting it for the BUILD makes Vite emit a React *development*
+      # bundle: 805.8 kB versus 566.4 kB for the same commit. Measured, and it
+      # matches the deployed 565.0 kB almost exactly. Building with it on is why
+      # local numbers looked ~240 kB larger than production and why a bundle-size
+      # investigation was opened against a figure that was never real.
       - name: Typecheck and build
-        env:
-          NODE_ENV: development
         run: npm run build
 
       - name: Unit tests (node project)

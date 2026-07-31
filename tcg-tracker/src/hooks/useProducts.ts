@@ -17,9 +17,15 @@ export interface ProductFilters {
   inStockOnly?: boolean
   search?: string
   sort?: ProductSort
+  /** Rows to fetch per page. Defaults to PAGE_SIZE (100), which is the size the
+   *  signal log's "load more" pagination is built around. The landing page
+   *  renders six cards and set this to 6 rather than fetching 100 and throwing
+   *  away 94 — see useSweepSummary for the wider measurement. */
+  pageSize?: number
 }
 
 export function useProducts(filters: ProductFilters = {}) {
+  const pageSize = filters.pageSize ?? PAGE_SIZE
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -80,36 +86,36 @@ export function useProducts(filters: ProductFilters = {}) {
     setError(null)
 
     async function fetchInitial() {
-      const { data, error, count } = await buildQuery(0, PAGE_SIZE - 1, true)
+      const { data, error, count } = await buildQuery(0, pageSize - 1, true)
 
       if (error) {
         setError(error.message)
       } else {
         setProducts(data as Product[])
-        setHasMore(data.length === PAGE_SIZE)
+        setHasMore(data.length === pageSize)
         setTotalCount(count ?? null)
       }
       setLoading(false)
     }
 
     fetchInitial()
-  }, [buildQuery])
+  }, [buildQuery, pageSize])
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return
 
     setLoadingMore(true)
     const from = products.length
-    const { data, error } = await buildQuery(from, from + PAGE_SIZE - 1)
+    const { data, error } = await buildQuery(from, from + pageSize - 1)
 
     if (error) {
       setError(error.message)
     } else {
       setProducts((prev) => [...prev, ...(data as Product[])])
-      setHasMore(data.length === PAGE_SIZE)
+      setHasMore(data.length === pageSize)
     }
     setLoadingMore(false)
-  }, [products.length, loadingMore, hasMore, buildQuery])
+  }, [products.length, loadingMore, hasMore, buildQuery, pageSize])
 
   return { products, loading, loadingMore, hasMore, totalCount, error, loadMore }
 }

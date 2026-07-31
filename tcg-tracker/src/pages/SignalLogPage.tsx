@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
-import { useStoreHealth } from '../hooks/useStoreHealth'
+import { useSweepSummary } from '../hooks/useSweepSummary'
 import { useGameCounts } from '../hooks/useGameCounts'
 import { useStoreCounts } from '../hooks/useStoreCounts'
 import { getStoreBaseName } from '../lib/storeName'
@@ -26,7 +26,10 @@ export function SignalLogPage() {
   const [searchParams] = useSearchParams()
 
   const { stores } = useStores()
-  const { overallLastSweepAt, healthy, storeHealths } = useStoreHealth()
+  // Summary path, not useStoreHealth: this page renders a health dot, a sweep
+  // time and a responding count. It was paying for the full per-store read —
+  // three pages of the products table — to display three numbers.
+  const { storeCount, respondingCount, overallLastSweepAt, healthy } = useSweepSummary()
 
   const [storeFilters, setStoreFilters] = useState<string[]>(() => {
     const raw = searchParams.get('store')
@@ -126,17 +129,16 @@ export function SignalLogPage() {
   const lastSweepLabel = overallLastSweepAt
     ? `${Math.max(0, Math.round((Date.now() - new Date(overallLastSweepAt).getTime()) / 60000))} MIN AGO`
     : '—'
-  const respondingCount = storeHealths.filter((s) => s.status === 'OK').length
 
   return (
     <div className="packradar pr-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={stores.length} healthy={healthy} />
+      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={storeCount} healthy={healthy} />
       <NavBar active="log" />
 
       <PageHeader
         title="Signal log"
         crumbCurrent="SIGNAL LOG"
-        meta={`${totalCount ?? products.length} SIGNALS · ${respondingCount}/${stores.length} STORES RESPONDING · LAST SWEEP ${lastSweepLabel}`}
+        meta={`${totalCount ?? products.length} SIGNALS · ${respondingCount}/${storeCount} STORES RESPONDING · LAST SWEEP ${lastSweepLabel}`}
       />
 
       <div
