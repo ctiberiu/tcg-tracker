@@ -39,6 +39,21 @@ jobs:
           NODE_ENV: development
         run: npm ci --include=dev
 
+      # scraper/ is a SEPARATE package with its own package.json, and the node
+      # tests import from scraper/scraper.js whose first line is
+      # `import { chromium } from 'playwright-extra'` — a scraper dependency, not
+      # a root one. Without this the suite passes locally (scraper/node_modules
+      # exists from ordinary scraper work) and fails in CI with
+      # ERR_MODULE_NOT_FOUND, which is exactly what happened on the first run.
+      #
+      # --ignore-scripts skips Playwright's browser download: these are node
+      # tests, nothing launches a browser, and the download is ~100MB and slow.
+      - name: Install scraper dependencies
+        working-directory: tcg-tracker/scraper
+        env:
+          NODE_ENV: development
+        run: npm ci --include=dev --ignore-scripts
+
       # NON-BLOCKING, deliberately, and this should be tightened rather than kept.
       # `npm run lint` currently exits 1 on 16 pre-existing problems (8 errors,
       # 8 warnings) in src/hooks/* and SignalLogPage.tsx — none introduced here.
