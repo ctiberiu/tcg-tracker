@@ -2818,12 +2818,21 @@ async function resolveAlertChannel(supabase) {
   // ---------------------------------------------------------------------------
   const isLocalRun = !process.env.GITHUB_ACTIONS && !process.env.ALLOW_LOCAL_EMAIL;
 
-  // `dry` is exempt because it already sends nothing — there is no blast radius to
-  // cap, and overriding it would make every local scrape start emailing the
-  // operator, which is a new behaviour rather than a safety improvement. The gate
-  // constrains modes that WOULD send; it never causes a send that wasn't going to
-  // happen. (See handback note — this is the one precedence call the epic left open.)
-  if (isLocalRun && mode !== 'dry') {
+  // THE INVARIANT, and the test to apply if you are ever tempted to "fix" the
+  // apparent inconsistency below: the gate only ever NARROWS a send that was
+  // already going to happen. It never CAUSES one.
+  //
+  // Hence the gate triggers on an allowlist of modes that actually send, NOT on
+  // `mode !== 'dry'`. Two modes send nothing and must stay that way:
+  //   - `dry`, which has no blast radius to cap. Overriding it would turn "sends
+  //     nothing" into "emails the operator on every local scrape" — a widening
+  //     dressed as a safety control, and the noise would train people to ignore
+  //     the gate that does matter.
+  //   - anything UNRECOGNISED, which falls through to dry below. An allowlist
+  //     keeps that true; a `!== 'dry'` check does not, and would make a typo in
+  //     ALERT_MODE start sending mail that a correct value would not have sent.
+  const SENDING_MODES = new Set(['live', 'gmail', 'redirect']);
+  if (isLocalRun && SENDING_MODES.has(mode)) {
     const selfAddresses = (process.env.ALERT_EMAIL_TO ?? '')
       .split(',')
       .map((e) => e.trim())
