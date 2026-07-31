@@ -67,6 +67,7 @@
 | GitHub Actions dispatch fails  | Verify `GITHUB_PAT` has `actions:write` scope |
 | `npm run dev` serves a blank page, console shows `$RefreshReg$ is not defined` | An ambient `NODE_ENV=production` in your shell. Run `NODE_ENV=development npm run dev`. Verified: the error appears on every route with `NODE_ENV=production` and disappears entirely with `development`, same code. Nothing in the repo sets `NODE_ENV` — it comes from the shell. |
 | `tsc: command not found` after `npm i` | Same cause: with `NODE_ENV=production` npm sets `omit=dev` and prunes all devDependencies. Recover with `NODE_ENV=development npm install --include=dev`. |
+| Local bundle is ~240 kB bigger than production | You built with `NODE_ENV=development`. That is required for `npm install`/`npm ci` (otherwise npm prunes devDependencies) but **must not be used for `npm run build`** — it makes Vite emit a React *development* bundle. Measured on one commit: 805.8 kB with it, 566.4 kB without, against 565.0 kB deployed. Build with `env -u NODE_ENV npm run build`. |
 
 ## Logs
 
