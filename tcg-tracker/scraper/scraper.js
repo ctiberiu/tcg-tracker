@@ -2612,12 +2612,13 @@ function sanitizeUrl(url) {
 
 /**
  * Send email alerts for newly inserted products via Gmail SMTP (nodemailer).
- * Sends one message per recipient, then stamps is_notified=true on success.
+ * Sends one message per recipient.
  *
- * is_notified is BOOKKEEPING ONLY — it is written here and never read back
- * anywhere in the codebase. It does not suppress anything. Repeat alerts are
- * prevented by the transition check in syncToSupabase: a product alerts when it
- * is newly inserted and in stock, or when it moves out-of-stock -> in-stock.
+ * Nothing is stamped on the product afterwards. Repeat alerts are prevented
+ * entirely by the transition check in syncToSupabase: a product alerts when it is
+ * newly inserted AND in stock, or when it moves out-of-stock -> in-stock. On the
+ * next run it is already present with in_stock=true, so there is no transition
+ * and no second alert.
  */
 /**
  * Resolve the list of recipient emails for alerts.
@@ -2664,11 +2665,12 @@ async function getRecipients(supabase) {
  *            is not a bulk sender and will throttle/flag a real audience.
  *   live     ZeptoMail → the real subscribers table
  *
- * `markNotified` is false in both test modes on purpose: marking products notified
- * during a dry/redirect run would permanently suppress their first real alert.
- * The trade-off is that test runs re-alert the same backlog every time (harmless —
- * it only ever reaches you), and that the first `live` run will fire the whole
- * accumulated backlog at once unless it is marked notified beforehand.
+ * `markNotified` records whether a run is a real send or a test one. Nothing acts
+ * on it in production any more — the products.is_notified column it used to stamp
+ * was write-only and was dropped in migration 032 — but it is still the clearest
+ * expression of that distinction and the local-gate assertions check it. See the
+ * handback note on epic 570d2b0a: keeping it is a deliberate call, not an
+ * oversight.
  */
 async function resolveAlertChannel(supabase) {
   const mode = (process.env.ALERT_MODE ?? 'dry').toLowerCase();
@@ -2791,12 +2793,6 @@ async function resolveAlertChannel(supabase) {
       console.log('  No active subscribers — skipping email alerts');
       return null;
     }
-    // Real audience, so is_notified IS set. NOTE: that flag is bookkeeping only —
-    // nothing ever reads it back (its only use is the write in sendAlerts). What
-    // actually stops an alert re-firing is the transition test in syncToSupabase:
-    // a product alerts when it is newly inserted and in stock, or when it goes
-    // out-of-stock -> in-stock. On the next run it is already present with
-    // in_stock=true, so there is no transition and no second alert.
     return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
   }
 
@@ -2921,7 +2917,7 @@ async function sendAlerts(insertedProducts) {
       `  ALERT_MODE=dry — would send "${subject}" to ${recipients.length} recipient(s): ${recipients.join(', ') || '(none)'}`,
     );
     console.log(`  ${insertedProducts.length} product(s), ${html.length} bytes of HTML — nothing sent, no credits spent`);
-    return; // markNotified is false in dry mode: leave them to alert for real later
+    return; // nothing sent, and nothing to stamp — see the note on markNotified above
   }
 
   // Send one email per recipient so addresses stay private (no shared To: line).
@@ -2952,27 +2948,6 @@ async function sendAlerts(insertedProducts) {
 
   console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s) [mode=${channel.mode}]`);
 
-  if (!channel.markNotified) {
-    // Bookkeeping only: is_notified is never read, so leaving it unset changes
-    // nothing about what alerts later. Whether a product alerts again is decided
-    // by the in-stock transition check in syncToSupabase, not by this flag — a
-    // product seeded during a test run is already in_stock=true next run, so
-    // there is no transition and it does NOT re-alert.
-    console.log('  Test mode — leaving is_notified untouched');
-    return;
-  }
-
-  const ids = insertedProducts.map((p) => p.id);
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({ is_notified: true })
-    .in('id', ids);
-
-  if (updateError) {
-    console.error(`  Failed to update is_notified: ${updateError.message}`);
-  } else {
-    console.log(`  Marked ${ids.length} products as notified`);
-  }
 }
 
 // Main entry point (only when run directly, not when imported for tests).
