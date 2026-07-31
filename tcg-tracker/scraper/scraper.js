@@ -2665,12 +2665,11 @@ async function getRecipients(supabase) {
  *            is not a bulk sender and will throttle/flag a real audience.
  *   live     ZeptoMail → the real subscribers table
  *
- * `markNotified` records whether a run is a real send or a test one. Nothing acts
- * on it in production any more — the products.is_notified column it used to stamp
- * was write-only and was dropped in migration 032 — but it is still the clearest
- * expression of that distinction and the local-gate assertions check it. See the
- * handback note on epic 570d2b0a: keeping it is a deliberate call, not an
- * oversight.
+ * `mode` is the single source of truth for whether a run is a real send or a test
+ * one: `live` and `gmail` reach subscribers, `dry`/`redirect`/`local` do not.
+ * There is deliberately no separate stored flag — a `markNotified` field survived
+ * here briefly after products.is_notified was dropped in migration 032, read by
+ * nothing, which is exactly how that column became a trap in the first place.
  */
 async function resolveAlertChannel(supabase) {
   const mode = (process.env.ALERT_MODE ?? 'dry').toLowerCase();
@@ -2750,7 +2749,6 @@ async function resolveAlertChannel(supabase) {
       overriddenMode: mode,
       from: `TCG Tracker <${gmailUser}>`,
       recipients: selfAddresses,
-      markNotified: false,
       transporter: gmail(),
       subjectPrefix: '[local] ',
     };
@@ -2773,7 +2771,6 @@ async function resolveAlertChannel(supabase) {
       mode,
       from,
       recipients,
-      markNotified: true,
       transporter: nodemailer.createTransport({
         host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
         port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
@@ -2793,7 +2790,7 @@ async function resolveAlertChannel(supabase) {
       console.log('  No active subscribers — skipping email alerts');
       return null;
     }
-    return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
+    return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, transporter: gmail() };
   }
 
   // Both test modes need somewhere safe to land: the admin address, over Gmail.
@@ -2828,7 +2825,6 @@ async function resolveAlertChannel(supabase) {
         mode,
         from: zeptoFrom,
         recipients: selfAddresses,
-        markNotified: false,
         transporter: nodemailer.createTransport({
           host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
           port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
@@ -2853,7 +2849,6 @@ async function resolveAlertChannel(supabase) {
       mode,
       from: `TCG Tracker <${gmailUser}>`,
       recipients: selfAddresses,
-      markNotified: false,
       transporter: gmail(),
     };
   }
@@ -2862,7 +2857,7 @@ async function resolveAlertChannel(supabase) {
     console.warn(`  Unknown ALERT_MODE="${mode}" — falling back to dry (nothing will be sent)`);
   }
   const would = await getRecipients(supabase);
-  return { mode: 'dry', from: null, recipients: would, markNotified: false, transporter: null };
+  return { mode: 'dry', from: null, recipients: would, transporter: null };
 }
 
 async function sendAlerts(insertedProducts) {
@@ -2917,7 +2912,7 @@ async function sendAlerts(insertedProducts) {
       `  ALERT_MODE=dry — would send "${subject}" to ${recipients.length} recipient(s): ${recipients.join(', ') || '(none)'}`,
     );
     console.log(`  ${insertedProducts.length} product(s), ${html.length} bytes of HTML — nothing sent, no credits spent`);
-    return; // nothing sent, and nothing to stamp — see the note on markNotified above
+    return; // nothing sent, and nothing to stamp
   }
 
   // Send one email per recipient so addresses stay private (no shared To: line).

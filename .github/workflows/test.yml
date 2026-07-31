@@ -1,0 +1,63 @@
+name: Tests
+
+# Runs the node Vitest project on every push and PR. Deliberately NOT the
+# `storybook` project: that one needs a real Chromium via @vitest/browser-playwright,
+# which is a browser download per run for tests that cover stories rather than logic.
+# `npm run test:all` runs both locally when that is wanted.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tcg-tracker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tcg-tracker/package-lock.json
+
+      # NODE_ENV is forced to development for install and for every step below.
+      # npm reads NODE_ENV=production as `omit=dev` and silently drops all 28
+      # devDependencies — including vitest, typescript and eslint — which then
+      # fails as `vitest: command not found` and reads like the runner is missing
+      # rather than uninstalled. The runner does not set NODE_ENV, but pinning it
+      # means a change to the runner image cannot reintroduce that failure.
+      - name: Install dependencies
+        env:
+          NODE_ENV: development
+        run: npm ci --include=dev
+
+      # NON-BLOCKING, deliberately, and this should be tightened rather than kept.
+      # `npm run lint` currently exits 1 on 16 pre-existing problems (8 errors,
+      # 8 warnings) in src/hooks/* and SignalLogPage.tsx — none introduced here.
+      # Making it blocking today would mean CI is red on its very first run, which
+      # trains people to ignore the badge, and a gate everyone ignores is worse
+      # than no gate. Reporting it without failing keeps the debt visible.
+      # Flip continue-on-error off once those 16 are fixed.
+      - name: Lint (non-blocking — 16 known pre-existing problems)
+        continue-on-error: true
+        env:
+          NODE_ENV: development
+        run: npm run lint
+
+      - name: Typecheck and build
+        env:
+          NODE_ENV: development
+        run: npm run build
+
+      - name: Unit tests (node project)
+        env:
+          NODE_ENV: development
+        run: npm test
