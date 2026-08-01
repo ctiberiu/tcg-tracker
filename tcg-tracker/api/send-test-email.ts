@@ -11,13 +11,31 @@ function escapeHtml(s: string): string {
     .replace(/'/g, '&#39;')
 }
 
+/**
+ * Scheme-check AND escape, matching sanitizeUrl in scraper/scraper.js.
+ *
+ * This previously returned the caller's raw string `u` once the scheme checked
+ * out, straight into an href="..." attribute. `new URL()` accepts `"`, `<` and
+ * `>` in a path, so a product URL of
+ *
+ *   https://evil.test/x"><img src=x onerror=...>
+ *
+ * parsed as https:, passed the check, and was emitted verbatim — closing the
+ * attribute and injecting arbitrary HTML into the email body. Verified against
+ * three payloads, including one that injects a working phishing link.
+ *
+ * Product URLs are scraped from third-party pages, so this is attacker-influenced
+ * input reaching HTML. Returning `p.href` percent-encodes the quote, and
+ * escapeHtml covers the rest.
+ */
 function safeUrl(u: string): string {
   try {
     const p = new URL(u)
-    return p.protocol === 'http:' || p.protocol === 'https:' ? u : '#'
+    if (p.protocol === 'http:' || p.protocol === 'https:') return escapeHtml(p.href)
   } catch {
-    return '#'
+    /* fall through */
   }
+  return '#'
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
