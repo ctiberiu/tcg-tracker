@@ -2208,13 +2208,16 @@ async function fetchStoreData(store, browser) {
 }
 
 /**
- * Request-filter mode. 'assets' blocks image/font/media only; 'off' disables
- * filtering entirely without a deploy; 'crosssite' additionally blocks
- * cross-site subresources and is NOT verified — see request-filter.js.
+ * Request-filter mode. 'assets' (default) blocks image/font/media; 'off'
+ * disables filtering entirely without a deploy.
+ *
+ * An unrecognised value falls back to 'assets' rather than to 'off' — a typo in
+ * this variable must not silently disable filtering, the same lesson as the
+ * ALERT_MODE gate where `mode !== 'dry'` turned a misspelling into a send.
  */
 function filterMode() {
   const m = (process.env.SCRAPER_REQUEST_FILTER ?? 'assets').toLowerCase();
-  return ['off', 'assets', 'crosssite'].includes(m) ? m : 'assets';
+  return ['off', 'assets'].includes(m) ? m : 'assets';
 }
 
 /**
