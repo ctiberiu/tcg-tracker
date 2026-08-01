@@ -9,7 +9,6 @@ export interface Product {
   url: string
   image_url: string | null
   in_stock: boolean
-  is_notified: boolean
   first_seen: string
   game: GameKey
 }
@@ -28,7 +27,6 @@ export type ScraperType =
   | 'regatul_jocurilor'
   | 'magento'
   | 'krit'
-  | 'smyk'
   | 'ozone'
   | 'woocommerce'
   | 'woocommerce_api'

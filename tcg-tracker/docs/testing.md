@@ -2,26 +2,36 @@
 
 ## Current State
 
-**Vitest is installed but there is no node-environment runner, which is not the same as
-"no test framework".** The distinction matters, because the second reading makes testing look
-unavailable when the tooling is mostly already here.
+Two Vitest projects, defined in `vite.config.ts`:
 
-What exists:
-- `vitest ^4.1.10` and `storybook ^10.4.6` in the frontend `devDependencies`
-- `vite.config.ts` defines exactly one Vitest project: `storybook`, running in **browser mode**
-  via `@vitest/browser-playwright`, sourced from the Storybook stories
-- No `test` script in `package.json`
+| project | environment | covers |
+|---|---|---|
+| `node` | node | `scraper/**/*.test.js`, plus `src/**/*.node.test.ts` for non-DOM frontend code |
+| `storybook` | browser (Playwright/Chromium) | the Storybook stories |
 
-What is missing:
-- **A node-environment Vitest project.** Nothing can currently run a plain `.test.js` against
-  non-DOM code
-- `scraper/package.json` has no vitest at all, so scraper logic has no runner of its own
-- No unit, integration or E2E tests outside the Storybook stories
+```
+npm test          # node project only — fast, no browser
+npm run test:watch
+npm run test:all  # both projects, incl. the browser one
+```
 
-Consequence in practice: pure scraper logic (`schedule.js`, `block-detection.js`, `digest.js`)
-is exported and unit-testable, but has been verified with throwaway harnesses run under plain
-`node` rather than committed tests — because there is nowhere for a committed test to live.
-Adding a node project to `vite.config.ts` is the unblocking step.
+Current coverage is the scraper's pure logic:
+
+- `scraper/block-detection.test.js` — `classifyOutcome`, `applyFailureOutcome`,
+  `detectChallengeText`. The pair that gates auto-disable, which has cost real stores twice.
+- `scraper/resolve-alert-channel.test.js` — the local-run hard gate, including that `dry`
+  yields a **null transporter** (that, not the early return in `sendAlerts`, is what makes its
+  real subscriber addresses unreachable).
+
+Still uncovered: `schedule.js` (`capOnePerDomain`, `isStoreDue`), `digest.js` selectors,
+`paginateWhileSaturated`. All already exported and pure — the gap is assertions, not design.
+
+> **Write the assertion even if you are not adding a test file.** For most of this project's
+> life there was no node runner, and roughly nine verification harnesses were written and
+> thrown away. They were never actually blocked: a plain `.mjs` script under `node`, with
+> Supabase stubbed, needs no runner at all — and the one that finally got committed caught a
+> live defect on its first run, one that three reviewers had missed. The barrier was habit,
+> not tooling.
 
 > If a clean install leaves `vitest: command not found`, check `NODE_ENV` first. An ambient
 > `NODE_ENV=production` makes npm set `omit=dev` and silently skip every devDependency.

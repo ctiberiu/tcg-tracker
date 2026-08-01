@@ -1,0 +1,22 @@
+-- Drop products.is_notified. It was write-only: stamped by sendAlerts and never
+-- read back by anything.
+--
+-- Verified before dropping — nine references across the repo, zero of them reads:
+-- one .update() in sendAlerts, its error log, four comments (which existed only to
+-- warn that the flag does nothing), the column definition in 001, and the field on
+-- the Product type. No .eq/.neq/.is/.filter, no conditional, nothing selecting on
+-- it. The sweep covered *.js, *.ts, *.tsx, *.sql, *.mjs and *.json across the whole
+-- repo including tcg-tracker/extension/, plus Supabase views and edge functions.
+--
+-- What actually prevents an alert re-firing is the transition check in
+-- syncToSupabase: a product alerts when it is newly inserted AND in stock, or when
+-- it moves out-of-stock -> in-stock. On the next run it is already present with
+-- in_stock=true, so there is no transition and no second alert. That logic never
+-- consulted this column.
+--
+-- The column was actively harmful, not merely dead: its comments claimed it
+-- suppressed repeat alerts, and reasoning from them produced a wrong architectural
+-- call about the pagination rollout — the belief that switching ALERT_MODE back to
+-- a sending mode would release an accumulated backlog. It would not. Removing the
+-- column removes the thing that kept inviting that inference.
+ALTER TABLE products DROP COLUMN is_notified;

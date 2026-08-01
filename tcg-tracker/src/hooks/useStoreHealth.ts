@@ -2,15 +2,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { GAMES, type GameInfo, type GameKey, type StoreHealthStatus } from '../components/packradar/tokens'
 import { getStoreBaseName } from '../lib/storeName'
-
-// Worse status wins when merging multiple game-rows of the same physical
-// store — a Pokémon row being OK shouldn't hide a One Piece row that's DOWN.
-const STATUS_SEVERITY: Record<StoreHealthStatus, number> = { OK: 0, SLOW: 1, DOWN: 2 }
+import { deriveStoreStatus, worstStatus } from '../lib/storeStatus'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-// Stores sweep on a ~15 min cycle — give some slack before calling a store SLOW/DOWN.
-const SLOW_THRESHOLD_MIN = 25
-const DOWN_THRESHOLD_MIN = 90
 
 // PostgREST caps a single response at 1000 rows, so this dataset is paged.
 //
@@ -99,9 +93,15 @@ export function useStoreHealth() {
     setLoading(true)
     setError(null)
 
-    const [storesRes, runsRes, productsRes, inStockRes] = await Promise.all([
-      supabase.from('stores').select('id, name, url').order('name'),
-      supabase.from('scrape_runs').select('store_id, status, started_at').order('started_at', { ascending: false }).limit(500),
+    // scrape_runs is gone from this list. It was fetched to derive status, but the
+    // table is RLS-restricted to authenticated users, so on the public pages it
+    // returned an empty array every time and the code fell through to a
+    // product-recency guess. Status now comes from the stores row itself.
+    const [storesRes, productsRes, inStockRes] = await Promise.all([
+      supabase
+        .from('stores')
+        .select('id, name, url, last_scraped_at, is_enabled, is_flagged, consecutive_failures')
+        .order('name'),
       fetchRecentProducts(),
       // Explicit wide range rather than a default-limited select — this needs the
       // true total, not just a recent slice (Supabase defaults to a 1000-row cap).
@@ -110,11 +110,6 @@ export function useStoreHealth() {
 
     if (storesRes.error) {
       setError(storesRes.error.message)
-      setLoading(false)
-      return
-    }
-    if (runsRes.error) {
-      setError(runsRes.error.message)
       setLoading(false)
       return
     }
@@ -132,13 +127,6 @@ export function useStoreHealth() {
 
     const now = Date.now()
     const sevenDaysAgo = now - SEVEN_DAYS_MS
-
-    const latestRunByStore = new Map<string, { status: string; started_at: string }>()
-    for (const run of runsRes.data) {
-      if (!latestRunByStore.has(run.store_id)) {
-        latestRunByStore.set(run.store_id, run)
-      }
-    }
 
     const latestProductByStore = new Map<string, { title: string; first_seen: string }>()
     const signals7dByStore = new Map<string, number>()
@@ -175,32 +163,20 @@ export function useStoreHealth() {
     }
 
     const rowHealths: RowHealth[] = storesRes.data.map((store) => {
-      const latestRun = latestRunByStore.get(store.id)
       const latestProduct = latestProductByStore.get(store.id)
 
-      // scrape_runs is RLS-restricted to authenticated users (it can carry internal
-      // error messages), so the anon/public client never sees it here — `latestRun`
-      // is always undefined on the public pages today. Falls back to treating
-      // "last new product seen" as a loose proxy for store health until a real
-      // data source is decided (see task: "Decide store health data source").
-      let status: StoreHealthStatus
-      if (latestRun) {
-        const elapsedMin = (now - new Date(latestRun.started_at).getTime()) / 60000
-        if (latestRun.status === 'failed') {
-          status = 'DOWN'
-        } else if (elapsedMin <= SLOW_THRESHOLD_MIN) {
-          status = 'OK'
-        } else if (elapsedMin <= DOWN_THRESHOLD_MIN) {
-          status = 'SLOW'
-        } else {
-          status = 'DOWN'
-        }
-      } else if (latestProduct) {
-        const elapsedHours = (now - new Date(latestProduct.first_seen).getTime()) / 3600000
-        status = elapsedHours <= 48 ? 'OK' : elapsedHours <= 24 * 7 ? 'SLOW' : 'DOWN'
-      } else {
-        status = 'DOWN'
-      }
+      // Health comes from the scraper's own failure state, shared with
+      // useSweepSummary so the two pages cannot disagree. It replaces a
+      // product-recency fallback this code itself described as "a loose proxy
+      // for store health until a real data source is decided" — that source is
+      // is_enabled/is_flagged/consecutive_failures, which applyFailureOutcome
+      // maintains and migration 015 makes anon-readable.
+      //
+      // The old rule conflated "we cannot reach this shop" with "this shop has
+      // not restocked", so a healthy store with a quiet fortnight read DOWN. It
+      // only ever ran because the scrape_runs query above is RLS-restricted and
+      // returns nothing to an anonymous visitor.
+      const status = deriveStoreStatus(store)
 
       let domain = store.url
       try {
@@ -214,7 +190,7 @@ export function useStoreHealth() {
         domain,
         status,
         signals7d: signals7dByStore.get(store.id) ?? 0,
-        lastSweepAt: latestRun?.started_at ?? latestProduct?.first_seen ?? null,
+        lastSweepAt: store.last_scraped_at ?? null,
         latestProduct,
         games: gamesByStore.get(store.id) ?? new Set(),
         inStockCount: inStockCountByStore.get(store.id) ?? 0,
@@ -228,10 +204,7 @@ export function useStoreHealth() {
     }
 
     const healths: StoreHealth[] = Array.from(rowsByBaseName.entries()).map(([name, rows]) => {
-      const status = rows.reduce<StoreHealthStatus>(
-        (worst, r) => (STATUS_SEVERITY[r.status] > STATUS_SEVERITY[worst] ? r.status : worst),
-        'OK',
-      )
+      const status = worstStatus(rows.map((r) => r.status))
       const lastSweepAt = rows.reduce<string | null>((latest, r) => {
         if (!r.lastSweepAt) return latest
         if (!latest || new Date(r.lastSweepAt) > new Date(latest)) return r.lastSweepAt

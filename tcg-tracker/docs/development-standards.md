@@ -94,7 +94,6 @@
 | `url`        | string                | No       | Unique; used for upsert      |
 | `image_url`  | string                | Yes      |                              |
 | `in_stock`   | boolean               | No       |                              |
-| `is_notified`| boolean               | No       | Default false                |
 | `first_seen` | ISO 8601 timestamp    | No       | Preserved across upserts     |
 
 ### Scraper Output Format
@@ -161,17 +160,17 @@ Each scrape function must return `Array<{ title, price, url, image_url, store_na
 ## 8. Testing Standards
 
 ### Current State
-- `vitest ^4.1.10` and `storybook ^10.4.6` are installed — the framework is **not** missing
-- But `vite.config.ts` defines only a browser-mode `storybook` Vitest project, and
-  `scraper/package.json` has no vitest, so there is **no node-environment runner**: a plain
-  `.test.js` against non-DOM code has nowhere to run. See `testing.md` for detail
-- Consequence: pure scraper logic is exported and unit-testable, but gets verified with
-  throwaway `node` harnesses instead of committed tests
-- No `test` script in `package.json`; ESLint is the only automated quality check wired up
+- Two Vitest projects in `vite.config.ts`: **`node`** (scraper and non-DOM code) and
+  **`storybook`** (browser, via Playwright). See `testing.md`
+- `npm test` runs the node project; `npm run test:all` runs both
+- Covered today: `classifyOutcome` / `applyFailureOutcome` / `detectChallengeText`, and the
+  local-run alert gate. Uncovered: `schedule.js`, the `digest.js` selectors,
+  `paginateWhileSaturated` — all exported and pure, so the gap is assertions, not design
+- ESLint remains the other automated check
 
-### Recommended Approach (when implemented)
-- **Unit tests**: add a node-environment Vitest project alongside the existing browser one,
-  then cover frontend hooks and scraper utility functions
+### Recommended Approach
+- **Unit tests**: put them in the `node` project — `scraper/*.test.js`, or
+  `src/**/*.node.test.ts` for frontend logic that does not need a DOM
 - **Integration tests**: Test Supabase queries against a test database
 - **E2E tests**: Playwright Test for critical user flows
 - **Test structure**: Arrange-Act-Assert pattern

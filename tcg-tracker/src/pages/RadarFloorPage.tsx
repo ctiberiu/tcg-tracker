@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useProducts } from '../hooks/useProducts'
-import { useStores } from '../hooks/useStores'
-import { useStoreHealth } from '../hooks/useStoreHealth'
+import { useSweepSummary } from '../hooks/useSweepSummary'
 import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
@@ -16,9 +15,14 @@ import {
 
 export function RadarFloorPage() {
   const navigate = useNavigate()
-  const { stores } = useStores()
-  const { storeHealths, overallLastSweepAt, healthy } = useStoreHealth()
-  const { products, totalCount, loading } = useProducts({ inStockOnly: true, sort: 'newest' })
+  // useSweepSummary, not useStoreHealth: this page renders a count, a health dot,
+  // a sweep time and six store names. The full hook pages the entire products
+  // table for per-store titles and channel sets that /stores needs and this page
+  // never shows — 7 requests / 78.5 kB over the wire, down to 2 / 7.9 kB.
+  const { stores: storeSummaries, storeCount, overallLastSweepAt, healthy } = useSweepSummary()
+  // Six cards are rendered, so six rows are fetched. This used to take 100 and
+  // discard 94 of them.
+  const { products, totalCount, loading } = useProducts({ inStockOnly: true, sort: 'newest', pageSize: 6 })
 
   const latestSix = products.slice(0, 6)
   const signalCount = totalCount ?? products.length
@@ -29,13 +33,13 @@ export function RadarFloorPage() {
 
   // Compact sweep panel: most recently active stores first, capped so it stays
   // glanceable rather than listing every monitored store (that's what /stores is for).
-  const sweepStores = [...storeHealths]
+  const sweepStores = [...storeSummaries]
     .sort((a, b) => new Date(b.lastSweepAt ?? 0).getTime() - new Date(a.lastSweepAt ?? 0).getTime())
     .slice(0, 6)
 
   return (
     <div className="packradar pr-page">
-      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={stores.length} healthy={healthy} />
+      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={storeCount} healthy={healthy} />
       <NavBar active="landing" />
 
       {/* hero */}

@@ -3,9 +3,10 @@
  *
  * Why this exists: store failures are currently invisible until someone goes
  * looking. ATU-Toys was dark across 8 store rows for days and was only found
- * because the user happened to mention the site had changed its links. Smyk has
- * been enabled with zero products ever recorded and nothing flagged it. A
- * Monday-morning email catches that class of problem in hours, not days.
+ * because the user happened to mention the site had changed its links. Smyk sat
+ * enabled with zero products ever recorded and nothing flagged it — this digest
+ * is what surfaced it, and the row was removed in migration 031. A Monday-morning
+ * email catches that class of problem in hours, not days.
  *
  * Deliberately standalone rather than part of scraper.js:
  *   - scraper.js imports playwright-extra and installs the stealth plugin at
@@ -144,8 +145,10 @@ function selectFlagged(stores, now) {
  *
  * This is the cohort nothing else catches. A store here is not flagged, not
  * disabled, and looks healthy on the dashboard — it simply returns no product
- * rows. Smyk is the worked example: enabled, zero products ever recorded, never
- * flagged, invisible for months.
+ * rows. Smyk was the worked example: enabled, zero products ever recorded, never
+ * flagged, invisible for months — surfaced here, then removed in migration 031.
+ * This section should normally be EMPTY; a permanent entry trains the reader to
+ * skip it, which is why that row was deleted rather than tolerated.
  *
  * Split into two severities because they mean different things:
  *   never  — no product has EVER been recorded for this store. Almost always a

@@ -43,7 +43,6 @@ const SCRAPER_MAP = {
   regatul_jocurilor: scrapeRegatulJocurilor,
   magento: scrapeMagento,
   krit: scrapeKrit,
-  smyk: scrapeSmyk,
   ozone: scrapeOzone,
   woocommerce: scrapeWooCommerce,
   woocommerce_api: scrapeDexHitApi, // never actually called via this map — fetchStoreData
@@ -728,7 +727,7 @@ async function scrapeOpenCart(page, store) {
  * plain fetch sees zero products. Playwright runs the JS, so scraping still
  * works, but none of the OpenCart selectors (`.product-thumb`) survive.
  *
- * Returns { products, confirmedEmpty } like scrapeSmyk. ATU-Toys keeps category
+ * Returns { products, confirmedEmpty } — the confirmed-empty opt-in. ATU-Toys keeps category
  * pages published even when they carry no stock (verified live: magic-the-gathering
  * has 30 products and riftbound-tcg has 8, while pokemon / yu-gi-oh / weiss-schwarz
  * are legitimately empty). Without the confirmed-empty signal those three would
@@ -897,125 +896,6 @@ async function scrapeKrit(page, store) {
 
     return results;
   }, { storeName: store.name, storeId: store.id });
-}
-
-/**
- * Smyk — custom React platform. The site migrated smyk.ro -> www.smyk.com (the old
- * URL 301-redirects; markup is unchanged). Each product is a `.complex-product`
- * container that holds TWO `a.complex-product__link-wrapper` anchors (image + info),
- * so we iterate the container — not the anchors — to read name, price and image
- * (which live in different anchors) as one unit.
- *
- * Returns { products, confirmedEmpty }: `confirmedEmpty` is true when smyk.com
- * positively reports a legitimately empty search (its dedicated /search-empty
- * route, title "Niciun rezultat"), so classifyOutcome can treat it as 'success'
- * instead of a rawCount===0 'block'. A genuine failure (block/challenge/timeout,
- * layout change) leaves confirmedEmpty false so it still classifies as a block.
- */
-async function scrapeSmyk(page, store) {
-  // Positively detect smyk.com's own "no results" state up front. Two live markers:
-  // the SSR body carries "Niciun rezultat" at the /search URL, and the client JS
-  // then redirects to a dedicated /search-empty route — accept EITHER. Require the
-  // product grid to be absent too, so a results page that happens to contain the
-  // phrase can never be misread as empty. A confirmed-empty search is a normal
-  // outcome (classifyOutcome → 'success'), not a failure that counts toward disable.
-  const confirmedEmpty = await page.evaluate(() => {
-    const noGrid = document.querySelectorAll('.complex-product').length === 0;
-    const emptyRoute = /\/search-empty(\/|$)/.test(location.pathname);
-    // textContent (not innerText) + title: the "Niciun rezultat" marker sits in a
-    // node that's only made visible / promoted to the page title once the client JS
-    // runs, but it is present in the SSR DOM immediately either way.
-    const haystack = `${document.title ?? ''} ${document.body?.textContent ?? ''}`;
-    const emptyMsg = /niciun rezultat|nu am g[ăa]sit|no results found/i.test(haystack);
-    return noGrid && (emptyRoute || emptyMsg);
-  }).catch(() => false);
-  if (confirmedEmpty) {
-    console.log(`  ${store.name}: confirmed empty search (no results) — healthy, not a failure`);
-    return { products: [], confirmedEmpty: true };
-  }
-
-  try {
-    await page.waitForSelector('.complex-product', { timeout: 15000 });
-  } catch {
-    // No grid and no confirmed-empty marker → a genuine failure (block/challenge/
-    // layout change/timeout). Leave confirmedEmpty false so it classifies as a block.
-    console.log(`  ${store.name}: No products found or page timed out`);
-    return { products: [], confirmedEmpty: false };
-  }
-
-  const products = await page.evaluate(({ storeName, storeId }) => {
-    function normalizeImageUrl(src, base) {
-      if (!src) return null;
-      src = src.trim();
-      if (src.startsWith('data:')) return null;
-      if (src.startsWith('//')) return 'https:' + src;
-      if (src.startsWith('/')) return base + src;
-      if (src.startsWith('http')) return src;
-      return base + '/' + src;
-    }
-    const baseUrl = window.location.origin;
-    const cards = document.querySelectorAll('.complex-product');
-    const results = [];
-    const seen = new Set();
-
-    for (const card of cards) {
-      const title = card.querySelector('.complex-product__name')?.textContent?.trim();
-      if (!title) continue;
-
-      // Prefer the product-page anchor (/…/p/…) — some cards lead with a shared
-      // promo/category link that would collide across products under dedup. A
-      // comma selector returns first-in-DOM-order, not by priority, so query in
-      // explicit fallback order.
-      const linkEl = card.querySelector('a[href*="/p/"]')
-        || card.querySelector('a.complex-product__link-wrapper[href]')
-        || card.querySelector('a[href]');
-      const url = linkEl?.href;
-      if (!url || seen.has(url)) continue;
-      seen.add(url);
-
-      let price = null;
-      const priceEl = card.querySelector('.price--new, .complex-product__price');
-      if (priceEl) {
-        const match = priceEl.textContent?.trim()?.match(/([\d.,]+)\s*(lei|LEI|RON)/i);
-        if (match) {
-          // Locale-agnostic: whichever separator appears LAST is the decimal
-          // point (LibHumanitas uses "101.58", others use RO "101,58" — a
-          // fixed "dot=thousands" assumption silently produced 10158).
-          price = parseFloat(
-            match[1].lastIndexOf(',') > match[1].lastIndexOf('.')
-              ? match[1].replace(/\./g, '').replace(',', '.')
-              : match[1].replace(/,/g, ''),
-          );
-        }
-      }
-
-      const imgEl = card.querySelector('img[data-testid="image"], img');
-      // Product images are lazy-loaded: the real URL sits in data-src while `src`
-      // holds a shared "/images/product-cover.jpeg" placeholder until the lazyload
-      // script fires. A headless scrape never scrolls, so prefer data-src.
-      const imgSrc = imgEl?.getAttribute('data-src') || imgEl?.getAttribute('src');
-
-      // Smyk search results include both available and unavailable products;
-      // check for unavailability indicators in the card
-      const cardText = card.textContent ?? '';
-      const unavailable = !!card.querySelector('[class*="unavailable"], button[disabled]')
-        || /indisponibil|stoc epuizat|sold\s*out/i.test(cardText);
-
-      results.push({
-        title,
-        price,
-        url,
-        image_url: normalizeImageUrl(imgSrc, baseUrl),
-        store_name: storeName,
-        store_id: storeId,
-        in_stock: !unavailable,
-      });
-    }
-
-    return results;
-  }, { storeName: store.name, storeId: store.id });
-
-  return { products, confirmedEmpty: false };
 }
 
 /**
@@ -2342,7 +2222,7 @@ async function fetchStoreData(store, browser) {
         .catch(() => false));
 
     // Scrapers return either a plain products array or, if they opt into the
-    // confirmed-empty signal (e.g. scrapeSmyk), { products, confirmedEmpty }.
+    // confirmed-empty signal (e.g. scrapeAtuToys), { products, confirmedEmpty }.
     const result = await scrapeFn(page, store);
     const firstPage = Array.isArray(result) ? result : (result?.products ?? []);
     const confirmedEmpty = Array.isArray(result) ? false : result?.confirmedEmpty === true;
@@ -2732,12 +2612,13 @@ function sanitizeUrl(url) {
 
 /**
  * Send email alerts for newly inserted products via Gmail SMTP (nodemailer).
- * Sends one message per recipient, then stamps is_notified=true on success.
+ * Sends one message per recipient.
  *
- * is_notified is BOOKKEEPING ONLY — it is written here and never read back
- * anywhere in the codebase. It does not suppress anything. Repeat alerts are
- * prevented by the transition check in syncToSupabase: a product alerts when it
- * is newly inserted and in stock, or when it moves out-of-stock -> in-stock.
+ * Nothing is stamped on the product afterwards. Repeat alerts are prevented
+ * entirely by the transition check in syncToSupabase: a product alerts when it is
+ * newly inserted AND in stock, or when it moves out-of-stock -> in-stock. On the
+ * next run it is already present with in_stock=true, so there is no transition
+ * and no second alert.
  */
 /**
  * Resolve the list of recipient emails for alerts.
@@ -2784,11 +2665,11 @@ async function getRecipients(supabase) {
  *            is not a bulk sender and will throttle/flag a real audience.
  *   live     ZeptoMail → the real subscribers table
  *
- * `markNotified` is false in both test modes on purpose: marking products notified
- * during a dry/redirect run would permanently suppress their first real alert.
- * The trade-off is that test runs re-alert the same backlog every time (harmless —
- * it only ever reaches you), and that the first `live` run will fire the whole
- * accumulated backlog at once unless it is marked notified beforehand.
+ * `mode` is the single source of truth for whether a run is a real send or a test
+ * one: `live` and `gmail` reach subscribers, `dry`/`redirect`/`local` do not.
+ * There is deliberately no separate stored flag — a `markNotified` field survived
+ * here briefly after products.is_notified was dropped in migration 032, read by
+ * nothing, which is exactly how that column became a trap in the first place.
  */
 async function resolveAlertChannel(supabase) {
   const mode = (process.env.ALERT_MODE ?? 'dry').toLowerCase();
@@ -2796,6 +2677,82 @@ async function resolveAlertChannel(supabase) {
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
   const gmail = () =>
     nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
+
+  // ---------------------------------------------------------------------------
+  // HARD GATE — runs before any mode handling and overrides every mode, `live`
+  // included. Not a default, not a fallback: a local run must be INCAPABLE of
+  // reaching a subscriber or of sending as the official identity.
+  //
+  // It keys off the RUNTIME, not off configuration. ALERT_MODE is a value that
+  // can be inherited — a shell with ALERT_MODE=live exported, or a .env copied
+  // out of the workflow, and a laptop emails real subscribers as
+  // signals@packradar.info. A safety property that depends on remembering to set
+  // something is not a safety property.
+  //
+  // GITHUB_ACTIONS is set by the runner and absent everywhere else, so FORGETTING
+  // IT FAILS CLOSED. That is the whole argument for it over an APP_ENV-style flag,
+  // where forgetting to set it fails open.
+  //
+  // ALLOW_LOCAL_EMAIL=1 is the deliberate escape hatch: verifying the real
+  // ZeptoMail path (DKIM/DMARC) from a laptop is how that was set up originally,
+  // so the capability has to survive — just opt-in and obvious.
+  // ---------------------------------------------------------------------------
+  const isLocalRun = !process.env.GITHUB_ACTIONS && !process.env.ALLOW_LOCAL_EMAIL;
+
+  // THE INVARIANT, and the test to apply if you are ever tempted to "fix" the
+  // apparent inconsistency below: the gate only ever NARROWS a send that was
+  // already going to happen. It never CAUSES one.
+  //
+  // Hence the gate triggers on an allowlist of modes that actually send, NOT on
+  // `mode !== 'dry'`. Two modes send nothing and must stay that way:
+  //   - `dry`, which has no blast radius to cap. Overriding it would turn "sends
+  //     nothing" into "emails the operator on every local scrape" — a widening
+  //     dressed as a safety control, and the noise would train people to ignore
+  //     the gate that does matter.
+  //   - anything UNRECOGNISED, which falls through to dry below. An allowlist
+  //     keeps that true; a `!== 'dry'` check does not, and would make a typo in
+  //     ALERT_MODE start sending mail that a correct value would not have sent.
+  const SENDING_MODES = new Set(['live', 'gmail', 'redirect']);
+  if (isLocalRun && SENDING_MODES.has(mode)) {
+    const selfAddresses = (process.env.ALERT_EMAIL_TO ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    // Missing config locally means send NOTHING. Explicitly does not fall through
+    // to any other path — falling through is how a safety gate becomes a suggestion.
+    if (selfAddresses.length === 0) {
+      console.warn(
+        `  🔒 LOCAL RUN — ALERT_MODE=${mode} overridden, but ALERT_EMAIL_TO is not set. ` +
+          'Nowhere safe to send, so sending nothing.',
+      );
+      return null;
+    }
+    if (!gmailUser || !gmailPass) {
+      console.warn(
+        `  🔒 LOCAL RUN — ALERT_MODE=${mode} overridden, but GMAIL_USER / GMAIL_APP_PASSWORD are not set. ` +
+          'Refusing to fall back to any other transport, so sending nothing.',
+      );
+      return null;
+    }
+
+    // Loud on purpose. A silent safety net teaches people it isn't there.
+    console.warn(
+      `  🔒 LOCAL RUN (GITHUB_ACTIONS unset) — ALERT_MODE=${mode} OVERRIDDEN. ` +
+        `Sending over Gmail as ${gmailUser} to ${selfAddresses.join(', ')} only. ` +
+        'ZeptoMail, ALERT_FROM and the subscribers table are all unreachable from here. ' +
+        'Set ALLOW_LOCAL_EMAIL=1 to use the real path deliberately.',
+    );
+
+    return {
+      mode: 'local',
+      overriddenMode: mode,
+      from: `TCG Tracker <${gmailUser}>`,
+      recipients: selfAddresses,
+      transporter: gmail(),
+      subjectPrefix: '[local] ',
+    };
+  }
 
   if (mode === 'live') {
     const user = process.env.ZEPTOMAIL_USER ?? 'emailapikey';
@@ -2814,7 +2771,6 @@ async function resolveAlertChannel(supabase) {
       mode,
       from,
       recipients,
-      markNotified: true,
       transporter: nodemailer.createTransport({
         host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
         port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
@@ -2834,13 +2790,7 @@ async function resolveAlertChannel(supabase) {
       console.log('  No active subscribers — skipping email alerts');
       return null;
     }
-    // Real audience, so is_notified IS set. NOTE: that flag is bookkeeping only —
-    // nothing ever reads it back (its only use is the write in sendAlerts). What
-    // actually stops an alert re-firing is the transition test in syncToSupabase:
-    // a product alerts when it is newly inserted and in stock, or when it goes
-    // out-of-stock -> in-stock. On the next run it is already present with
-    // in_stock=true, so there is no transition and no second alert.
-    return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, markNotified: true, transporter: gmail() };
+    return { mode, from: `TCG Tracker <${gmailUser}>`, recipients, transporter: gmail() };
   }
 
   // Both test modes need somewhere safe to land: the admin address, over Gmail.
@@ -2875,7 +2825,6 @@ async function resolveAlertChannel(supabase) {
         mode,
         from: zeptoFrom,
         recipients: selfAddresses,
-        markNotified: false,
         transporter: nodemailer.createTransport({
           host: process.env.ZEPTOMAIL_HOST ?? 'smtp.zeptomail.eu',
           port: Number(process.env.ZEPTOMAIL_PORT ?? 587),
@@ -2900,7 +2849,6 @@ async function resolveAlertChannel(supabase) {
       mode,
       from: `TCG Tracker <${gmailUser}>`,
       recipients: selfAddresses,
-      markNotified: false,
       transporter: gmail(),
     };
   }
@@ -2909,7 +2857,7 @@ async function resolveAlertChannel(supabase) {
     console.warn(`  Unknown ALERT_MODE="${mode}" — falling back to dry (nothing will be sent)`);
   }
   const would = await getRecipients(supabase);
-  return { mode: 'dry', from: null, recipients: would, markNotified: false, transporter: null };
+  return { mode: 'dry', from: null, recipients: would, transporter: null };
 }
 
 async function sendAlerts(insertedProducts) {
@@ -2953,14 +2901,18 @@ async function sendAlerts(insertedProducts) {
     </table>
   `;
 
-  const subject = `TCG Tracker: ${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
+  // subjectPrefix is set only by the local-run hard gate, so a message that
+  // escaped a laptop is identifiable in the inbox without opening it.
+  const subject =
+    `${channel.subjectPrefix ?? ''}TCG Tracker: ` +
+    `${insertedProducts.length} product${insertedProducts.length > 1 ? 's' : ''} in stock`;
 
   if (channel.mode === 'dry') {
     console.log(
       `  ALERT_MODE=dry — would send "${subject}" to ${recipients.length} recipient(s): ${recipients.join(', ') || '(none)'}`,
     );
     console.log(`  ${insertedProducts.length} product(s), ${html.length} bytes of HTML — nothing sent, no credits spent`);
-    return; // markNotified is false in dry mode: leave them to alert for real later
+    return; // nothing sent, and nothing to stamp
   }
 
   // Send one email per recipient so addresses stay private (no shared To: line).
@@ -2991,27 +2943,6 @@ async function sendAlerts(insertedProducts) {
 
   console.log(`  Alert email sent to ${sentCount}/${recipients.length} recipient(s) [mode=${channel.mode}]`);
 
-  if (!channel.markNotified) {
-    // Bookkeeping only: is_notified is never read, so leaving it unset changes
-    // nothing about what alerts later. Whether a product alerts again is decided
-    // by the in-stock transition check in syncToSupabase, not by this flag — a
-    // product seeded during a test run is already in_stock=true next run, so
-    // there is no transition and it does NOT re-alert.
-    console.log('  Test mode — leaving is_notified untouched');
-    return;
-  }
-
-  const ids = insertedProducts.map((p) => p.id);
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({ is_notified: true })
-    .in('id', ids);
-
-  if (updateError) {
-    console.error(`  Failed to update is_notified: ${updateError.message}`);
-  } else {
-    console.log(`  Marked ${ids.length} products as notified`);
-  }
 }
 
 // Main entry point (only when run directly, not when imported for tests).
@@ -3061,4 +2992,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeSmyk, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
+export { scrapeAll, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
