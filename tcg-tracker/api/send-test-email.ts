@@ -72,7 +72,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  // Only send to an actual subscriber (RLS lets the authenticated admin read this).
+  // AUTHORISATION, not just authentication. getUser() above proves only that
+  // *some* valid Supabase JWT was presented — never whose. With public signup
+  // enabled, anyone can obtain one, so identity alone gated nothing: any
+  // self-registered account could send mail from the operator's own mailbox.
+  //
+  // `admins` is the server-side notion of "the operator" that this codebase
+  // previously lacked entirely — VITE_ALLOWED_EMAIL is inlined into the client
+  // bundle and is invisible here. See migration 033.
+  //
+  // The self-read policy on `admins` means a non-admin's query returns no rows
+  // rather than an error, so absence is the denial.
+  const { data: adminRow } = await supabase
+    .from('admins')
+    .select('user_id')
+    .eq('user_id', userData.user.id)
+    .maybeSingle()
+  if (!adminRow) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+
+  // Only send to an actual subscriber.
+  //
+  // This check was NOT a control before 033: `subscribers` was
+  // FOR ALL TO authenticated WITH CHECK (true), so an attacker simply inserted
+  // their own address and then satisfied it. That was step one of the chain —
+  // arbitrary recipient, plus content built from `products`, which `stores.url`
+  // write access let them influence. It is a real constraint now only because
+  // the admin check above and 033's policy both hold.
   const { data: sub } = await supabase
     .from('subscribers')
     .select('email')
