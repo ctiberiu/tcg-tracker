@@ -10,6 +10,7 @@ import {
   applyFailureOutcome,
 } from './block-detection.js';
 import { isStoreDue, capOnePerDomain, storeHost } from './schedule.js';
+import { shouldAllowRequest } from './request-filter.js';
 import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
 
 chromium.use(StealthPlugin());
@@ -2203,12 +2204,113 @@ async function fetchStoreData(store, browser) {
   }
 
   const scrapeFn = SCRAPER_MAP[store.scraper_type];
+  return fetchWithFilterFallback(store, browser, scrapeFn);
+}
+
+/**
+ * Request-filter mode. 'assets' blocks image/font/media only; 'off' disables
+ * filtering entirely without a deploy; 'crosssite' additionally blocks
+ * cross-site subresources and is NOT verified — see request-filter.js.
+ */
+function filterMode() {
+  const m = (process.env.SCRAPER_REQUEST_FILTER ?? 'assets').toLowerCase();
+  return ['off', 'assets', 'crosssite'].includes(m) ? m : 'assets';
+}
+
+/**
+ * Scrape a store, and if filtering was active and the result was EMPTY, retry
+ * once with filtering off before believing it.
+ *
+ * This is the safeguard that stops this epic being able to cause the failure it
+ * was warned about. An empty result is indistinguishable from a total scrape
+ * failure: classifyOutcome reads rawCount 0 as `block`, five strikes flag the
+ * store, and twelve hours later it auto-disables — while the shop was serving
+ * product the whole time (see 9bf84aa / ATU-Toys One Piece). If our own filter
+ * causes that, it must be self-diagnosing rather than silent and terminal.
+ *
+ * So: empty + filtering on → one unfiltered retry. If products appear, the
+ * FILTER is the cause. Say so loudly and return them, so the store is scraped
+ * correctly and never classified as blocked on our own doing. If it is still
+ * empty, the store is genuinely failing and the normal path applies unchanged.
+ *
+ * THE INVARIANT: no auto-disable may ever be caused by our own filter. Every
+ * branch below exists to hold that, and it is the thing to preserve if this code
+ * is refactored — not the particular shape of the branches.
+ *
+ * Precedent: scrapePokemania (:318-330) and scrapeWooCommerce (:1111-1119)
+ * already establish "one retry, then fail the store attempt (→ transient, no
+ * stock corruption) rather than lie" as the house response to a render failure.
+ * Both THROW rather than returning empty, precisely so the outcome classifies
+ * transient and cannot reach auto-disable.
+ *
+ * One deliberate difference from that precedent, and from the letter of the
+ * review that asked for it: when the unfiltered retry SUCCEEDS this returns the
+ * products rather than classifying transient. Transient would discard a complete
+ * catalogue we just fetched correctly; returning it classifies `success`, which
+ * both stores the right data and resets the failure streak. It satisfies the
+ * invariant more strongly than transient does, rather than less. The still-empty
+ * case is left exactly as before — that is a genuine store failure and the
+ * pre-existing path is correct for it.
+ *
+ * Cost is one extra page load, only on empty results, which are rare and are
+ * exactly the case worth spending it on.
+ */
+async function fetchWithFilterFallback(store, browser, scrapeFn, fetchPage = fetchStorePage) {
+  const mode = filterMode();
+  const first = await fetchPage(store, browser, scrapeFn, mode);
+  if (mode === 'off' || first.raw.length > 0) return first;
+
+  // A store that POSITIVELY reported "no results" is not a filter failure — it
+  // rendered fine and the category is genuinely empty. Retrying it would spend a
+  // page load per run on every legitimately-empty category forever (ATU-Toys has
+  // three), and worse, the retry would fire constantly and never find anything,
+  // draining the signal value of "the retry fired" down to noise. Observed on
+  // the first live run of this code.
+  if (first.confirmedEmpty === true) return first;
+
+  const retry = await fetchPage(store, browser, scrapeFn, 'off');
+  if (retry.raw.length > 0) {
+    // A retry that fires is a FINDING, not just a net doing its job: this store
+    // depends on something we classified as passive — CSS background-image
+    // tiles, a font-driven layout gate, an image-triggered lazy loader. Report
+    // which store and which resource types were blocked, because "the retry
+    // fired N times" is not actionable and degrades into background noise.
+    const blocked = first.blockedByType ?? {};
+    const detail = Object.entries(blocked).map(([t, n]) => `${t}×${n}`).join(', ') || 'none recorded';
+    console.warn(
+      `  ⚠ ${store.name}: 0 products WITH request filtering (mode=${mode}), ${retry.raw.length} WITHOUT it. ` +
+        `THE FILTER IS THE CAUSE, not the store — using the unfiltered result, so this cannot auto-disable. ` +
+        `Blocked during the failed attempt: ${detail}. ` +
+        `This store needs a documented exception, or SCRAPER_REQUEST_FILTER=off.`,
+    );
+    return retry;
+  }
+  return first;
+}
+
+async function fetchStorePage(store, browser, scrapeFn, mode) {
+  // Counted so a fired retry can name the resource types involved rather than
+  // just reporting that it fired.
+  const blockedByType = {};
   const context = await browser.newContext({
     userAgent: BROWSER_UA,
     viewport: { width: 1280, height: 800 },
   });
   try {
     const page = await context.newPage();
+
+    // Filter on the CONTEXT, not the page, so it also covers the navigations
+    // paginateWhileSaturated performs.
+    if (mode !== 'off') {
+      await context.route('**/*', (route) => {
+        const req = route.request();
+        const type = req.resourceType();
+        const { allow } = shouldAllowRequest(store.url, req.url(), type, mode);
+        if (!allow) blockedByType[type] = (blockedByType[type] ?? 0) + 1;
+        return allow ? route.continue() : route.abort();
+      });
+    }
+
     const response = await page.goto(store.url, { waitUntil: 'load', timeout: 30000 });
     const status = response?.status() ?? 0;
 
@@ -2230,7 +2332,7 @@ async function fetchStoreData(store, browser) {
     // signals, and re-reading them per page would let a later page's transient
     // hiccup reclassify an otherwise healthy scrape.
     const raw = await paginateWhileSaturated(page, store, scrapeFn, firstPage);
-    return { raw, status, challenged, confirmedEmpty };
+    return { raw, status, challenged, confirmedEmpty, blockedByType };
   } finally {
     await context.close();
   }
@@ -2262,6 +2364,20 @@ async function scrapeAll() {
   // those skips launching Chromium entirely.
   const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api', 'secretcards_api']);
   const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
+  // ⚠️ DO NOT ADD `--no-sandbox`, and read this before changing launch options.
+  //
+  // The Chromium sandbox is the strongest control in this scraper — it is what
+  // stands between hostile third-party JS on a shop page and a runner holding
+  // the service-role SUPABASE_KEY, GMAIL_APP_PASSWORD and ZEPTOMAIL_TOKEN. Most
+  // CI scrapers disable it; this one does not.
+  //
+  // Written as a conditional because a bare prohibition gets deleted by whoever
+  // cannot see what it protects: IF you hit `Running as root without --no-sandbox
+  // is not supported` or a similar permission error, the fix is NOT this flag.
+  // It is to run as a non-root user, or add SYS_ADMIN / use --user in the
+  // container, or use Playwright's own Docker image which is already configured
+  // for it. Reach for those first; the flag trades the whole protection for a
+  // one-line workaround.
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
   const scrapedStoreIds = [];
@@ -2992,4 +3108,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
+export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
