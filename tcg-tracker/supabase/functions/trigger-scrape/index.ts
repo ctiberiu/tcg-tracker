@@ -46,6 +46,30 @@ serve(async (req) => {
       })
     }
 
+    // AUTHORISATION, not just authentication. getUser() proves only that *some*
+    // valid Supabase JWT was presented, never whose — and public signup is
+    // enabled, so anyone can obtain one. Without this check any self-registered
+    // account could dispatch a GitHub Actions workflow on demand: unbounded CI
+    // minutes, and forced scraper traffic to third-party shops from the
+    // operator's runner IP, which is the burst profile the 2026-07-04 mass
+    // auto-disable was attributed to.
+    //
+    // `admins` is the server-side notion of "the operator" (migration 033).
+    // VITE_ALLOWED_EMAIL is inlined into the client bundle and is invisible here.
+    // The self-read policy means a non-admin gets no rows rather than an error,
+    // so absence is the denial.
+    const { data: adminRow } = await supabase
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!adminRow) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const { store_id, run_id } = await req.json()
     if (!store_id) {
       return new Response(JSON.stringify({ error: 'store_id is required' }), {

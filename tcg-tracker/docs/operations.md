@@ -28,6 +28,26 @@
 - Migration files are in `supabase/migrations/` numbered sequentially
 - Apply new migrations via Supabase SQL editor or `scraper/run-migrations.js`
 
+> **After applying `033_admins_and_operator_rls.sql`, run `SELECT * FROM admins;` and confirm
+> exactly one row.** Access to `stores`, `scrape_runs` and `subscribers` — and both the
+> `send-test-email` and `trigger-scrape` endpoints — now require membership in that table.
+> The migration seeds it by looking up the operator's address in `auth.users`, and raises a
+> `WARNING` if it ends up empty. **That warning scrolls past in psql output**, and the symptom
+> of a wrong address is a locked-out operator rather than an error: the Admin UI silently
+> cannot write. Assert the positive case rather than hoping the negative one did not fire.
+>
+> Membership is deliberately not grantable through the API — `admins` has a SELECT policy and
+> no write policy at all — so add operators via the SQL editor or the service-role key.
+
+> **Before trusting `033`, run the RLS test:**
+> `psql "$DATABASE_URL" -f supabase/tests/operator_rls_test.sql`
+> It wraps in a transaction and `ROLLBACK`s, seeds its own synthetic admin, and asserts both
+> directions — a non-admin cannot read `subscribers` or write `stores` or grant itself admin,
+> `anon` cannot read `subscribers` but *can* still read `stores`/`products` (the public pages
+> depend on that), and the admin *can* still write `stores`. That last assertion is the one
+> that catches a lockout, and a suite of only-negative assertions passes happily against a
+> policy that denies everyone.
+
 ### Adding a New Store
 1. Add the store via the Admin UI (name, URL, scraper type, selectors)
 2. If the store uses an unsupported platform, add a new scrape function in `scraper/scraper.js` and register it in `SCRAPER_MAP`

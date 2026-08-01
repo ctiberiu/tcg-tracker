@@ -95,6 +95,14 @@ $$;
 REVOKE ALL ON FUNCTION is_admin() FROM public;
 GRANT EXECUTE ON FUNCTION is_admin() TO authenticated;
 
+-- Belt and braces. Supabase's default privileges on new public tables almost
+-- certainly already cover this — 016's snipe tables work without an explicit
+-- grant — but the failure mode if that assumption is ever wrong is severe and
+-- asymmetric: is_admin() would raise `permission denied for table admins` on
+-- EVERY policy evaluation, which is a total lockout rather than a false. RLS
+-- still decides which rows are visible; this only grants the right to ask.
+GRANT SELECT ON TABLE admins TO authenticated;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Replace the three blanket policies
 -- ─────────────────────────────────────────────────────────────────────────────
