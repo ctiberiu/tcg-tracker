@@ -348,3 +348,203 @@
     box-shadow: 0 0 0 0 rgba(46, 232, 108, 0);
   }
 }
+
+/* ─── 404 ──────────────────────────────────────────────────────────────────────
+   Ported from the approved design (Trade Card Arcade Redesign / "PackRadar 404").
+
+   ONE breakpoint governs the stacked layout: the moment the scope drops below the
+   copy instead of sitting beside it, the text centres too. An earlier version
+   stacked at 900px but only centred at 560px, which left a band where the column
+   was stacked and still hard-left — that reads as a bug, not a layout. */
+.pr-404 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 56px;
+  align-items: center;
+  padding: 72px var(--pr-gutter) 88px;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.pr-404__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--pr-status-gone);
+  margin-bottom: 20px;
+}
+
+.pr-404__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pr-status-gone);
+  box-shadow: 0 0 10px var(--pr-status-gone);
+  animation: pr-404-pulse 2.4s ease-in-out infinite;
+  flex: none;
+}
+
+.pr-404__code {
+  font-family: var(--pr-font-display);
+  font-weight: 700;
+  font-size: 96px;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  color: var(--pr-text-bright);
+  margin: 0 0 16px;
+}
+
+.pr-404__lede {
+  font-family: var(--pr-font-display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--pr-text-bright);
+  margin: 0 0 16px;
+}
+
+.pr-404__sub {
+  max-width: 460px;
+  line-height: 1.7;
+  font-family: var(--pr-font-display);
+  font-size: 15.5px;
+  color: var(--pr-text-mid);
+  margin: 0 0 30px;
+  text-wrap: pretty;
+}
+
+/* Same solid-green primary as the landing hero's OPEN SIGNAL LOG.
+   Selector is `.packradar a.pr-404__cta`, not `.pr-404__cta`, on purpose:
+   `.packradar a` (line ~325) sets color:var(--pr-signal) at specificity (0,1,1),
+   which beats a single class (0,1,0) — so a plain `.pr-404__cta { color }` lost and
+   the label rendered green-on-green, i.e. an invisible button on a solid block.
+   Any new link styled as a filled button in this file needs the same shape. */
+.packradar a.pr-404__cta {
+  display: inline-block;
+  padding: 14px 26px;
+  background: var(--pr-signal);
+  color: var(--pr-bg);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  font-family: var(--pr-font-mono);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.packradar a.pr-404__cta:hover {
+  background: var(--pr-text-bright);
+  color: var(--pr-bg);
+}
+
+.pr-404__scope {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  justify-self: center;
+}
+
+.pr-404__ring {
+  position: absolute;
+  border: 1px solid var(--pr-border);
+  border-radius: 50%;
+}
+
+.pr-404__ring--1 { inset: 0; }
+.pr-404__ring--2 { inset: 48px; }
+.pr-404__ring--3 { inset: 96px; opacity: 0.7; }
+.pr-404__ring--4 { inset: 144px; opacity: 0.45; }
+
+.pr-404__sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(46, 232, 108, 0.3),
+    rgba(46, 232, 108, 0.08) 28deg,
+    transparent 66deg
+  );
+  animation: pr-404-spin 4s linear infinite;
+}
+
+.pr-404__cross-h,
+.pr-404__cross-v {
+  position: absolute;
+  background: var(--pr-border);
+  opacity: 0.55;
+}
+
+.pr-404__cross-h { left: 0; right: 0; top: 50%; height: 1px; }
+.pr-404__cross-v { top: 0; bottom: 0; left: 50%; width: 1px; }
+
+.pr-404__scope-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--pr-text-dim);
+  line-height: 2;
+}
+
+.pr-404__scope-label strong {
+  display: block;
+  font-family: var(--pr-font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--pr-status-gone);
+}
+
+@keyframes pr-404-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pr-404-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* Stack and centre together — see the note at the top of this block. */
+@media (max-width: 900px) {
+  .pr-404 {
+    grid-template-columns: 1fr;
+    gap: 44px;
+    padding: 48px var(--pr-gutter) 64px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .pr-404__eyebrow { justify-content: center; }
+  .pr-404__sub { margin-left: auto; margin-right: auto; }
+  .pr-404__scope { width: 240px; height: 240px; }
+  .pr-404__ring--2 { inset: 34px; }
+  .pr-404__ring--3 { inset: 68px; }
+  .pr-404__ring--4 { inset: 102px; }
+  .pr-404__code { font-size: 68px; }
+  .pr-404__lede { font-size: 24px; }
+}
+
+/* Phone only: full-width CTA and a tighter measure. Deliberately does NOT restate
+   alignment — one place decides that. */
+@media (max-width: 560px) {
+  .pr-404__code { font-size: 56px; }
+  .pr-404__lede { font-size: 21px; }
+  .pr-404__sub { font-size: 14.5px; max-width: 38ch; }
+  .packradar a.pr-404__cta { display: block; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-404__sweep,
+  .pr-404__dot {
+    animation: none;
+  }
+}

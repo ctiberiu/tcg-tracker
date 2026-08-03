@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { AdminPage } from './pages/AdminPage'
 import { SnipePage } from './pages/SnipePage'
@@ -6,6 +6,7 @@ import { RadarFloorPage } from './pages/RadarFloorPage'
 import { SignalLogPage } from './pages/SignalLogPage'
 import { StoresPage } from './pages/StoresPage'
 import { PrivacyPage } from './pages/PrivacyPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -34,7 +35,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Was <Navigate to="/login" replace />, which rendered the login page for every
+            non-existent URL — unlimited distinct URLs, one duplicate body. */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )
