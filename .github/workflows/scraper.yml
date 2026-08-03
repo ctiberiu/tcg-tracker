@@ -32,10 +32,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Node 22, not 20. Two reasons, one of which already bit us:
+      #
+      # 1. @supabase/supabase-js >= 2.111 throws on startup under Node 20 —
+      #    "Node.js detected but native WebSocket not found" from realtime-js —
+      #    so createClient() fails before any scraping happens. A Dependabot bump
+      #    to 2.111 took the scraper down for four consecutive runs on 2026-08-03
+      #    and had to be reverted. Node 20 is what made that a breaking change.
+      # 2. Node 20 went end-of-life in April 2026. This repo is developed against
+      #    v22 locally, so pinning CI to 20 meant local and CI ran different
+      #    runtimes — which is precisely how the incompatibility reached main
+      #    without anyone seeing it.
+      #
+      # Keep this in step with digest.yml and test.yml; a split would recreate
+      # the same class of divergence one level down.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: tcg-tracker/scraper/package-lock.json
 
