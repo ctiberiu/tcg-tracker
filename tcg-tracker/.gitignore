@@ -19,6 +19,11 @@ dist-ssr
 # Vercel
 .vercel
 
+# Supabase CLI link state. supabase/.temp/pooler-url contains a Postgres
+# connection string WITH credentials, so this must never be committed.
+# Migrations and functions under supabase/ are tracked as normal.
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
