@@ -1,0 +1,27 @@
+version: 2
+
+# DELIBERATELY SCOPED TO scraper/ ONLY — do not widen this without reading why.
+#
+# The scraper drives a real Chromium through 28 third-party shop sites, executing
+# whatever JS those sites embed (ad networks, analytics, tag managers). The control
+# that stands between that and this repo's runner — which holds the service-role
+# SUPABASE_KEY, GMAIL_APP_PASSWORD and ZEPTOMAIL_TOKEN — is the Chromium sandbox
+# (scraper.js deliberately does NOT pass --no-sandbox; see the comment there).
+#
+# A sandbox is only as good as how current it is, and Playwright pins its own
+# Chromium build via scraper/package.json. So keeping that one manifest fresh IS
+# the mitigation. It is a cadence, not a code change, which is why it lives here
+# rather than in a backlog item that depends on someone remembering.
+#
+# Pointing this at the frontend as well would open 20+ PRs at a time against a
+# known-noisy audit surface. People then ignore the queue — including the
+# Playwright bump that is the entire point. A gate everyone ignores is worse than
+# no gate, so the narrow scope is load-bearing, not laziness.
+updates:
+  - package-ecosystem: npm
+    directory: /tcg-tracker/scraper
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: deps
