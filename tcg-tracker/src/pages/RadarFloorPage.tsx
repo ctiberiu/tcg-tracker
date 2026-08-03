@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { useProducts } from '../hooks/useProducts'
 import { useSweepSummary } from '../hooks/useSweepSummary'
 import { getStoreBaseName } from '../lib/storeName'
@@ -14,6 +15,12 @@ import {
 } from '../components/packradar'
 
 export function RadarFloorPage() {
+  useDocumentMeta({
+    title: 'PackRadar — live TCG restock tracker for Romanian shops',
+    description: 'Track Pokémon, One Piece, Lorcana, Magic and Yu-Gi-Oh restocks across every Romanian TCG shop. Updated every two minutes.',
+    path: '/',
+  })
+
   const navigate = useNavigate()
   // useSweepSummary, not useStoreHealth: this page renders a count, a health dot,
   // a sweep time and six store names. The full hook pages the entire products

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { NavBar, PageHeader, PackRadarFooter, MobileTabBar } from '../components/packradar'
 
 const LAST_UPDATED = '30 JUL 2026'
@@ -38,6 +39,12 @@ function Strong({ children }: { children: ReactNode }) {
 }
 
 export function PrivacyPage() {
+  useDocumentMeta({
+    title: 'Privacy policy | PackRadar',
+    description: 'How PackRadar handles data, analytics and email subscriptions.',
+    path: '/privacy',
+  })
+
   return (
     <div className="packradar pr-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <NavBar active="landing" />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { useSearchParams } from 'react-router-dom'
 import { useProducts, type ProductFilters, type ProductSort } from '../hooks/useProducts'
 import { useStores } from '../hooks/useStores'
@@ -23,6 +24,12 @@ import {
 const SKELETON_COUNT = 8
 
 export function SignalLogPage() {
+  useDocumentMeta({
+    title: 'Signal Log — every TCG restock we have spotted | PackRadar',
+    description: 'Search and filter every restock PackRadar has detected across Romanian TCG shops, newest first.',
+    path: '/view',
+  })
+
   const [searchParams] = useSearchParams()
 
   const { stores } = useStores()

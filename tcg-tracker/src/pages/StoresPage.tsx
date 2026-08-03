@@ -1,4 +1,5 @@
 import { useStoreHealth } from '../hooks/useStoreHealth'
+import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import {
   StatusStrip,
   NavBar,
@@ -10,6 +11,12 @@ import {
 } from '../components/packradar'
 
 export function StoresPage() {
+  useDocumentMeta({
+    title: 'Shop status — which Romanian TCG stores are being tracked | PackRadar',
+    description: 'Live scan status for every Romanian TCG shop PackRadar monitors, including when each was last checked.',
+    path: '/stores',
+  })
+
   const { storeHealths, healthy, loading } = useStoreHealth()
 
   const respondingCount = storeHealths.filter((s) => s.status === 'OK').length

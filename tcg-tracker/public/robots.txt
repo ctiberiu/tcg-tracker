@@ -1,0 +1,21 @@
+# Served as a real file. Vercel resolves public/ BEFORE vercel.json rewrites, so
+# this is reachable despite the catch-all `/((?!storybook).*) -> /index.html`.
+# Before this file existed, /robots.txt returned HTTP 200 with the SPA shell and
+# content-type text/html — which reads as "present" if you only check the status.
+
+User-agent: *
+Allow: /
+
+# Operator-only surfaces. Behind ProtectedRoute already, so this is about not
+# wasting crawl budget rather than about access control.
+Disallow: /admin
+Disallow: /snipe
+Disallow: /login
+
+# Storybook is basic-auth'd in middleware.ts; keep crawlers off it regardless.
+Disallow: /storybook
+
+# NOTE: no Sitemap: line yet — the sitemap does not exist. It must be generated
+# at build time from the games list rather than hand-written, and the line goes
+# in when that build step lands. Pointing at a sitemap that 404s is worse than
+# omitting it.

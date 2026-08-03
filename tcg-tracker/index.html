@@ -6,6 +6,12 @@
     <title>PackRadar — Always scanning</title>
     <meta name="description" content="Every Romanian TCG store, swept on a constant cycle. Pinged the second inventory changes." />
     <meta name="theme-color" content="#060B08" />
+    <!-- Canonical. The app is reachable on BOTH packradar.info and the
+         auto-assigned tcg-tracker-kappa.vercel.app, serving byte-identical HTML
+         (verified: same md5). Without this, those are two competing hostnames
+         for the same content and Google picks one — possibly the vercel.app
+         host, which is older. Overridden per-route by useDocumentMeta. -->
+    <link rel="canonical" href="https://packradar.info/" />
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
     <link rel="icon" type="image/png" sizes="64x64" href="/icon-64.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -15,14 +21,14 @@
     <meta property="og:site_name" content="PackRadar" />
     <meta property="og:title" content="PackRadar — Always scanning" />
     <meta property="og:description" content="Every Romanian TCG store, swept on a constant cycle. Pinged the second inventory changes." />
-    <meta property="og:image" content="https://tcg-tracker-kappa.vercel.app/og-banner-1200x630.png" />
+    <meta property="og:image" content="https://packradar.info/og-banner-1200x630.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="PackRadar — Always scanning" />
     <meta name="twitter:description" content="Every Romanian TCG store, swept on a constant cycle. Pinged the second inventory changes." />
-    <meta name="twitter:image" content="https://tcg-tracker-kappa.vercel.app/og-banner-1200x630.png" />
+    <meta name="twitter:image" content="https://packradar.info/og-banner-1200x630.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
