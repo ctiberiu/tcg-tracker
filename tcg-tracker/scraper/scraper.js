@@ -344,7 +344,12 @@ async function scrapePokemania(page, store) {
 }
 
 /**
- * Shopify stores (RedGoblin, TCGarena, Guildhall)
+ * Shopify stores — membership lives in `stores.scraper_type = 'shopify'`, NOT
+ * in this comment. It is resolved at runtime via SCRAPER_MAP, so any list here
+ * is a snapshot of a query and drifts silently. This one did: it named
+ * Guildhall, which is actually `pokemonia`, and omitted Arcana Inn, which is
+ * actually shopify — and that wrong entry was cited as evidence in a live
+ * incident review. Query the column.
  * Uses the Shopify JSON API (/products.json) for reliable product data and stock status.
  */
 async function scrapeShopify(_page, store) {
@@ -555,7 +560,9 @@ async function scrapeRegatulJocurilor(page, store) {
 }
 
 /**
- * Magento stores (Noriel, Bookcity, Libhumanitas, Carrefour)
+ * Magento stores — membership lives in `stores.scraper_type = 'magento'`, not
+ * here. The list this replaced had drifted by omission (Transylvania Games is
+ * magento and was missing). See the note on the Shopify docblock above.
  * Products use .product-item containers with standard Magento markup.
  */
 async function scrapeMagento(page, store) {
