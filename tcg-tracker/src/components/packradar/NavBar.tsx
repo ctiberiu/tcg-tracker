@@ -4,7 +4,10 @@ import { NavLink } from './NavLink'
 import { CtaButton } from './CtaButton'
 
 interface NavBarProps {
-  active: 'landing' | 'log' | 'stores'
+  /** 'none' is for routes that are not one of the three nav destinations — the
+   *  game landing pages sit outside this nav rather than under one of its
+   *  entries, and highlighting an entry they are not on would be a lie. */
+  active: 'landing' | 'log' | 'stores' | 'none'
 }
 
 export function NavBar({ active }: NavBarProps) {

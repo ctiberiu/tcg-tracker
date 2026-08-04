@@ -7,6 +7,8 @@ import { SignalLogPage } from './pages/SignalLogPage'
 import { StoresPage } from './pages/StoresPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { GameLandingPage } from './pages/GameLandingPage'
+import { GAME_PAGES } from './lib/gamePages'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -19,6 +21,12 @@ function App() {
         <Route path="/view" element={<SignalLogPage />} />
         <Route path="/stores" element={<StoresPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        {/* Romanian game landing pages. Generated from the registry rather than
+            listed here, so adding a game is one entry in gamePages.ts and a route
+            list can never fall out of step with it. */}
+        {GAME_PAGES.map((page) => (
+          <Route key={page.path} path={page.path} element={<GameLandingPage page={page} />} />
+        ))}
         <Route
           path="/admin"
           element={
