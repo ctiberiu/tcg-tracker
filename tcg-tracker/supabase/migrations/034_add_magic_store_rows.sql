@@ -58,16 +58,31 @@
 --     LexShop              24 raw /  24 magic
 --     Arcana Inn           15 raw /   8 magic  (collection mixes in non-MTG)
 --
--- ── Deviating URLs, both resolved by testing rather than by preference ──────
--- Transylvania Games: every other row for this shop uses the magento search
--- pattern `catalogsearch/result/?q=`, and the epic said to prefer the proven
--- pattern on a tie. They did not tie — the search URL returns 0 products (the
--- page renders, titled "Rezultatele cautarii pentru: 'magic the gathering'",
--- but only 2 `.product-item` nodes and the scraper extracts none). The supplied
--- CATEGORY url returns 27. Category wins on measurement.
+-- ── URL shapes that needed a decision, both settled by testing ──────────────
+-- Transylvania Games: the CATEGORY url follows this shop's majority pattern —
+-- it is NOT a deviation. Enumerated from migrations 025-028 as they stood when
+-- this migration was written, its five existing rows split 3 category/2 search:
 --
--- RedGoblin: supplied with `/ro/` and gclid tracking params; stripped to match
--- the existing Lorcana row's form. The stripped form returns 245 magic products.
+--     /card-games/pokemon                (025)  category
+--     /card-games/yu-gi-oh               (028)  category
+--     /card-games/digimon                (028)  category
+--     catalogsearch/result/?q=one+piece  (026)  search
+--     catalogsearch/result/?q=lorcana    (027)  search
+--
+-- The premise this row was chosen under — that every other row for this shop
+-- uses the magento search pattern `catalogsearch/result/?q=` — was inverted.
+-- Category is the house pattern here; search is the minority.
+--
+-- The choice does not rest on that premise and does not change, because it was
+-- measured: the search URL returns 0 products (the page renders, titled
+-- "Rezultatele cautarii pentru: 'magic the gathering'", but only 2
+-- `.product-item` nodes and the scraper extracts none), while the supplied
+-- CATEGORY url returns 27. Category wins on measurement, and precedent agrees
+-- with the measurement rather than opposing it.
+--
+-- RedGoblin: the one real deviation here. Supplied with `/ro/` and gclid
+-- tracking params; stripped to match the existing Lorcana row's form. The
+-- stripped form returns 245 magic products.
 --
 -- ── NOT added, and why ──────────────────────────────────────────────────────
 -- ATU-Toys        already has a magic row. The alternate URL supplied
