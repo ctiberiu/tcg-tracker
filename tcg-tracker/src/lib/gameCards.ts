@@ -58,8 +58,10 @@ export const CARD_WINDOW = 100
  * 18/314 pokemon, 0/163 yugioh, 6/51 one_piece and 22/89 lorcana, and all 46
  * matched titles were enumerated individually with zero false positives.
  *
- * No trailing `\b`: several terms end in non-ASCII letters ("covoraș"), where
- * JavaScript's ASCII-only `\b` would never match.
+ * No trailing `\b` on most terms: several end in non-ASCII letters ("covoraș"),
+ * where JavaScript's ASCII-only `\b` would never match. `cana` is the one
+ * exception and carries its own trailing `\b`, so it matches the mug in
+ * "Cana - Pokemon TCG - Pikachu" without reaching into "canapea".
  *
  * This is presentation only. The underlying cause is that `isGameProduct` has
  * no merch rule at all — it requires a TCG keyword and denies only
@@ -67,7 +69,7 @@ export const CARD_WINDOW = 100
  * database in the first place. That is backlog 2fac0531, not this page.
  */
 export const ACCESSORY_TITLE =
-  /\b(play ?mats?|gaming mats?|covora[sș]|portfolios?|binders?|deck ?box(es)?|sleeves?|top ?loaders?|alcove|card cases?|storage box(es)?|albume?)/i
+  /\b(play ?mats?|gaming mats?|covora[sș]|portfolios?|binders?|deck ?box(es)?|sleeves?|top ?loaders?|alcove|card cases?|storage box(es)?|albume?|cana\b)/i
 
 export function isAccessoryTitle(title: string): boolean {
   return ACCESSORY_TITLE.test(title)
@@ -105,4 +107,47 @@ export function selectGameCards<T extends CardRow>(rows: readonly T[], limit = C
   }
 
   return picked
+}
+
+/** Shop chips shown before the tail collapses into "+ încă N". */
+export const MAX_SHOP_CHIPS = 11
+
+/**
+ * Chooses which shop chips are visible.
+ *
+ * THE RULE THAT MATTERS: every shop appearing in the card grid must appear
+ * among the visible chips. Without it the page contradicts itself two inches
+ * apart — LexShop, TCGarena and RaiJucarii were in the Pokémon grid while the
+ * list headed "MAGAZINE URMĂRITE" above them did not name any of the three.
+ *
+ * Ordering alone cannot fix that, and both obvious orderings fail differently:
+ * alphabetical put BookCity and LibHumanitas on screen while hiding Pokemania
+ * and RedGoblin, and in-stock volume (the order `useGameLanding` returns) still
+ * leaves a shop that happens to have synced recently below the eleventh chip.
+ * So card shops are promoted to the front, and volume order fills the rest.
+ *
+ * `cards` never exceeds CARD_COUNT and holds at most MAX_CARDS_PER_SHOP rows
+ * per shop, so at most 4 distinct shops can be promoted — the promotion can
+ * never crowd out the whole list.
+ */
+export function selectShopChips<T extends CardRow>(
+  shops: readonly string[],
+  cards: readonly T[],
+  max = MAX_SHOP_CHIPS,
+): { visible: string[]; hidden: number } {
+  // Nothing is being hidden, so nothing needs promoting. Returning the incoming
+  // order untouched keeps the chips still for the three games that sit at eight
+  // shops — reordering them every time a new product lands would be visible
+  // churn buying nothing.
+  if (shops.length <= max) return { visible: [...shops], hidden: 0 }
+
+  const inGrid = new Set(cards.map((card) => getStoreBaseName(card.store_name)))
+
+  // Both halves keep the incoming order, so the result is stable for a stable
+  // input rather than reshuffling on every render.
+  const promoted = shops.filter((shop) => inGrid.has(shop))
+  const rest = shops.filter((shop) => !inGrid.has(shop))
+  const visible = [...promoted, ...rest].slice(0, max)
+
+  return { visible, hidden: shops.length - visible.length }
 }

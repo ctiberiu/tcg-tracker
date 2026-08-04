@@ -4,8 +4,14 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { useGameLanding } from '../hooks/useGameLanding'
 import { useSweepSummary } from '../hooks/useSweepSummary'
 import { getStoreBaseName } from '../lib/storeName'
-import { selectGameCards, CARD_COUNT } from '../lib/gameCards'
-import { formatRoNumber, roCount, GAME_PAGE_CLOSING_LINE, type GamePage } from '../lib/gamePages'
+import { selectGameCards, selectShopChips, CARD_COUNT } from '../lib/gameCards'
+import {
+  formatRoNumber,
+  roCount,
+  GAME_PAGE_CLOSING_LINE,
+  RO_PRODUCT_STATUS,
+  type GamePage,
+} from '../lib/gamePages'
 import {
   StatusStrip,
   NavBar,
@@ -29,9 +35,6 @@ import {
  * NOT gated behind auth, deliberately. These pages are the acquisition surface,
  * and whatever is gated is de-indexed.
  */
-
-/** Chips shown before collapsing the tail into a "+ încă N" chip. */
-const MAX_SHOP_CHIPS = 11
 
 /** Stands in for a figure that has not loaded yet. Never a zero: a real "0" is
  *  meaningful on this page (it triggers the empty state) and must not be
@@ -58,7 +61,10 @@ export function GameLandingPage({ page }: GameLandingPageProps) {
 
   const cards = selectGameCards(recent)
   const upperName = name.toUpperCase()
-  const hiddenShops = Math.max(0, shops.length - MAX_SHOP_CHIPS)
+  // Chips are chosen FROM the cards, not independently of them: a shop in the
+  // grid that is missing from the list above it reads as the page contradicting
+  // itself. See selectShopChips.
+  const { visible: visibleShops, hidden: hiddenShops } = selectShopChips(shops, cards)
 
   const rootStyle = { '--pr-g': info.color, '--pr-gd': info.dim } as CSSProperties
 
@@ -104,7 +110,7 @@ export function GameLandingPage({ page }: GameLandingPageProps) {
               <div className="pr-gp-shops">
                 <div className="pr-gp-shops-label">MAGAZINE URMĂRITE</div>
                 <div className="pr-gp-shoplist">
-                  {shops.slice(0, MAX_SHOP_CHIPS).map((shop) => (
+                  {visibleShops.map((shop) => (
                     <span key={shop} className="pr-gp-shop">{shop}</span>
                   ))}
                   {hiddenShops > 0 && <span className="pr-gp-shop">+ încă {hiddenShops}</span>}
@@ -177,6 +183,7 @@ export function GameLandingPage({ page }: GameLandingPageProps) {
                 title={product.title}
                 price={product.price}
                 status="IN STOCK"
+                statusLabel={RO_PRODUCT_STATUS['IN STOCK']}
                 imageUrl={product.image_url}
                 href={product.url}
               />

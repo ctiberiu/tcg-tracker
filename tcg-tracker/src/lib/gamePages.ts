@@ -1,4 +1,4 @@
-import type { GameKey } from '../components/packradar/tokens'
+import type { GameKey, ProductStatus } from '../components/packradar/tokens'
 
 /**
  * The Romanian game landing pages — one entry per route, one component
@@ -58,6 +58,27 @@ export interface GamePage {
  */
 export const GAME_PAGE_CLOSING_LINE =
   'Află primul când produsul revine în stoc și comandă înainte să se epuizeze din nou.'
+
+/**
+ * Product-status badge text for these pages only.
+ *
+ * The section above every card grid reads "CELE MAI NOI PRODUSE ÎN STOC" and
+ * the cards under it were reading "● IN STOCK" — English labels on the four
+ * pages that exist to serve Romanian search. The mockups specify "● ÎN STOC".
+ *
+ * `ProductStatus`' values are NOT changed: they read like data and something
+ * may compare against them, and /view and /stores stay English. This is a
+ * render-boundary override passed to StatusBadge, which still takes its colour
+ * from the status itself.
+ *
+ * Typed as a full Record so a new ProductStatus member fails the build here
+ * rather than silently rendering in English.
+ */
+export const RO_PRODUCT_STATUS: Record<ProductStatus, string> = {
+  'IN STOCK': 'ÎN STOC',
+  PREORDER: 'PRECOMANDĂ',
+  GONE: 'EPUIZAT',
+}
 
 export const GAME_PAGES: readonly GamePage[] = [
   {

@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { selectGameCards, isAccessoryTitle, MAX_CARDS_PER_SHOP, CARD_COUNT } from './gameCards'
+import {
+  selectGameCards,
+  selectShopChips,
+  isAccessoryTitle,
+  MAX_CARDS_PER_SHOP,
+  MAX_SHOP_CHIPS,
+  CARD_COUNT,
+} from './gameCards'
+import { getStoreBaseName } from './storeName'
 
 const row = (store_name: string, title: string) => ({ store_name, title })
 
@@ -36,6 +44,14 @@ describe('isAccessoryTitle', () => {
     'Pokémon TCG: ME03 - Perfect Order - Cutie de antrenor de elită',
   ])('leaves %s alone', (title) => {
     expect(isAccessoryTitle(title)).toBe(false)
+  })
+
+  // `cana` was named in this rule's comment and absent from the pattern. Both
+  // directions asserted, because the term is only safe BECAUSE of its
+  // boundaries: it is a Romanian mug and a substring of "Lorcana".
+  it('flags a mug and still spares Lorcana', () => {
+    expect(isAccessoryTitle('Cana - Pokemon TCG - Pikachu')).toBe(true)
+    expect(isAccessoryTitle('Disney Lorcana TCG: Azurite Sea Booster')).toBe(false)
   })
 })
 
@@ -112,5 +128,99 @@ describe('selectGameCards', () => {
       row('Krit', 'Pokemon: Ultra Pro: Seaside Deckbox'),
     ]
     expect(selectGameCards(rows)).toEqual([])
+  })
+})
+
+describe('selectShopChips', () => {
+  /** The Pokémon page's real shape on 2026-08-04: 19 shops in in-stock volume
+   *  order, and a grid whose shops sat at positions 1, 12, 6, 5, 7 and 16. */
+  const nineteenShops = [
+    'Pokemania', 'RamCards', 'Noriel', 'Krit', 'Arcana Inn', 'Hobby-Planet',
+    'LumeaJocurilor', 'Ozone', 'BebeTei', 'RedGoblin', 'CardXTCG', 'LexShop',
+    'Flamey', 'Foon', 'LibHumanitas', 'TCGarena', 'Transylvania Games',
+    'BookCity', 'RaiJucarii',
+  ]
+  const gridCards = [
+    row('Pokemania', 'a'), row('LexShop', 'b'), row('Hobby-Planet', 'c'),
+    row('Pokemania', 'd'), row('TCGarena', 'e'), row('LumeaJocurilor', 'f'),
+    row('LumeaJocurilor', 'g'), row('RaiJucarii', 'h'),
+  ]
+
+  // THE DEFECT THIS FUNCTION EXISTS FOR. LexShop, TCGarena and RaiJucarii were
+  // in the card grid and absent from the eleven chips above it — the page
+  // naming a set of shops and then showing products from shops outside it.
+  // It is a relationship between two independently-correct functions, so
+  // nothing but an assertion spanning both will catch it drifting.
+  it('shows every shop that appears in the card grid', () => {
+    const { visible } = selectShopChips(nineteenShops, gridCards)
+    const inGrid = new Set(gridCards.map((c) => getStoreBaseName(c.store_name)))
+
+    for (const shop of inGrid) {
+      expect(visible).toContain(shop)
+    }
+  })
+
+  it('fills the remaining slots from the incoming order', () => {
+    const { visible } = selectShopChips(nineteenShops, gridCards)
+
+    expect(visible).toHaveLength(MAX_SHOP_CHIPS)
+    // Promoted first, in their original relative order, then the rest.
+    expect(visible.slice(0, 5)).toEqual([
+      'Pokemania', 'Hobby-Planet', 'LumeaJocurilor', 'LexShop', 'TCGarena',
+    ])
+    expect(visible.slice(6)).toEqual(['RamCards', 'Noriel', 'Krit', 'Arcana Inn', 'Ozone'])
+  })
+
+  it('counts the hidden remainder rather than assuming a number', () => {
+    const { visible, hidden } = selectShopChips(nineteenShops, gridCards)
+    expect(hidden).toBe(nineteenShops.length - visible.length)
+    expect(hidden).toBe(8)
+  })
+
+  // Yu-Gi-Oh, One Piece and Lorcana all sit at eight shops, so this is their
+  // everyday path, not an edge case. Nothing is hidden, so nothing is promoted
+  // and the order does not churn as products land.
+  it('leaves the order untouched when every shop fits', () => {
+    const eight = ['ATU-Toys', 'Hobby-Planet', 'Krit', 'LexShop', 'RamCards', 'RedGoblin', 'TCGarena', 'Transylvania Games']
+    const { visible, hidden } = selectShopChips(eight, [row('TCGarena', 'a')])
+
+    expect(visible).toEqual(eight)
+    expect(hidden).toBe(0)
+  })
+
+  it('merges a shop’s per-game rows before matching, so a suffixed card still promotes its shop', () => {
+    // The grid row is "RedGoblin (Lorcana)"; the chip is "RedGoblin". Matching
+    // raw names would leave RedGoblin unpromoted and reintroduce the defect.
+    const shops = Array.from({ length: 12 }, (_, i) => `Shop ${String(i).padStart(2, '0')}`)
+    shops.push('RedGoblin')
+
+    const { visible } = selectShopChips(shops, [row('RedGoblin (Lorcana)', 'a')])
+
+    expect(visible[0]).toBe('RedGoblin')
+  })
+
+  it('cannot be crowded out: a full grid promotes at most four shops', () => {
+    // CARD_COUNT rows at MAX_CARDS_PER_SHOP per shop bounds the promotion, so
+    // volume order always keeps most of the list.
+    const cards = Array.from({ length: CARD_COUNT }, (_, i) =>
+      row(`Grid ${Math.floor(i / MAX_CARDS_PER_SHOP)}`, `t${i}`),
+    )
+    const shops = [
+      ...Array.from({ length: 11 }, (_, i) => `Volume ${i}`),
+      ...Array.from({ length: CARD_COUNT / MAX_CARDS_PER_SHOP }, (_, i) => `Grid ${i}`),
+    ]
+
+    const { visible } = selectShopChips(shops, cards)
+
+    expect(visible.filter((s) => s.startsWith('Grid'))).toHaveLength(CARD_COUNT / MAX_CARDS_PER_SHOP)
+    expect(visible.filter((s) => s.startsWith('Volume'))).toHaveLength(
+      MAX_SHOP_CHIPS - CARD_COUNT / MAX_CARDS_PER_SHOP,
+    )
+  })
+
+  it('survives an empty grid', () => {
+    const { visible, hidden } = selectShopChips(['Krit', 'LexShop'], [])
+    expect(visible).toEqual(['Krit', 'LexShop'])
+    expect(hidden).toBe(0)
   })
 })

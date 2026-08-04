@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { GAME_PAGES, GAME_PAGE_CLOSING_LINE, roCount, formatRoNumber } from './gamePages'
-import { GAMES } from '../components/packradar/tokens'
+import {
+  GAME_PAGES,
+  GAME_PAGE_CLOSING_LINE,
+  RO_PRODUCT_STATUS,
+  roCount,
+  formatRoNumber,
+} from './gamePages'
+import { GAMES, STATUS_COLOR } from '../components/packradar/tokens'
 
 /** Every operator-authored string on the pages, in one place, so the copy rules
  *  are asserted over the whole surface rather than over whichever field someone
@@ -68,6 +74,27 @@ describe('operator copy rules', () => {
     expect(GAME_PAGE_CLOSING_LINE).toBe(
       'Află primul când produsul revine în stoc și comandă înainte să se epuizeze din nou.',
     )
+  })
+})
+
+describe('RO_PRODUCT_STATUS', () => {
+  // The cards under a heading reading "CELE MAI NOI PRODUSE ÎN STOC" were
+  // labelled "● IN STOCK". These four routes exist to serve Romanian search;
+  // an English badge on every card is the costliest kind of small defect.
+  it('translates the badge the mockups specify', () => {
+    expect(RO_PRODUCT_STATUS['IN STOCK']).toBe('ÎN STOC')
+  })
+
+  // Covers every status, not just the one the page renders today, so a future
+  // preorder path cannot quietly ship in English.
+  it('covers every ProductStatus', () => {
+    expect(Object.keys(RO_PRODUCT_STATUS).sort()).toEqual(Object.keys(STATUS_COLOR).sort())
+  })
+
+  it('leaves no English behind in the labels it replaces', () => {
+    for (const [status, label] of Object.entries(RO_PRODUCT_STATUS)) {
+      expect(label).not.toBe(status)
+    }
   })
 })
 
