@@ -1725,9 +1725,11 @@ async function scrapeBebetei(page, store) {
 
 /**
  * Carturesti.ro — AngularJS SPA (.cartu-grid-tile cards).
- * The Pokemon search returns general books too, so we keep only titles
- * containing "Pokemon TCG:". In stock when the stock label reads
- * "În stoc" or "Doar în librărie".
+ * Every Carturesti row is a text search (`/product/search/<term>`, migrations
+ * 012 and 028), so results carry general books and other games' cards mixed in.
+ * Narrowing is isGameProduct(store.game, title)'s job at the commit() callsite,
+ * as it is for every other scraper — see the card loop for why it is not done
+ * here. In stock when the stock label reads "În stoc" or "Doar în librărie".
  */
 async function scrapeCarturesti(page, store) {
   try {
@@ -1757,9 +1759,22 @@ async function scrapeCarturesti(page, store) {
       const title = card.querySelector('h5.md-title')?.textContent?.trim();
       if (!title) continue;
 
-      // The "tcg" search lists every brand's TCG products; keep only Pokemon
-      // ones. Matches both "Pokemon TCG:" and "Pokemon TCG -" naming.
-      if (!title.toLowerCase().includes('pokemon tcg')) continue;
+      // Titles are deliberately NOT filtered here. The search lists every
+      // brand's TCG products alongside general books; isGameProduct(store.game,
+      // title) narrows that downstream at the commit() callsite.
+      //
+      // This line used to read `if (!title.toLowerCase().includes('pokemon
+      // tcg')) continue;`, which hardcoded one game into a scraper serving four
+      // store rows — pokemon, digimon, dragon_ball_super and riftbound (012,
+      // 028). The other three could not return a product at any URL, which is
+      // the likely reason they sit disabled.
+      //
+      // Filtering at source also costs rawCount its meaning: classifyOutcome
+      // reads rawCount 0 as `block`, so a page serving 16 products fine looks
+      // like a scrape failure and earns auto-disable strikes. Exactly the trap
+      // documented at scrapeAtuToys above, where an all-accessory category
+      // disabled a working store after 17 strikes. Return everything; let the
+      // shared filter decide what to keep.
 
       const linkEl = card.querySelector('a.select-item-event[href], a.clean-a[href]');
       let url = linkEl?.getAttribute('href') ?? null;
@@ -3118,4 +3133,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
+export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
