@@ -6,11 +6,41 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
+import { renderSitemap } from './src/lib/sitemap';
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+
+// Emits dist/sitemap.xml from the route registry at build time.
+//
+// It has to be a REAL FILE in the build output, not a route. Vercel serves
+// static files from the output directory before applying the vercel.json
+// rewrites, so a file here escapes the catch-all
+// `/((?!storybook).*) -> /index.html`. That catch-all is why /robots.txt used
+// to answer HTTP 200 with the SPA shell and `content-type: text/html` — present
+// by status code, useless to a crawler — and it is why robots.txt lives in
+// public/ today.
+//
+// `emitFile` rather than writing into public/: public/ is checked in, and a
+// generated file sitting in a checked-in directory invites someone to edit it
+// by hand, which is the exact failure the "generate it" requirement exists to
+// prevent. This way the only copy is built.
+//
+// `apply: 'build'` — `vite dev` does not run generateBundle, so /sitemap.xml is
+// a 404 in the dev server. That is a real gap in local verification and the
+// reason the acceptance check below fetches from a `vite preview` of dist/
+// rather than from the dev server.
+function sitemapPlugin() {
+  return {
+    name: 'packradar-sitemap',
+    apply: 'build' as const,
+    generateBundle(this: { emitFile: (file: { type: 'asset'; fileName: string; source: string }) => void }) {
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: renderSitemap() });
+    },
+  };
+}
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), sitemapPlugin()],
   test: {
     projects: [
       // Node-environment project. Added ALONGSIDE the browser/Storybook project
