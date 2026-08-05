@@ -352,9 +352,20 @@ async function scrapePokemania(page, store) {
  * incident review. Query the column.
  * Uses the Shopify JSON API (/products.json) for reliable product data and stock status.
  */
+/** Shopify's products.json serves at most 250 per request regardless of what
+ *  `limit` asks for, and a collection can be far deeper. Measured 2026-08-06:
+ *  RedGoblin's Magic collection holds 827 products over 4 pages, and the
+ *  single-request version was collecting the first 250 — the cap, to the row.
+ *
+ *  Shared with the browser path deliberately: this is the same "how deep do we
+ *  walk" question `paginateWhileSaturated` answers, and two different depths
+ *  would be two numbers to reason about. 5 pages is 1250 products here, which
+ *  is well past every catalogue measured. */
+const SHOPIFY_PAGE_SIZE = 250;
+
 async function scrapeShopify(_page, store) {
   const baseUrl = new URL(store.url).origin;
-  const jsonUrl = store.url.replace(/\?.*$/, '').replace(/\/$/, '') + '/products.json?limit=250';
+  const jsonUrl = store.url.replace(/\?.*$/, '').replace(/\/$/, '') + `/products.json?limit=${SHOPIFY_PAGE_SIZE}`;
 
   // No Playwright page — the scraper skips the wasted page load for Shopify and
   // does its own JSON fetch. Report the fetch's OWN status + challenge signal so
@@ -382,7 +393,7 @@ async function scrapeShopify(_page, store) {
     return { products: [], status, challenged: true };
   }
 
-  const products = (data.products ?? []).map((product) => ({
+  const toProduct = (product) => ({
     title: product.title,
     price: product.variants?.[0]?.price ? parseFloat(product.variants[0].price) : null,
     url: baseUrl + '/products/' + product.handle,
@@ -390,7 +401,66 @@ async function scrapeShopify(_page, store) {
     store_name: store.name,
     store_id: store.id,
     in_stock: product.variants?.some((v) => v.available) ?? false,
-  }));
+  });
+
+  const products = (data.products ?? []).map(toProduct);
+  const seenHandles = new Set((data.products ?? []).map((p) => p.handle));
+
+  // Walk further pages only when page 1 came back FULL. A short page is the
+  // whole collection, and asking for page 2 of a 15-product collection is a
+  // request that can only return nothing.
+  if (seenHandles.size >= SHOPIFY_PAGE_SIZE) {
+    for (let pageNum = 2; pageNum <= PAGINATION_MAX_PAGES; pageNum++) {
+      let pageProducts;
+      try {
+        const pageRes = await fetch(`${jsonUrl}&page=${pageNum}`, {
+          headers: { 'User-Agent': BROWSER_UA },
+          signal: AbortSignal.timeout(30000),
+        });
+        if (!pageRes.ok) {
+          console.log(`  ${store.name}: pagination stopped (page ${pageNum} HTTP ${pageRes.status}) after ${pageNum - 1} page(s), ${products.length} products`);
+          break;
+        }
+        pageProducts = JSON.parse(await pageRes.text()).products ?? [];
+      } catch (err) {
+        // A later page failing is NOT a block — page 1 already succeeded, so the
+        // store is reachable. Keep what we have rather than throwing the whole
+        // scrape away and taking a strike for it.
+        console.log(`  ${store.name}: pagination stopped (page ${pageNum} error: ${err.message}) after ${pageNum - 1} page(s), ${products.length} products`);
+        break;
+      }
+
+      // Same authoritative stop as paginateWhileSaturated: no NEW handles. A
+      // real last page, a rejected page param and a shop clamping an
+      // out-of-range page back to the last valid one all look identical here,
+      // and all three should stop.
+      const fresh = pageProducts.filter((p) => !seenHandles.has(p.handle));
+      if (fresh.length === 0) {
+        console.log(`  ${store.name}: pagination stopped (no-new-urls) after ${pageNum - 1} page(s), ${products.length} products`);
+        break;
+      }
+      fresh.forEach((p) => seenHandles.add(p.handle));
+      products.push(...fresh.map(toProduct));
+      console.log(`  ${store.name}: page ${pageNum} +${fresh.length} new (${products.length} so far)`);
+
+      // A short page is the last page — the same signal the page-1 gate uses,
+      // applied consistently. This IS a second stop condition, which the note on
+      // paginateWhileSaturated argues against; that argument is specifically
+      // about stops keyed on live STOCK, which churns run to run and made depth
+      // a function of inventory. Page size does not churn with stock, so it
+      // cannot produce the false-restock cycle that warning describes. It saves
+      // one request per Shopify store per run.
+      if (pageProducts.length < SHOPIFY_PAGE_SIZE) {
+        console.log(`  ${store.name}: pagination stopped (short page) after ${pageNum} page(s), ${products.length} products`);
+        break;
+      }
+
+      if (pageNum === PAGINATION_MAX_PAGES) {
+        console.log(`  ${store.name}: pagination stopped (cap-hit at ${PAGINATION_MAX_PAGES} pages) with ${products.length} products`);
+      }
+    }
+  }
+
   return { products, status, challenged };
 }
 
@@ -2063,7 +2133,10 @@ const PAGINATION_MIN_PAGE_1 = 10;
 
 /** Scrapers that already walk their own pagination. Left alone entirely. The
  *  browserless types (shopify/ozone/*_api) never reach here — fetchStoreData
- *  special-cases them before the browser branch. */
+ *  special-cases them before the browser branch — so anything they need has to
+ *  live in their own scrape function. `scrapeShopify` walks its own pages for
+ *  exactly that reason (see SHOPIFY_PAGE_SIZE); until 2026-08-06 it did not,
+ *  and it was silently capped at the first 250 products of every collection. */
 const SELF_PAGINATING_TYPES = new Set(['pokemania', 'woocommerce']);
 
 /**
