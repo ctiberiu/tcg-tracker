@@ -59,6 +59,17 @@ ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
 -- there is no INSERT/UPDATE/DELETE policy, so membership is granted only via the
 -- SQL editor or the service-role key. That is deliberate — a table that governs
 -- who is privileged must not be writable by the privilege it governs.
+-- DROP-before-CREATE on all four policies in this file so the migration is
+-- replayable. It was not. A partial run on 2026-08-06 left this policy behind
+-- and the retry died on `42710 policy ... already exists` — which meant
+-- is_admin(), the three blanket-policy replacements and the admins seed were
+-- never reached, i.e. the migration reported a failure while leaving the
+-- ORIGINAL `USING (true)` policies in place. A migration that cannot be replayed
+-- is a migration whose failure state is unknown.
+--
+-- Dropping first is safe: RLS stays enabled throughout and a missing policy
+-- denies by default, so a failure between the DROP and the CREATE fails closed.
+DROP POLICY IF EXISTS "Admins can read the admin list" ON admins;
 CREATE POLICY "Admins can read the admin list"
   ON admins FOR SELECT TO authenticated
   USING (user_id = auth.uid());
@@ -110,10 +121,12 @@ DROP POLICY IF EXISTS "Authenticated users can manage stores"      ON stores;
 DROP POLICY IF EXISTS "Authenticated users can manage scrape_runs" ON scrape_runs;
 DROP POLICY IF EXISTS "Authenticated users can manage subscribers" ON subscribers;
 
+DROP POLICY IF EXISTS "Admins can manage stores" ON stores;
 CREATE POLICY "Admins can manage stores"
   ON stores FOR ALL TO authenticated
   USING (is_admin()) WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admins can manage scrape_runs" ON scrape_runs;
 CREATE POLICY "Admins can manage scrape_runs"
   ON scrape_runs FOR ALL TO authenticated
   USING (is_admin()) WITH CHECK (is_admin());
@@ -124,6 +137,7 @@ CREATE POLICY "Admins can manage scrape_runs"
 -- satisfied send-test-email.ts's "is this address a subscriber" gate, yielding
 -- attacker-chosen recipient + attacker-influenced content from the operator's
 -- own mailbox. Closing this breaks that chain at step one.
+DROP POLICY IF EXISTS "Admins can manage subscribers" ON subscribers;
 CREATE POLICY "Admins can manage subscribers"
   ON subscribers FOR ALL TO authenticated
   USING (is_admin()) WITH CHECK (is_admin());
