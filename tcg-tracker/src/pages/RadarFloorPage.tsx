@@ -18,7 +18,11 @@ import {
 export function RadarFloorPage() {
   useDocumentMeta({
     title: 'PackRadar — live TCG restock tracker for Romanian shops',
-    description: 'Track Pokémon, One Piece, Lorcana, Magic and Yu-Gi-Oh restocks across every Romanian TCG shop. Updated every two minutes.',
+    // Deliberately says that tracking is constant, never how constant. Publishing
+    // the sweep interval tells every shop exactly what to rate-limit, and a meta
+    // description is the most public string in the app — it is what Google prints
+    // under the result. This line read "Updated every two minutes." until 2026-08-05.
+    description: 'Track Pokémon, One Piece, Lorcana, Magic and Yu-Gi-Oh restocks across every Romanian TCG shop. Continuously updated.',
     path: '/',
   })
 
