@@ -548,3 +548,250 @@
     animation: none;
   }
 }
+
+/* ── Romanian game landing pages (/carti-pokemon and siblings) ──────────────
+   One component serves every game (GameLandingPage). The ONLY per-game values
+   are --pr-g and --pr-gd, set as inline style on the page root from GAMES in
+   tokens.ts. Nothing below hardcodes a game colour, which is the point: a
+   second copy of those hex values is how the design project's own palette
+   drifted from the site's.
+
+   Prefixed --pr-g rather than the mockup's --g to match every other custom
+   property in this file. */
+
+/* Column flex so the footer sits at the bottom on a short page (a game with
+   nothing in stock renders a panel, not a grid, and is genuinely short). */
+.pr-gp {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-gp-body {
+  flex: 1;
+  padding: 36px var(--pr-gutter) 0;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.pr-gp-crumb {
+  font-size: 10.5px;
+  color: var(--pr-text-dim);
+  letter-spacing: 1.5px;
+  margin-bottom: 14px;
+}
+
+.pr-gp-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: start;
+  padding-bottom: 34px;
+  border-bottom: 1px solid var(--pr-border);
+}
+
+.pr-gp-h1 {
+  font-family: var(--pr-font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: -0.5px;
+  color: var(--pr-text-bright);
+  margin: 0 0 14px;
+}
+
+/* The game name inside the h1. Not italic despite the <em> — <em> is the right
+   element for "this word carries the emphasis", and the emphasis is carried by
+   colour here. */
+.pr-gp-h1 em {
+  font-style: normal;
+  color: var(--pr-g);
+}
+
+.pr-gp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pr-gp-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid var(--pr-border);
+  background: var(--pr-bg-panel);
+  font-size: 11px;
+  color: var(--pr-text-dim);
+  letter-spacing: 0.5px;
+}
+
+.pr-gp-stat b {
+  font-family: var(--pr-font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pr-text-bright);
+}
+
+.pr-gp-stat--live b {
+  color: var(--pr-g);
+}
+
+.pr-gp-shops {
+  margin-top: 20px;
+}
+
+.pr-gp-shops-label {
+  font-size: 10px;
+  color: var(--pr-text-dim);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.pr-gp-shoplist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pr-gp-shop {
+  padding: 7px 12px;
+  border: 1px solid var(--pr-border);
+  background: var(--pr-bg-panel);
+  font-size: 11px;
+  color: var(--pr-text-mid);
+  letter-spacing: 0.5px;
+}
+
+.pr-gp-copy p {
+  font-family: var(--pr-font-display);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--pr-text-mid);
+  margin: 0 0 14px;
+  text-wrap: pretty;
+}
+
+.pr-gp-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.pr-gp-copy strong {
+  color: var(--pr-text-bright);
+  font-weight: 600;
+}
+
+.pr-gp-kicker {
+  font-family: var(--pr-font-display);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--pr-text-bright);
+  font-weight: 600;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--pr-border);
+}
+
+.pr-gp-sectionhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 30px 0 16px;
+}
+
+.pr-gp-sectionlabel {
+  font-size: 11px;
+  color: var(--pr-text-dim);
+  letter-spacing: 2px;
+}
+
+.pr-gp-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--pr-g);
+  letter-spacing: 1px;
+}
+
+/* Shown when a game has nothing in stock, in place of the card grid — never an
+   empty grid beside a bare "0". */
+.pr-gp-empty {
+  border: 1px solid var(--pr-border);
+  background: var(--pr-bg-panel);
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.pr-gp-empty-title {
+  font-family: var(--pr-font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--pr-text-bright);
+  margin-bottom: 10px;
+}
+
+.pr-gp-empty p {
+  font-family: var(--pr-font-display);
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--pr-text-mid);
+  max-width: 56ch;
+  margin: 0 auto;
+}
+
+.pr-gp-cta {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 12px;
+}
+
+/* Selector is `.packradar a.pr-gp-ctalink`, not `.pr-gp-ctalink`, for the same
+   reason as the 404 CTA: `.packradar a` sets colour at specificity (0,1,1) and
+   beats a single class. */
+.packradar a.pr-gp-ctalink {
+  display: inline-block;
+  padding: 14px 28px;
+  background: var(--pr-g);
+  color: var(--pr-bg);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  font-family: var(--pr-font-mono);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.packradar a.pr-gp-ctalink:hover {
+  background: var(--pr-text-bright);
+  color: var(--pr-bg);
+}
+
+.pr-gp-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--pr-text-dim);
+  letter-spacing: 0.5px;
+  padding-bottom: 34px;
+}
+
+@media (max-width: 900px) {
+  .pr-gp-hero {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .pr-gp-h1 { font-size: 32px; }
+  .pr-gp-kicker { font-size: 16px; }
+}
+
+@media (max-width: 560px) {
+  .pr-gp-h1 { font-size: 27px; }
+  .pr-gp-empty { padding: 26px 18px; }
+  .packradar a.pr-gp-ctalink { display: block; width: 100%; text-align: center; }
+}

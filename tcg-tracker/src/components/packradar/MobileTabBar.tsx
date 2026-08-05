@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { StatusDot } from './StatusDot'
 
 interface MobileTabBarProps {
-  active: 'landing' | 'log' | 'stores'
+  /** 'none' matches no tab, so nothing is highlighted — see NavBar. */
+  active: 'landing' | 'log' | 'stores' | 'none'
 }
 
 const TABS: { key: MobileTabBarProps['active']; label: string; to: string }[] = [

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-
-const SITE_ORIGIN = 'https://packradar.info'
+// Shared with the sitemap generator. A sitemap whose URLs disagree with these
+// canonicals would give Google two answers to the same question — see site.ts.
+import { SITE_ORIGIN } from '../lib/site'
 
 interface DocumentMeta {
   title: string

@@ -14,9 +14,12 @@ interface SignalCardProps {
   status: ProductStatus
   imageUrl: string | null
   href: string
+  /** Overrides the badge text without touching the status the colour comes
+   *  from — see StatusBadge. Used by the Romanian landing pages. */
+  statusLabel?: string
 }
 
-export function SignalCard({ game, store, date, title, price, status, imageUrl, href }: SignalCardProps) {
+export function SignalCard({ game, store, date, title, price, status, imageUrl, href, statusLabel }: SignalCardProps) {
   const [hover, setHover] = useState(false)
 
   return (
@@ -81,7 +84,7 @@ export function SignalCard({ game, store, date, title, price, status, imageUrl, 
           }}
         >
           <Price amount={price} />
-          <StatusBadge status={status} />
+          <StatusBadge status={status} label={statusLabel} />
         </div>
       </div>
     </a>
