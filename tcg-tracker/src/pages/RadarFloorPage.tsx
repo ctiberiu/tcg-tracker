@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDocumentMeta } from '../hooks/useDocumentMeta'
 import { useProducts } from '../hooks/useProducts'
 import { useSweepSummary } from '../hooks/useSweepSummary'
@@ -11,6 +11,7 @@ import {
   SignalRow,
   CtaButton,
   MobileTabBar,
+  GamePageLinks,
   GAMES,
 } from '../components/packradar'
 
@@ -117,6 +118,15 @@ export function RadarFloorPage() {
             />
           ))}
         </div>
+
+        {/* The chips above are ChannelChip, which renders a <button> with an
+            onClick — so nothing on this page was ever a link to a game. These
+            are, and they point at the Romanian landing pages rather than at
+            /view?game=x. The two destinations are deliberately both present:
+            the chips filter the log in place, these open a page. */}
+        <div style={{ marginTop: 28 }}>
+          <GamePageLinks label="GAME PAGES · IN ROMANIAN" />
+        </div>
       </div>
 
       {/* latest signals */}
@@ -175,6 +185,15 @@ export function RadarFloorPage() {
           }}
         >
           <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>NO NEW SIGNALS. RADAR IS LIVE.</span>
+          {/* This page has its own copy of the footer rather than using
+              PackRadarFooter, so the privacy link has to be added here too.
+              Without it /privacy is two hops from the homepage, and the
+              homepage is the most-crawled page on the site. Deliberately only
+              the link: merging the two footers is a refactor, and folding one
+              into a link change is how a small diff becomes a regression. */}
+          <Link to="/privacy" style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>
+            PRIVACY
+          </Link>
           <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>PACKRADAR · RO SWEEP · 2026</span>
         </div>
       </div>
