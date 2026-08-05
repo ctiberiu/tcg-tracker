@@ -15,7 +15,7 @@ Disallow: /login
 # Storybook is basic-auth'd in middleware.ts; keep crawlers off it regardless.
 Disallow: /storybook
 
-# NOTE: no Sitemap: line yet — the sitemap does not exist. It must be generated
-# at build time from the games list rather than hand-written, and the line goes
-# in when that build step lands. Pointing at a sitemap that 404s is worse than
-# omitting it.
+# Generated at build time from the route registry by the `packradar-sitemap`
+# plugin in vite.config.ts, and emitted into the build output for the same
+# reason this file lives in public/: a real file escapes the catch-all rewrite.
+Sitemap: https://packradar.info/sitemap.xml

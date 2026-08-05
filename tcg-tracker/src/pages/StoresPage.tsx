@@ -29,7 +29,10 @@ export function StoresPage() {
       <PageHeader
         title="Stores on watch"
         crumbCurrent="STORES"
-        meta={`${storeHealths.length} STORES MONITORED · SWEEP EVERY 15 MIN · ${respondingCount}/${storeHealths.length} RESPONDING`}
+        // "SWEEP EVERY 15 MIN" was here until 2026-08-05. It was wrong twice over:
+        // it published the sweep cadence, which tells a shop what to rate-limit,
+        // and 15 minutes was not the cadence anyway (scraper.yml runs `*/2 * * * *`).
+        meta={`${storeHealths.length} STORES MONITORED · CONTINUOUS SWEEP · ${respondingCount}/${storeHealths.length} RESPONDING`}
       />
 
       <div style={{ padding: '0 var(--pr-gutter)', flex: 1 }}>
