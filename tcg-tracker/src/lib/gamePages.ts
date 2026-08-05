@@ -117,6 +117,19 @@ export const GAME_PAGES: readonly GamePage[] = [
     metaDescription:
       "Cărți Lorcana în stoc acum în magazinele online din România, de la Illumineer's Trove la starter deck-uri. Afli imediat când un produs revine în stoc.",
   },
+  {
+    path: '/carti-magic',
+    game: 'magic',
+    // "Magic", not "Magic: The Gathering": the h1 renders it as
+    // "Cărți <em>Magic</em> în România" and the CTA uppercases it, and a colon
+    // inside both reads as a broken sentence. Matches the slug and the
+    // tokens.ts label.
+    name: 'Magic',
+    hook: 'Display-urile de Play Booster și deck-urile Commander din noile seturi dispar de obicei repede din stoc.',
+    metaTitle: 'Cărți Magic în România: ce este în stoc acum | PackRadar',
+    metaDescription:
+      'Cărți Magic în stoc acum în magazinele online din România, de la display-uri de Play Booster la deck-uri Commander. Afli imediat când un produs revine în stoc.',
+  },
 ]
 
 /** ro-RO grouping: 1222 renders as "1.222", which is what the mockups show. */
