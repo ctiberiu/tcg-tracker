@@ -2143,29 +2143,52 @@ const PAGINATION_MIN_PAGE_1 = 10;
  * stock and the next scrape alerted it as a restock. Nothing in the code
  * connected the interval to the grace, so nothing caught it.
  *
- * `interval x 2` is the comment's own "~2 scrape cycles", now enforced instead
- * of remembered. The rule it implements is "flip on the SECOND consecutive
- * miss", which is what the flat 20 did at a 15-minute interval: one miss leaves
- * a product 15 minutes stale and it survives; two leaves it 30 and it trips.
+ * THE PROPERTY, which is what stale-grace.test.js asserts and what the
+ * multiplier is chosen to satisfy: a product missing for ONE cycle survives, a
+ * product missing for TWO is swept, and both hold with MARGIN rather than
+ * landing on a threshold. The sweep trips at `age >= grace` and age after N
+ * misses is N x interval, so the grace has to sit strictly between one cycle
+ * and two.
  *
- * NOTE this lengthens the grace for the 70 stores at 15 minutes, from 20 to 30.
- * Same rule, stated exactly rather than approximated, with the margin back that
- * run-to-run jitter eats. It is a real behaviour change and it never shortens a
- * grace. The floor now only binds below 10 minutes, which nothing is set to.
+ * `grace > interval` alone is necessary and not sufficient. `x 2` satisfies it
+ * and is still wrong: it puts the threshold exactly on the two-miss boundary,
+ * so a run landing thirty seconds early defers detection to the third miss.
+ * A nondeterministic threshold is worse than a wrong fixed one, because the
+ * failure does not reproduce. 1.5 is the midpoint and maximises margin on both
+ * sides.
  *
- * INVARIANT, asserted in stale-grace.test.js: the grace must be strictly longer
- * than the interval, for every interval. Below that line, one missed scrape is
- * a stock-out.
+ * NO FLOOR ON THE DERIVED VALUE, deliberately — and this is a departure from
+ * what the epic specified. A 20-minute floor breaks the property for short
+ * intervals and reintroduces exactly the defect being fixed:
+ *
+ *     interval   max(20, i x 1.5)   1 miss     2 misses
+ *           5m                20m   survives   SURVIVES   <- trips on the 4th
+ *          10m                20m   survives   boundary   <- zero slack
+ *          15m              22.5m   survives   trips (+7.5m)
+ *          30m                45m   survives   trips (+15m)
+ *
+ * Nothing runs below 15 minutes today, so the floor would be inert — which is
+ * precisely how the flat 20 stayed correct for months until migration 034 moved
+ * a value nobody had connected to it. A fast-polling store SHOULD get a short
+ * grace; that is what deriving it means.
+ *
+ * At 15 minutes this gives 22.5 against today's flat 20, so the 70 stores on
+ * that interval see a rounding difference rather than a behaviour change:
+ * detection still lands on the second miss, with 7.5 minutes of slack against
+ * today's 10.
  */
-const STALE_GRACE_FLOOR_MS = 20 * 60 * 1000;
-const STALE_GRACE_CYCLES = 2;
+const STALE_GRACE_CYCLES = 1.5;
+
+/** Used ONLY when a store's interval is unreadable. NOT a floor on the derived
+ *  value — see above. Returning 0 for a bad interval would sweep every missing
+ *  product on its first miss across all 74 stores, which is strictly worse than
+ *  the bug this function exists to fix. */
+const STALE_GRACE_FALLBACK_MS = 20 * 60 * 1000;
 
 function staleGraceMs(checkIntervalMinutes) {
-  // A missing/odd interval falls back to the floor rather than to zero — an
-  // unparseable value must not disable the grace.
   const minutes = Number(checkIntervalMinutes);
-  if (!Number.isFinite(minutes) || minutes <= 0) return STALE_GRACE_FLOOR_MS;
-  return Math.max(STALE_GRACE_FLOOR_MS, minutes * STALE_GRACE_CYCLES * 60 * 1000);
+  if (!Number.isFinite(minutes) || minutes <= 0) return STALE_GRACE_FALLBACK_MS;
+  return minutes * STALE_GRACE_CYCLES * 60 * 1000;
 }
 
 /** Scrapers that already walk their own pagination. Left alone entirely. The
@@ -2745,7 +2768,7 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       // caused the repeat alerts, so an unknown interval must not silently
       // produce one — but the floor is also what these stores had before this
       // change, so the fallback is the old behaviour, not a new risk.
-      console.error(`  Staleness sweep: could not read check intervals (${intervalErr.message}) — using the floor grace`);
+      console.error(`  Staleness sweep: could not read check intervals (${intervalErr.message}) — using the fallback grace`);
     } else {
       for (const s of sweptStores ?? []) intervalByStore.set(s.id, s.check_interval_minutes);
     }
@@ -3273,4 +3296,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FLOOR_MS, STALE_GRACE_CYCLES };
+export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
