@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tcg-tracker/scraper
+        working-directory: scraper
 
     steps:
       - name: Checkout repository
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: tcg-tracker/scraper/package-lock.json
+          cache-dependency-path: scraper/package-lock.json
 
       # No `npx playwright install` step: digest.js is standalone and never
       # launches a browser, so the job needs only the npm deps.

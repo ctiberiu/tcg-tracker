@@ -19,7 +19,7 @@ version: 2
 # no gate, so the narrow scope is load-bearing, not laziness.
 updates:
   - package-ecosystem: npm
-    directory: /tcg-tracker/scraper
+    directory: /scraper
     schedule:
       interval: weekly
     open-pull-requests-limit: 3

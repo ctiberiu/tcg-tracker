@@ -11,13 +11,12 @@
 
 ### Frontend
 ```bash
-cd tcg-tracker
 npm install
 ```
 
 ### Scraper
 ```bash
-cd tcg-tracker/scraper
+cd scraper
 npm install
 npx playwright install --with-deps chromium
 ```
