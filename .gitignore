@@ -26,10 +26,6 @@ yarn-debug.log*
 pnpm-debug.log*
 *storybook.log
 
-# Sensitive spec file with credentials
-poke-tracker-spec.md
-pokemonia-products.md
-
 # Migration helper (not part of app)
 scraper/run-migrations.js
 
@@ -50,7 +46,7 @@ scraper/run-migrations.js
 *.sln
 *.sw?
 
-# Working documents and scratch output, deliberately untracked
+# Working documents: planning PDFs, specs and scratch output live outside the
+# repo, not in it. A printout is a snapshot that silently diverges from the
+# source it was printed from.
 *.pdf
-FILTERS.md
-yugioh-desktop.png
