@@ -205,7 +205,7 @@ Each scrape function must return `Array<{ title, price, url, image_url, store_na
 ## 10. Directory Layout
 
 ```
-tcg-tracker/
+packradar/            # repo root
 ├── src/
 │   ├── pages/          # Route-level components
 │   ├── hooks/          # Data hooks (useAuth, useProducts, useStores)
