@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: tcg-tracker
+        working-directory: .
 
     steps:
       - name: Checkout repository
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: tcg-tracker/package-lock.json
+          cache-dependency-path: package-lock.json
 
       # NODE_ENV is forced to development for install and for every step below.
       # npm reads NODE_ENV=production as `omit=dev` and silently drops all 28
@@ -49,7 +49,7 @@ jobs:
       # --ignore-scripts skips Playwright's browser download: these are node
       # tests, nothing launches a browser, and the download is ~100MB and slow.
       - name: Install scraper dependencies
-        working-directory: tcg-tracker/scraper
+        working-directory: scraper
         env:
           NODE_ENV: development
         run: npm ci --include=dev --ignore-scripts
