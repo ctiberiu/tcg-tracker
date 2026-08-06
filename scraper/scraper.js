@@ -2131,6 +2131,43 @@ const PAGINATION_MAX_PAGES = 5;
  *  request — "costs nothing where nothing is wrong". */
 const PAGINATION_MIN_PAGE_1 = 10;
 
+/**
+ * How long a product must be continuously missing from its store's listing
+ * before the staleness sweep marks it out of stock.
+ *
+ * Derived from the store's OWN `check_interval_minutes` rather than fixed,
+ * because a fixed number silently expires. The old flat 20 minutes was chosen
+ * against the 15-minute interval every store had; migration 034 set 30 minutes
+ * on four Magic rows for host load, and 20 minutes cannot outlast a 30-minute
+ * cycle. On those four stores a single missed scrape marked the product out of
+ * stock and the next scrape alerted it as a restock. Nothing in the code
+ * connected the interval to the grace, so nothing caught it.
+ *
+ * `interval x 2` is the comment's own "~2 scrape cycles", now enforced instead
+ * of remembered. The rule it implements is "flip on the SECOND consecutive
+ * miss", which is what the flat 20 did at a 15-minute interval: one miss leaves
+ * a product 15 minutes stale and it survives; two leaves it 30 and it trips.
+ *
+ * NOTE this lengthens the grace for the 70 stores at 15 minutes, from 20 to 30.
+ * Same rule, stated exactly rather than approximated, with the margin back that
+ * run-to-run jitter eats. It is a real behaviour change and it never shortens a
+ * grace. The floor now only binds below 10 minutes, which nothing is set to.
+ *
+ * INVARIANT, asserted in stale-grace.test.js: the grace must be strictly longer
+ * than the interval, for every interval. Below that line, one missed scrape is
+ * a stock-out.
+ */
+const STALE_GRACE_FLOOR_MS = 20 * 60 * 1000;
+const STALE_GRACE_CYCLES = 2;
+
+function staleGraceMs(checkIntervalMinutes) {
+  // A missing/odd interval falls back to the floor rather than to zero — an
+  // unparseable value must not disable the grace.
+  const minutes = Number(checkIntervalMinutes);
+  if (!Number.isFinite(minutes) || minutes <= 0) return STALE_GRACE_FLOOR_MS;
+  return Math.max(STALE_GRACE_FLOOR_MS, minutes * STALE_GRACE_CYCLES * 60 * 1000);
+}
+
 /** Scrapers that already walk their own pagination. Left alone entirely. The
  *  browserless types (shopify/ozone/*_api) never reach here — fetchStoreData
  *  special-cases them before the browser branch — so anything they need has to
@@ -2671,8 +2708,16 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
   // check interval: 20+ repeat alerts/day for one item). Requiring absence to
   // outlast ~2 scrape cycles filters that out while still catching genuine
   // stock-outs within roughly half an hour.
-  const STALE_GRACE_MS = 20 * 60 * 1000;
-
+  //
+  // The grace is DERIVED from each store's own interval (staleGraceMs), not a
+  // fixed number. It used to be a flat 20 minutes, chosen against the 15-minute
+  // interval every store had at the time. Migration 034 set
+  // check_interval_minutes = 30 on four Magic rows for host load, and nothing
+  // connected the two: 20 minutes cannot outlast a 30-minute cycle, so on those
+  // four stores a product missing from a SINGLE scrape was marked out of stock
+  // immediately — the exact behaviour the grace exists to prevent — and alerted
+  // as a restock when it came back. Repeat emails to a real inbox for ~12 hours
+  // on 2026-08-06, ~10+ Krit Magic products.
   if (scrapedStoreIds.length > 0) {
     console.log('\nRunning staleness sweep...');
 
@@ -2687,10 +2732,32 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
       urlsByStore.get(p.store_id).push(normalizeProductUrl(p.url));
     }
 
+    // Each swept store's own interval, read fresh rather than passed in: the
+    // grace has to reflect what the store is CONFIGURED to do, and reading it
+    // here means a schedule change cannot leave a stale grace behind.
+    const intervalByStore = new Map();
+    const { data: sweptStores, error: intervalErr } = await supabase
+      .from('stores')
+      .select('id, check_interval_minutes')
+      .in('id', scrapedStoreIds);
+    if (intervalErr) {
+      // Fall back to the floor for every store. Too SHORT a grace is what
+      // caused the repeat alerts, so an unknown interval must not silently
+      // produce one — but the floor is also what these stores had before this
+      // change, so the fallback is the old behaviour, not a new risk.
+      console.error(`  Staleness sweep: could not read check intervals (${intervalErr.message}) — using the floor grace`);
+    } else {
+      for (const s of sweptStores ?? []) intervalByStore.set(s.id, s.check_interval_minutes);
+    }
+
     let totalStale = 0;
-    const staleCutoff = Date.now() - STALE_GRACE_MS;
+    const now = Date.now();
     for (const storeId of scrapedStoreIds) {
       const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
+      // Per store, not global: raising one store's interval must not weaken
+      // every other store's grace, and a single global value would have to
+      // satisfy the slowest store on the board.
+      const staleCutoff = now - staleGraceMs(intervalByStore.get(storeId));
 
       // Fetch all currently in-stock products for this store
       const { data: storeProducts, error: fetchErr } = await fetchAllRows(() =>
@@ -3206,4 +3273,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1 };
+export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FLOOR_MS, STALE_GRACE_CYCLES };
