@@ -13,6 +13,20 @@ export interface Product {
   game: GameKey
 }
 
+/**
+ * A row of `store_signal_counts()` (migration 035) — one per store that has any
+ * products, never one per product, so it cannot run into PostgREST's 1000-row
+ * response cap the way the row-counting queries it replaced did.
+ *
+ * `count(*)` is bigint in Postgres; PostgREST serialises it as a JSON number,
+ * and both call sites pass it through `Number()` rather than trusting that.
+ */
+export interface StoreSignalCounts {
+  store_id: string
+  signals_7d: number
+  in_stock_count: number
+}
+
 export interface Subscriber {
   id: string
   email: string
