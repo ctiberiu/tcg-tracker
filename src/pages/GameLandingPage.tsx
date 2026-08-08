@@ -21,6 +21,7 @@ import {
   MobileTabBar,
   StatusDot,
   GAMES,
+  PENDING,
 } from '../components/packradar'
 
 /**
@@ -36,10 +37,10 @@ import {
  * and whatever is gated is de-indexed.
  */
 
-/** Stands in for a figure that has not loaded yet. Never a zero: a real "0" is
- *  meaningful on this page (it triggers the empty state) and must not be
- *  indistinguishable from "not known yet". */
-const PENDING = '···'
+/* PENDING stands in for a figure that has not loaded yet, and is imported
+ * rather than declared here now that three other pages need it. Never a zero: a
+ * real "0" is meaningful on this page (it triggers the empty state) and must not
+ * be indistinguishable from "not known yet". */
 
 interface GameLandingPageProps {
   page: GamePage
