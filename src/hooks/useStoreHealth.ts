@@ -4,8 +4,6 @@ import { GAMES, type GameInfo, type GameKey, type StoreHealthStatus } from '../c
 import { getStoreBaseName } from '../lib/storeName'
 import { deriveStoreStatus, worstStatus } from '../lib/storeStatus'
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-
 // PostgREST caps a single response at 1000 rows, so this dataset is paged.
 //
 // It used to be one `.limit(1000)` newest-first slice, which is a GLOBAL budget
@@ -97,15 +95,21 @@ export function useStoreHealth() {
     // table is RLS-restricted to authenticated users, so on the public pages it
     // returned an empty array every time and the code fell through to a
     // product-recency guess. Status now comes from the stores row itself.
-    const [storesRes, productsRes, inStockRes] = await Promise.all([
+    const [storesRes, productsRes, countsRes] = await Promise.all([
       supabase
         .from('stores')
         .select('id, name, url, last_scraped_at, is_enabled, is_flagged, consecutive_failures')
         .order('name'),
       fetchRecentProducts(),
-      // Explicit wide range rather than a default-limited select — this needs the
-      // true total, not just a recent slice (Supabase defaults to a 1000-row cap).
-      supabase.from('products').select('store_id').eq('in_stock', true).range(0, 9999),
+      // Was `.select('store_id').eq('in_stock', true).range(0, 9999)`, described
+      // as an "explicit wide range … this needs the true total". It did not get
+      // the true total: PostgREST's 1000-row cap is server-side, so the 9999 was
+      // decoration in the same way useSweepSummary's 10000 was. Measured
+      // 2026-08-07 it returned 938 of 938 in-stock rows — correct that day, with
+      // 62 rows of headroom before it began under-counting silently, on a table
+      // that had just doubled in a week. Counted in Postgres now (migration 035),
+      // which removes the cap from the question instead of budgeting against it.
+      supabase.rpc('store_signal_counts'),
     ])
 
     if (storesRes.error) {
@@ -119,32 +123,36 @@ export function useStoreHealth() {
       setLoading(false)
       return
     }
-    if (inStockRes.error) {
-      setError(inStockRes.error.message)
+    if (countsRes.error) {
+      setError(countsRes.error.message)
       setLoading(false)
       return
     }
 
     const now = Date.now()
-    const sevenDaysAgo = now - SEVEN_DAYS_MS
 
+    // Titles and channel badges still come from the paged row read — those are
+    // per-row facts, not aggregates, so there is nothing to count them into.
     const latestProductByStore = new Map<string, { title: string; first_seen: string }>()
-    const signals7dByStore = new Map<string, number>()
     const gamesByStore = new Map<string, Set<GameKey>>()
     for (const product of productsRes.data) {
       if (!latestProductByStore.has(product.store_id)) {
         latestProductByStore.set(product.store_id, product)
       }
-      if (new Date(product.first_seen).getTime() >= sevenDaysAgo) {
-        signals7dByStore.set(product.store_id, (signals7dByStore.get(product.store_id) ?? 0) + 1)
-      }
       if (!gamesByStore.has(product.store_id)) gamesByStore.set(product.store_id, new Set())
       gamesByStore.get(product.store_id)!.add(product.game as GameKey)
     }
 
+    // Both counts arrive from the one function useSweepSummary calls, so /stores
+    // and / cannot report different signal counts for the same shop — they are
+    // now the same number rather than two client-side recounts that agree only
+    // while both happen to read every row.
+    const signals7dByStore = new Map<string, number>()
     const inStockCountByStore = new Map<string, number>()
-    for (const product of inStockRes.data) {
-      inStockCountByStore.set(product.store_id, (inStockCountByStore.get(product.store_id) ?? 0) + 1)
+    for (const row of (countsRes.data ?? []) as StoreSignalCounts[]) {
+      if (!row.store_id) continue
+      signals7dByStore.set(row.store_id, Number(row.signals_7d))
+      inStockCountByStore.set(row.store_id, Number(row.in_stock_count))
     }
 
     // A physical store has one `stores` row per game it's scraped for (see

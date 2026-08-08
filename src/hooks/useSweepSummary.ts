@@ -29,10 +29,22 @@ import type { StoreHealthStatus } from '../components/packradar/tokens'
  * one.
  */
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-/** PostgREST caps a response at 1000 rows; the 7-day window is well inside that,
- *  but ask explicitly rather than relying on the default. */
-const SIGNAL_ROW_CAP = 10000
+/**
+ * One row per store, counted by Postgres. See migration 035.
+ *
+ * This replaced `select('store_id').gte('first_seen', …).range(0, SIGNAL_ROW_CAP - 1)`
+ * with SIGNAL_ROW_CAP = 10000, which was a number that looked generous and did
+ * nothing: PostgREST's 1000-row cap is server-side. Measured 2026-08-07, the
+ * 7-day window held 2171 rows and the query returned 1000 of them with HTTP 200
+ * and no truncation signal, so `signals7d` was understated for every store past
+ * the cut — and with no ORDER BY on the query, which stores those were is not
+ * defined. The window is a COUNT, so it is now asked as one.
+ */
+interface StoreSignalCounts {
+  store_id: string
+  signals_7d: number
+  in_stock_count: number
+}
 
 export interface StoreSummary {
   name: string
@@ -63,8 +75,6 @@ export function useSweepSummary() {
     setLoading(true)
     setError(null)
 
-    const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS).toISOString()
-
     const [storesRes, signalsRes] = await Promise.all([
       // Health comes from the scraper's own failure state, which lives on these
       // columns and is readable by anon (migration 015). No products needed.
@@ -72,13 +82,9 @@ export function useSweepSummary() {
         .from('stores')
         .select('id, name, last_scraped_at, is_enabled, is_flagged, consecutive_failures')
         .order('name'),
-      // Only store_id, and only the 7-day window — this is a GROUP BY count done
-      // client-side. Selecting titles here is what made the old path expensive.
-      supabase
-        .from('products')
-        .select('store_id')
-        .gte('first_seen', sevenDaysAgo)
-        .range(0, SIGNAL_ROW_CAP - 1),
+      // The GROUP BY runs in Postgres. The 7-day cutoff lives in the function so
+      // there is one definition of "recent" rather than one per caller.
+      supabase.rpc('store_signal_counts'),
     ])
 
     if (storesRes.error) {
@@ -93,9 +99,9 @@ export function useSweepSummary() {
     }
 
     const signalsByStoreId = new Map<string, number>()
-    for (const row of signalsRes.data) {
+    for (const row of (signalsRes.data ?? []) as StoreSignalCounts[]) {
       if (!row.store_id) continue
-      signalsByStoreId.set(row.store_id, (signalsByStoreId.get(row.store_id) ?? 0) + 1)
+      signalsByStoreId.set(row.store_id, Number(row.signals_7d))
     }
 
     // One `stores` row per shop per game, so merge on base name — "RedGoblin" and
