@@ -33,7 +33,14 @@ const CELL: Record<'date' | 'store' | 'game' | 'title' | 'price' | 'status', CSS
   // SignalRow's title is the display face at 14.5/600 and is the tallest cell,
   // so it sets the row height on desktop.
   title: { fontFamily: 'var(--pr-font-display)', fontSize: 14.5, fontWeight: 600, width: '72%' },
-  price: { fontSize: 13, fontWeight: 700, width: 66, marginLeft: 'auto' },
+  // Deliberately NO fontSize. SignalRow wraps <Price> in a bare
+  // `<span style={{ textAlign: 'right' }}>`, which inherits the page's 16px and
+  // so carries a 24px line box — taller than the 14.5px title, which makes THIS
+  // cell the one that sets the row's height (24 + 28 padding + 1 border = 53px).
+  // Setting 13px here to match the Price text inside it made the skeleton 50.75px
+  // and cost 2.25px per row; the inherited strut is the thing to mirror, not the
+  // visible glyphs.
+  price: { width: 66, marginLeft: 'auto' },
   status: { fontSize: 10, width: 58, marginLeft: 'auto' },
 }
 

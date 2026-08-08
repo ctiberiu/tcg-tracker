@@ -20,10 +20,21 @@ import {
 /** Six rows are fetched and six are rendered, so six is also the skeleton count. */
 const SKELETON_ROWS = 6
 
-/** Chip-shaped placeholders for the channel row. Four is the usual number of
- *  games present among six newest products; the row's job here is to hold its
- *  own height so the sections below it do not jump when the chips arrive. */
-const SKELETON_CHIPS = [128, 104, 116, 96]
+/**
+ * Chip-shaped placeholders for the channel row.
+ *
+ * Widths are close to a real `size="lg"` chip (measured 236px for "WEISS SCHWARZ
+ * 1 SIGNALS"), which matters at 390px: the row wraps, so a too-narrow
+ * placeholder packs two per line where the real chips take one each, and the row
+ * came out 101px short. At these widths the wrap count matches at both 1400px
+ * and 390px.
+ *
+ * The COUNT, though, is data — one chip per distinct game among the six newest
+ * in-stock products, so 1 to 5. Four is what the query returns today. This is
+ * the one dimension on this page a skeleton cannot pin, and the honest fix is
+ * upstream: see the note on the channel row below.
+ */
+const SKELETON_CHIPS = [232, 208, 220, 200]
 
 export function RadarFloorPage() {
   useDocumentMeta({
@@ -140,9 +151,24 @@ export function RadarFloorPage() {
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {loading &&
             SKELETON_CHIPS.map((width) => (
-              // 38px is a `size="lg"` chip: 10px padding each side, an 11.5px
-              // line box, and the 1px border it draws.
-              <span key={width} className="pr-shimmer" style={{ height: 38, width }} />
+              // A `size="lg"` chip's box, reproduced rather than approximated:
+              // 10px/16px padding, a 1px border and an 11.5px line box, giving
+              // 17.25 + 20 + 2 = 39.25px. A flat `height: 38` was 1.25px short.
+              // The border is transparent so the placeholder reads as one block.
+              <span
+                key={width}
+                className="pr-shimmer"
+                style={{
+                  display: 'block',
+                  boxSizing: 'border-box',
+                  padding: '10px 16px',
+                  border: '1px solid transparent',
+                  fontSize: 11.5,
+                  width,
+                }}
+              >
+                {'\u00A0'}
+              </span>
             ))}
           {!loading && channels.map(({ game, count }) => (
             <ChannelChip
