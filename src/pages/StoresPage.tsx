@@ -8,6 +8,7 @@ import {
   CtaButton,
   PackRadarFooter,
   MobileTabBar,
+  PENDING,
 } from '../components/packradar'
 
 export function StoresPage() {
@@ -17,13 +18,23 @@ export function StoresPage() {
     path: '/stores',
   })
 
-  const { storeHealths, healthy, loading } = useStoreHealth()
+  const { storeHealths, healthy, loading, overallLastSweepAt } = useStoreHealth()
 
   const respondingCount = storeHealths.filter((s) => s.status === 'OK').length
 
   return (
     <div className="packradar pr-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={storeHealths.length} healthy={healthy} />
+      {/* Was the time the page was opened, labelled LAST SWEEP. Note this page's
+          `healthy` is `[].every(...)` while loading, i.e. true — so it claimed
+          SIGNAL OK before hearing from a single store. `loading` withholds it. */}
+      <StatusStrip
+        lastSweepTime={
+          overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : PENDING
+        }
+        storeCount={storeHealths.length}
+        healthy={healthy}
+        loading={loading}
+      />
       <NavBar active="stores" />
 
       <PageHeader
@@ -32,7 +43,11 @@ export function StoresPage() {
         // "SWEEP EVERY 15 MIN" was here until 2026-08-05. It was wrong twice over:
         // it published the sweep cadence, which tells a shop what to rate-limit,
         // and 15 minutes was not the cadence anyway (scraper.yml runs `*/2 * * * *`).
-        meta={`${storeHealths.length} STORES MONITORED · CONTINUOUS SWEEP · ${respondingCount}/${storeHealths.length} RESPONDING`}
+        meta={
+          loading
+            ? `${PENDING} STORES MONITORED · CONTINUOUS SWEEP · ${PENDING} RESPONDING`
+            : `${storeHealths.length} STORES MONITORED · CONTINUOUS SWEEP · ${respondingCount}/${storeHealths.length} RESPONDING`
+        }
       />
 
       <div style={{ padding: '0 var(--pr-gutter)', flex: 1 }}>

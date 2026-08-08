@@ -9,11 +9,32 @@ import {
   SweepPanel,
   ChannelChip,
   SignalRow,
+  SignalRowSkeleton,
   CtaButton,
   MobileTabBar,
   GamePageLinks,
   GAMES,
+  PENDING,
 } from '../components/packradar'
+
+/** Six rows are fetched and six are rendered, so six is also the skeleton count. */
+const SKELETON_ROWS = 6
+
+/**
+ * Chip-shaped placeholders for the channel row.
+ *
+ * Widths are close to a real `size="lg"` chip (measured 236px for "WEISS SCHWARZ
+ * 1 SIGNALS"), which matters at 390px: the row wraps, so a too-narrow
+ * placeholder packs two per line where the real chips take one each, and the row
+ * came out 101px short. At these widths the wrap count matches at both 1400px
+ * and 390px.
+ *
+ * The COUNT, though, is data — one chip per distinct game among the six newest
+ * in-stock products, so 1 to 5. Four is what the query returns today. This is
+ * the one dimension on this page a skeleton cannot pin, and the honest fix is
+ * upstream: see the note on the channel row below.
+ */
+const SKELETON_CHIPS = [232, 208, 220, 200]
 
 export function RadarFloorPage() {
   useDocumentMeta({
@@ -31,7 +52,13 @@ export function RadarFloorPage() {
   // a sweep time and six store names. The full hook pages the entire products
   // table for per-store titles and channel sets that /stores needs and this page
   // never shows — 7 requests / 78.5 kB over the wire, down to 2 / 7.9 kB.
-  const { stores: storeSummaries, storeCount, overallLastSweepAt, healthy } = useSweepSummary()
+  const {
+    stores: storeSummaries,
+    storeCount,
+    overallLastSweepAt,
+    healthy,
+    loading: summaryLoading,
+  } = useSweepSummary()
   // Six cards are rendered, so six rows are fetched. This used to take 100 and
   // discard 94 of them.
   const { products, totalCount, loading } = useProducts({ inStockOnly: true, sort: 'newest', pageSize: 6 })
@@ -51,7 +78,18 @@ export function RadarFloorPage() {
 
   return (
     <div className="packradar pr-page">
-      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={storeCount} healthy={healthy} />
+      {/* Was `new Date().toLocaleTimeString('ro-RO')` — the moment the page was
+          opened, printed under the words LAST SWEEP. It read as fresh whatever
+          the scraper had actually done, including not having run for a day.
+          GameLandingPage already did this correctly; this is that line. */}
+      <StatusStrip
+        lastSweepTime={
+          overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : PENDING
+        }
+        storeCount={storeCount}
+        healthy={healthy}
+        loading={summaryLoading}
+      />
       <NavBar active="landing" />
 
       {/* hero */}
@@ -99,6 +137,7 @@ export function RadarFloorPage() {
         </div>
 
         <SweepPanel
+          loading={summaryLoading}
           stores={sweepStores.map((s) => ({ name: s.name, signals: s.signals7d, last: `${s.lastSweep} ago` }))}
           footerLine={healthy ? 'ALL STORES RESPONDING · LAST SWEEP ' + (overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : '—') : 'SOME STORES DEGRADED'}
         />
@@ -109,8 +148,29 @@ export function RadarFloorPage() {
         <div style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2, marginBottom: 12 }}>
           CHANNELS · ONE COLOR PER GAME
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {channels.map(({ game, count }) => (
+        <div className="pr-channel-strip" style={{ display: 'flex', gap: 10 }}>
+          {loading &&
+            SKELETON_CHIPS.map((width) => (
+              // A `size="lg"` chip's box, reproduced rather than approximated:
+              // 10px/16px padding, a 1px border and an 11.5px line box, giving
+              // 17.25 + 20 + 2 = 39.25px. A flat `height: 38` was 1.25px short.
+              // The border is transparent so the placeholder reads as one block.
+              <span
+                key={width}
+                className="pr-shimmer"
+                style={{
+                  display: 'block',
+                  boxSizing: 'border-box',
+                  padding: '10px 16px',
+                  border: '1px solid transparent',
+                  fontSize: 11.5,
+                  width,
+                }}
+              >
+                {'\u00A0'}
+              </span>
+            ))}
+          {!loading && channels.map(({ game, count }) => (
             <ChannelChip
               key={game.key}
               game={game}
@@ -145,26 +205,27 @@ export function RadarFloorPage() {
           }}
         >
           <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 2 }}>
-            LATEST SIGNALS · {latestSix.length} OF {signalCount}
+            {/* "0 OF 0" during load, in the same type as the real figure. */}
+            LATEST SIGNALS · {loading ? PENDING : `${latestSix.length} OF ${signalCount}`}
           </span>
           <CtaButton variant="ghost" size="sm" to="/view">FULL LOG →</CtaButton>
         </div>
-        {!loading && (
-          <div style={{ display: 'grid' }}>
-            {latestSix.map((product) => (
-              <SignalRow
-                key={product.id}
-                game={GAMES[product.game]}
-                date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
-                store={getStoreBaseName(product.store_name)}
-                title={product.title}
-                price={product.price}
-                status={product.in_stock ? 'IN STOCK' : 'GONE'}
-                href={product.url}
-              />
-            ))}
-          </div>
-        )}
+        <div style={{ display: 'grid' }}>
+          {loading
+            ? Array.from({ length: SKELETON_ROWS }, (_, i) => <SignalRowSkeleton key={i} />)
+            : latestSix.map((product) => (
+                <SignalRow
+                  key={product.id}
+                  game={GAMES[product.game]}
+                  date={new Date(product.first_seen).toLocaleDateString('ro-RO')}
+                  store={getStoreBaseName(product.store_name)}
+                  title={product.title}
+                  price={product.price}
+                  status={product.in_stock ? 'IN STOCK' : 'GONE'}
+                  href={product.url}
+                />
+              ))}
+        </div>
       </div>
 
       {/* CTA band */}
@@ -173,7 +234,7 @@ export function RadarFloorPage() {
           The full log is live.
         </div>
         <div style={{ fontSize: 12, color: 'var(--pr-text-dim)', letterSpacing: 0.5, marginBottom: 24 }}>
-          {signalCount} SIGNALS · FILTER BY CHANNEL, STORE, PRICE, STOCK
+          {loading ? PENDING : signalCount} SIGNALS · FILTER BY CHANNEL, STORE, PRICE, STOCK
         </div>
         <CtaButton variant="solid" to="/view">OPEN SIGNAL LOG →</CtaButton>
 

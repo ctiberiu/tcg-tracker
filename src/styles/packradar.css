@@ -204,6 +204,37 @@
   background: #ffffff0d !important;
 }
 
+/* The landing page's channel chips.
+ *
+ * One line, always, with the overflow scrolled rather than wrapped — the same
+ * shape as .pr-active-pills below 639px. This is here for a measured reason: the
+ * chip count is data (one per distinct game among the six newest in-stock
+ * products, so 1..N), and while the row could wrap, its HEIGHT was data too. A
+ * loading placeholder can match a fixed height or a fixed count but not a
+ * variable one, so at 390px the row shifted by 49.25px for every chip the
+ * skeleton guessed wrong — measured -148px at one game and +98.5px at six.
+ *
+ * Pinning it to one line is the same move as the ellipsis on SignalRow's title
+ * and SweepPanel's store name: constrain the dimension that depends on the data
+ * so the placeholder can be exact instead of lucky. The vertical padding keeps
+ * overflow-x from clipping the status dots' glow, and applies in both states so
+ * it cannot itself introduce a shift. */
+.pr-channel-strip {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 8px 0;
+}
+
+.pr-channel-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* Chips keep their intrinsic width instead of being squeezed by the flex line. */
+.pr-channel-strip > * {
+  flex: none;
+}
+
 .pr-active-pills {
   flex-wrap: wrap;
   margin-bottom: 20px;
