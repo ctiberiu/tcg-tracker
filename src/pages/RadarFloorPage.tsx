@@ -148,7 +148,7 @@ export function RadarFloorPage() {
         <div style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2, marginBottom: 12 }}>
           CHANNELS · ONE COLOR PER GAME
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="pr-channel-strip" style={{ display: 'flex', gap: 10 }}>
           {loading &&
             SKELETON_CHIPS.map((width) => (
               // A `size="lg"` chip's box, reproduced rather than approximated:
