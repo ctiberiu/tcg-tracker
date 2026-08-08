@@ -405,6 +405,9 @@ async function scrapeShopify(_page, store) {
 
   const products = (data.products ?? []).map(toProduct);
   const seenHandles = new Set((data.products ?? []).map((p) => p.handle));
+  // Complete until something cuts the walk short. A collection that fits in one
+  // response never enters the loop and is complete by definition.
+  let complete = true;
 
   // Walk further pages only when page 1 came back FULL. A short page is the
   // whole collection, and asking for page 2 of a 15-product collection is a
@@ -418,7 +421,8 @@ async function scrapeShopify(_page, store) {
           signal: AbortSignal.timeout(30000),
         });
         if (!pageRes.ok) {
-          console.log(`  ${store.name}: pagination stopped (page ${pageNum} HTTP ${pageRes.status}) after ${pageNum - 1} page(s), ${products.length} products`);
+          complete = false;
+          console.log(`  ${store.name}: pagination stopped (page ${pageNum} HTTP ${pageRes.status}) after ${pageNum - 1} page(s), ${products.length} products — PARTIAL, staleness sweep skipped`);
           break;
         }
         pageProducts = JSON.parse(await pageRes.text()).products ?? [];
@@ -426,7 +430,8 @@ async function scrapeShopify(_page, store) {
         // A later page failing is NOT a block — page 1 already succeeded, so the
         // store is reachable. Keep what we have rather than throwing the whole
         // scrape away and taking a strike for it.
-        console.log(`  ${store.name}: pagination stopped (page ${pageNum} error: ${err.message}) after ${pageNum - 1} page(s), ${products.length} products`);
+        complete = false;
+        console.log(`  ${store.name}: pagination stopped (page ${pageNum} error: ${err.message}) after ${pageNum - 1} page(s), ${products.length} products — PARTIAL, staleness sweep skipped`);
         break;
       }
 
@@ -456,12 +461,15 @@ async function scrapeShopify(_page, store) {
       }
 
       if (pageNum === PAGINATION_MAX_PAGES) {
-        console.log(`  ${store.name}: pagination stopped (cap-hit at ${PAGINATION_MAX_PAGES} pages) with ${products.length} products`);
+        // Stopped by policy with the collection still yielding new handles, so
+        // pages past the cap were never looked at.
+        complete = false;
+        console.log(`  ${store.name}: pagination stopped (cap-hit at ${PAGINATION_MAX_PAGES} pages) with ${products.length} products — PARTIAL, staleness sweep skipped`);
       }
     }
   }
 
-  return { products, status, challenged };
+  return { products, status, challenged, complete };
 }
 
 /**
@@ -2216,55 +2224,63 @@ function buildPageUrl(store, pageNum) {
 }
 
 /**
- * Keep fetching pages while every product on the page is in stock.
+ * Walk a store's listing until it stops yielding new product URLs.
  *
- * Why: most scrapers fetch page 1 and stop. If page 1 is 100% in stock you have
- * never observed the boundary where stock ends, so there is probably more
- * in-stock product beyond it. Measured on Krit (Yu-Gi-Oh!): page 1 served 24
- * in-stock products, page 2 another 24, and only page 3 reached out-of-stock
- * product — the scraper was capturing a quarter of that store's live inventory.
- * Where page 1 already contains an out-of-stock item the boundary HAS been seen,
- * so nothing extra is fetched and unaffected stores pay nothing.
+ * Why: most scrapers fetch page 1 and stop. Measured on Krit (Yu-Gi-Oh!): page 1
+ * served 24 products, page 2 another 24, and only page 3 reached out-of-stock
+ * product — the scraper was capturing a quarter of that store's inventory.
  *
- * IMPORTANT — saturation is evaluated on the page just fetched, never against
- * the `products` table. The table accumulates history and flips items to
- * out-of-stock once they disappear, so a store whose live page 1 is 100% in
- * stock can still show out-of-stock rows in the DB. Those are two different
- * measurements and only the live one detects truncation. (The weekly digest's
- * saturation section necessarily reads the table, so it is a weak hint and is
- * NOT expected to agree with this.)
+ * ── DEPTH MUST NOT DEPEND ON LIVE STOCK ─────────────────────────────────────
+ * This function used to be called `paginateWhileSaturated` and refused to walk
+ * past page 1 unless page 1 was 100% in stock:
  *
- * CRITICAL — stock state is the ENTRY trigger only, never the stop condition.
- * The authoritative stop is "this page yielded no new product URLs", i.e. depth
- * tracks catalogue size, which is stable run to run. An earlier draft stopped on
- * the first page containing out-of-stock product, which would have made depth a
- * function of live stock: a store whose page 1 went from 24/24 to 23/24 in stock
- * would stop at page 1 that run, pages 2+ would be absent, the staleness sweep
- * would mark them out-of-stock, and the next run that walked further would
- * "restock" them. That is exactly the false-restock incident documented at
- * scrapePokemania (see the comment on its null-page retry) — reached by design
- * intent rather than by render failure. One stop condition, not two that
- * disagree under stock churn.
+ *     if (!all.every((p) => p.in_stock === true)) return all;
+ *
+ * Its own note called that "the ENTRY trigger only, never the stop condition",
+ * and argued at length that a stop keyed on stock would make depth a function
+ * of inventory and produce a "false-restock cycle". **That argument was right
+ * and it applied to the entry gate too.** Entry or stop makes no difference:
+ * either way one item selling out on page 1 collapses a 4-page walk to one page,
+ * 24-96 products vanish from that run, the staleness sweep correctly marks them
+ * out of stock because they genuinely were absent, and the next saturated run
+ * "restocks" every one of them. The note predicted the outcome and then shipped
+ * a different route to it. Confirmed live on Krit Magic, 2026-08-06: observed
+ * depths of 1, 3, 4 and 5 pages, one run marking 15 products stale and a later
+ * deeper run alerting 15 as restocked.
+ *
+ * So there is no stock test here at all now. Depth is a function of catalogue
+ * size, which is stable run to run, and nothing else.
+ *
+ * `PAGINATION_MIN_PAGE_1` stays: a page 1 shorter than a full page is the whole
+ * catalogue. That is a SIZE signal, not a stock signal, and it does not vary
+ * with inventory.
+ *
+ * ── WHAT "COMPLETE" MEANS, AND WHY THE CALLER NEEDS IT ──────────────────────
+ * Returns `{ products, complete }`. `complete` is false when the walk was cut
+ * short rather than reaching the end of the catalogue — a nav error, or the page
+ * cap. A partial scrape must not be read as a complete one: the staleness sweep
+ * treats "not in this run" as "gone", which is only sound if the run covered the
+ * same ground as the last one.
  *
  * Stops on: a page yielding no new URLs (real last page, a wrong page param, or
  * the site clamping an out-of-range page back to the last valid one — all three
- * look the same and all three should stop), a nav error, or the page cap.
- * The stop REASON is logged: it is the diagnostic that tells us, from the first
- * week of Actions logs, which of the unvalidated platforms actually paginate.
+ * look the same and all three should stop), a nav error, or the page cap. The
+ * stop REASON is logged; it is the diagnostic that tells us which of the
+ * unvalidated platforms actually paginate.
  */
-async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) {
+async function paginateUntilExhausted(page, store, scrapeFn, firstPageProducts) {
   const all = [...firstPageProducts];
-  if (SELF_PAGINATING_TYPES.has(store.scraper_type)) return all;
-  if (all.length < PAGINATION_MIN_PAGE_1) return all;
-  // Entry trigger only — see the note above on why this must not also stop us.
-  if (!all.every((p) => p.in_stock === true)) return all;
+  // These walk their own pagination, so one call is the whole catalogue.
+  if (SELF_PAGINATING_TYPES.has(store.scraper_type)) return { products: all, complete: true };
+  // Short page 1 is the whole catalogue — a size signal, not a stock one.
+  if (all.length < PAGINATION_MIN_PAGE_1) return { products: all, complete: true };
 
   const seen = new Set(all.map((p) => normalizeProductUrl(p.url)));
-  const done = (reason, pagesFetched) => {
+  const done = (reason, pagesFetched, complete) => {
     console.log(
-      `  ${store.name}: pagination stopped (${reason}) after ${pagesFetched} page(s), ${all.length} products`,
+      `  ${store.name}: pagination stopped (${reason}) after ${pagesFetched} page(s), ${all.length} products${complete ? '' : ' — PARTIAL, staleness sweep skipped'}`,
     );
-    return all;
+    return { products: all, complete };
   };
 
   // Per-page in-stock counts make `cap-hit` actionable at zero extra cost. The
@@ -2284,7 +2300,7 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
   // A clamped page can't reach cap-hit at all — no-new-urls fires first.
   let lastPageInStock = all.length;
 
-  console.log(`  ${store.name}: page 1 fully in stock (${all.length}) — walking for more`);
+  console.log(`  ${store.name}: page 1 full (${all.length}) — walking for more`);
 
   for (let pageNum = 2; pageNum <= PAGINATION_MAX_PAGES; pageNum++) {
     // Same 2-5s band as the inter-store jitter. Pagination multiplies requests
@@ -2298,11 +2314,32 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
       const result = await scrapeFn(page, store);
       pageProducts = Array.isArray(result) ? result : (result?.products ?? []);
     } catch (err) {
-      return done(`page ${pageNum} error: ${err.message.split('\n')[0]}`, pageNum - 1);
+      // Cut short, not finished: pages beyond this one were never looked at.
+      return done(`page ${pageNum} error: ${err.message.split('\n')[0]}`, pageNum - 1, false);
     }
 
     const fresh = pageProducts.filter((p) => !seen.has(normalizeProductUrl(p.url)));
-    if (fresh.length === 0) return done('no-new-urls', pageNum - 1);
+    if (fresh.length === 0) {
+      // Two different things reach here and they need different verdicts.
+      //
+      // The page RENDERED and returned products we already have — a real last
+      // page, or a shop clamping an out-of-range page back to the last valid
+      // one. Either way the catalogue is exhausted: complete.
+      //
+      // The page returned NOTHING AT ALL. That is what a scrape function logs
+      // as "No products found or page timed out" when its selector wait
+      // expires, and it is indistinguishable from a genuine empty page past the
+      // end. Observed on Krit Magic run 31123987664: page 4 timed out, the walk
+      // stopped at 3 pages with 72 products where the previous run collected
+      // 120, and the sweep then marked 15 products stale. Treating an empty
+      // page as proof of the end is what turned a render blip into 15 false
+      // stock-outs, so it counts as partial.
+      return done(
+        pageProducts.length > 0 ? 'no-new-urls' : `page ${pageNum} returned nothing`,
+        pageNum - 1,
+        pageProducts.length > 0,
+      );
+    }
 
     for (const p of fresh) seen.add(normalizeProductUrl(p.url));
     all.push(...fresh);
@@ -2320,7 +2357,10 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
     lastPageInStock > 0
       ? `⚠ ${lastPageInStock} still in stock on the last page — the cap may be truncating real stock here, raise it for this platform`
       : 'last page had no in-stock product — catalogue is just deeper than the cap, benign';
-  return done(`cap-hit: ${capDiagnosis}`, PAGINATION_MAX_PAGES);
+  // Cap-hit is PARTIAL by definition: we stopped by policy with the catalogue
+  // still yielding new URLs, so pages beyond the cap were never looked at and
+  // their products must not be read as missing.
+  return done(`cap-hit: ${capDiagnosis}`, PAGINATION_MAX_PAGES, false);
 }
 
 /**
@@ -2334,8 +2374,8 @@ async function paginateWhileSaturated(page, store, scrapeFn, firstPageProducts) 
  */
 async function fetchStoreData(store, browser) {
   if (store.scraper_type === 'shopify') {
-    const r = await scrapeShopify(null, store); // { products, status, challenged } — no page load
-    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: r.confirmedEmpty === true };
+    const r = await scrapeShopify(null, store); // { products, status, challenged, complete } — no page load
+    return { raw: r.products ?? [], status: r.status ?? 0, challenged: r.challenged === true, confirmedEmpty: r.confirmedEmpty === true, complete: r.complete !== false };
   }
 
   if (store.scraper_type === 'ozone') {
@@ -2489,8 +2529,8 @@ async function fetchStorePage(store, browser, scrapeFn, mode) {
     // status/challenged stay as read from page 1 — they are the store's block
     // signals, and re-reading them per page would let a later page's transient
     // hiccup reclassify an otherwise healthy scrape.
-    const raw = await paginateWhileSaturated(page, store, scrapeFn, firstPage);
-    return { raw, status, challenged, confirmedEmpty, blockedByType };
+    const walk = await paginateUntilExhausted(page, store, scrapeFn, firstPage);
+    return { raw: walk.products, status, challenged, confirmedEmpty, blockedByType, complete: walk.complete };
   } finally {
     await context.close();
   }
@@ -2514,7 +2554,7 @@ async function scrapeAll() {
 
   if (stores.length === 0) {
     console.log('No stores due to scrape');
-    return { products: [], scrapedStoreIds: [] };
+    return { products: [], scrapedStoreIds: [], sweepableStoreIds: [] };
   }
 
   // Only spin up Playwright if a store that actually needs a browser is due.
@@ -2539,6 +2579,11 @@ async function scrapeAll() {
   const browser = needsBrowser ? await chromium.launch({ headless: true }) : null;
   const allProducts = [];
   const scrapedStoreIds = [];
+  // Stores whose scrape reached the end of the catalogue. Only these may be
+  // swept for staleness: "not in this run" only means "gone" if the run covered
+  // the same ground. A run that was cut short by the page cap, a nav error or a
+  // page that returned nothing has not earned that inference.
+  const sweepableStoreIds = [];
 
   const commit = (store, raw, status, challenged, confirmedEmpty = false) => {
     // categoryConfirmed (opt-in, like confirmedEmpty): the scraper matched an
@@ -2556,6 +2601,10 @@ async function scrapeAll() {
     if (outcome === 'success') {
       allProducts.push(...products);
       scrapedStoreIds.push(store.id);
+      // `complete` is undefined for the single-fetch API scrapers, where one
+      // call IS the whole catalogue — so absence means complete, and only an
+      // explicit false opts out.
+      if (complete !== false) sweepableStoreIds.push(store.id);
       const emptyNote = confirmedEmpty && raw.length === 0 ? ' — confirmed empty search (healthy, no matches)' : '';
       console.log(`  ${store.name}: ${products.length} TCG products found (${raw.length - products.length} non-TCG filtered)${emptyNote}`);
     } else if (outcome === 'transient') {
@@ -2586,7 +2635,7 @@ async function scrapeAll() {
     let outcome = 'transient';
     try {
       console.log(`Scraping ${store.name}...`);
-      const { raw, status, challenged, confirmedEmpty } = await fetchStoreData(store, browser);
+      const { raw, status, challenged, confirmedEmpty, complete } = await fetchStoreData(store, browser);
       outcome = commit(store, raw, status, challenged, confirmedEmpty);
     } catch (err) {
       outcome = 'transient'; // one-off nav/network error — does NOT count toward auto-disable
@@ -2615,7 +2664,7 @@ async function scrapeAll() {
         `Runs that overlap the next tick queue instead of starting, which stretches every store's effective check interval.`,
     );
   }
-  return { products: allProducts, scrapedStoreIds };
+  return { products: allProducts, scrapedStoreIds, sweepableStoreIds };
 }
 
 /**
@@ -2646,7 +2695,7 @@ async function fetchAllRows(queryFactory) {
  * Updates price, image_url, in_stock for existing products.
  * Returns { inserted, updated, insertedProducts } for alert use.
  */
-async function syncToSupabase(products, scrapedStoreIds = []) {
+async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds = scrapedStoreIds) {
   const supabase = initSupabase();
 
   // Fetch existing URLs + prior stock state to distinguish new/updated and
@@ -2741,7 +2790,19 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
   // immediately — the exact behaviour the grace exists to prevent — and alerted
   // as a restock when it came back. Repeat emails to a real inbox for ~12 hours
   // on 2026-08-06, ~10+ Krit Magic products.
-  if (scrapedStoreIds.length > 0) {
+  // Only stores whose scrape reached the end of their catalogue. The sweep
+  // infers "gone" from "absent from this run", which is only sound when the run
+  // covered the same ground as the last one. A run cut short by the page cap, a
+  // nav error, or a page that returned nothing has not covered it, and reading
+  // its absences as stock-outs is the false-restock cycle: products vanish from
+  // a shallow run, get marked out of stock, and every one of them alerts when a
+  // deeper run finds them again.
+  const skipped = scrapedStoreIds.filter((id) => !sweepableStoreIds.includes(id));
+  if (skipped.length > 0) {
+    console.log(`  Staleness sweep: skipping ${skipped.length} store(s) with a partial scrape`);
+  }
+
+  if (sweepableStoreIds.length > 0) {
     console.log('\nRunning staleness sweep...');
 
     // Group scraped product URLs by store_id (normalized for consistent matching).
@@ -2762,7 +2823,7 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
     const { data: sweptStores, error: intervalErr } = await supabase
       .from('stores')
       .select('id, check_interval_minutes')
-      .in('id', scrapedStoreIds);
+      .in('id', sweepableStoreIds);
     if (intervalErr) {
       // Fall back to the floor for every store. Too SHORT a grace is what
       // caused the repeat alerts, so an unknown interval must not silently
@@ -2775,7 +2836,7 @@ async function syncToSupabase(products, scrapedStoreIds = []) {
 
     let totalStale = 0;
     const now = Date.now();
-    for (const storeId of scrapedStoreIds) {
+    for (const storeId of sweepableStoreIds) {
       const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
       // Per store, not global: raising one store's interval must not weaken
       // every other store's grace, and a single global value would have to
@@ -3258,10 +3319,10 @@ async function main() {
   await updateScrapeRun(supabase, runId, { status: 'running' });
 
   try {
-    const { products, scrapedStoreIds } = await scrapeAll();
+    const { products, scrapedStoreIds, sweepableStoreIds } = await scrapeAll();
 
     console.log('\nSyncing to Supabase...');
-    const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds);
+    const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds, sweepableStoreIds);
     console.log(`  Inserted: ${inserted} new products`);
     console.log(`  Updated: ${updated} existing products`);
     console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
@@ -3296,4 +3357,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }
 
-export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateWhileSaturated, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
+export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateUntilExhausted, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
