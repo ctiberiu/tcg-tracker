@@ -37,7 +37,28 @@ export function SignalRow({ game, date, store, title, price, status, href }: Sig
         <StatusDot color={game.color} size={7} />
         {game.label}
       </span>
-      <span style={{ fontFamily: 'var(--pr-font-display)', fontSize: 14.5, color: 'var(--pr-text-bright)', fontWeight: 600 }}>
+      {/* One line, always. Product titles vary wildly in length — "Pokemon TCG -
+          PITCH BLACK - 3-pack Blister" against "Magic: The Gathering Marvel Super
+          Heroes - The Fantastic Four Collector's Edition Commander Deck" — so an
+          unconstrained title wrapped to two lines on roughly half the rows and the
+          row grew from 53px to 73px. That made the height a function of the data,
+          which no fixed-height skeleton can match: measured a 73px layout shift on
+          load. Truncating pins the row so the skeleton is exact rather than
+          approximate, and stays exact as content changes. The full title is on
+          /view and in the `title` attribute below. */}
+      <span
+        title={title}
+        style={{
+          fontFamily: 'var(--pr-font-display)',
+          fontSize: 14.5,
+          color: 'var(--pr-text-bright)',
+          fontWeight: 600,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {title}
       </span>
       <span style={{ textAlign: 'right' }}>
