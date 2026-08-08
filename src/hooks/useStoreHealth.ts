@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { GAMES, type GameInfo, type GameKey, type StoreHealthStatus } from '../components/packradar/tokens'
 import { getStoreBaseName } from '../lib/storeName'
+import type { StoreSignalCounts } from '../lib/types'
 import { deriveStoreStatus, worstStatus } from '../lib/storeStatus'
 
 // PostgREST caps a single response at 1000 rows, so this dataset is paged.

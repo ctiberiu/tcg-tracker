@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import type { StoreSignalCounts } from '../lib/types'
 import { getStoreBaseName } from '../lib/storeName'
 import { deriveStoreStatus, worstStatus } from '../lib/storeStatus'
 import type { StoreHealthStatus } from '../components/packradar/tokens'
@@ -40,12 +41,6 @@ import type { StoreHealthStatus } from '../components/packradar/tokens'
  * the cut — and with no ORDER BY on the query, which stores those were is not
  * defined. The window is a COUNT, so it is now asked as one.
  */
-interface StoreSignalCounts {
-  store_id: string
-  signals_7d: number
-  in_stock_count: number
-}
-
 export interface StoreSummary {
   name: string
   status: StoreHealthStatus
