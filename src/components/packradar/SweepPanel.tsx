@@ -64,10 +64,18 @@ export function SweepPanel({ stores, footerLine, loading = false }: SweepPanelPr
                 {/* The dot is drawn unfilled rather than pulsing: a pulsing green
                     dot per row reads as "this store is responding", which is the
                     one thing not yet known. */}
+                {/* No bar has a pixel height, for the reason SignalRowSkeleton
+                    documents: a hardcoded height is a second copy of a value the
+                    real row derives from its font, and the two drift. This version
+                    did hardcode 13 and 11 against real text at 12.5 and 11, which
+                    left the panel 39px short and shifted the hero grid on load.
+                    Each cell now renders U+00A0 at the SAME font size as the cell
+                    it stands in for, so the row height is computed the same way in
+                    both states and tracks any future font change for free. */}
                 <span className="pr-shimmer" style={{ height: 8, width: 8, borderRadius: '50%' }} />
-                <span className="pr-shimmer" style={{ height: 13, width: `${52 + ((i * 13) % 26)}%` }} />
-                <span className="pr-shimmer" style={{ height: 11, width: 58 }} />
-                <span className="pr-shimmer" style={{ height: 11, width: 44 }} />
+                <span className="pr-shimmer" style={{ fontSize: 12.5, fontWeight: 600, width: `${52 + ((i * 13) % 26)}%` }}>&nbsp;</span>
+                <span className="pr-shimmer" style={{ fontSize: 11, width: 58 }}>&nbsp;</span>
+                <span className="pr-shimmer" style={{ fontSize: 11, width: 44 }}>&nbsp;</span>
               </SweepRow>
             ))
           : stores.map((st) => (
