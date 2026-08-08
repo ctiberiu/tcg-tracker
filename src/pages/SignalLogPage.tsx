@@ -18,6 +18,7 @@ import {
   PackRadarFooter,
   MobileTabBar,
   GAMES,
+  PENDING,
   type GameKey,
 } from '../components/packradar'
 
@@ -36,7 +37,13 @@ export function SignalLogPage() {
   // Summary path, not useStoreHealth: this page renders a health dot, a sweep
   // time and a responding count. It was paying for the full per-store read —
   // three pages of the products table — to display three numbers.
-  const { storeCount, respondingCount, overallLastSweepAt, healthy } = useSweepSummary()
+  const {
+    storeCount,
+    respondingCount,
+    overallLastSweepAt,
+    healthy,
+    loading: summaryLoading,
+  } = useSweepSummary()
 
   const [storeFilters, setStoreFilters] = useState<string[]>(() => {
     const raw = searchParams.get('store')
@@ -139,13 +146,28 @@ export function SignalLogPage() {
 
   return (
     <div className="packradar pr-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <StatusStrip lastSweepTime={new Date().toLocaleTimeString('ro-RO')} storeCount={storeCount} healthy={healthy} />
+      {/* Was the time the page was opened, labelled LAST SWEEP. */}
+      <StatusStrip
+        lastSweepTime={
+          overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : PENDING
+        }
+        storeCount={storeCount}
+        healthy={healthy}
+        loading={summaryLoading}
+      />
       <NavBar active="log" />
 
+      {/* Each figure is withheld by the load it actually depends on, rather than
+          by one page-wide flag: the signal total comes from useProducts and the
+          store figures from useSweepSummary, and they land separately. */}
       <PageHeader
         title="Signal log"
         crumbCurrent="SIGNAL LOG"
-        meta={`${totalCount ?? products.length} SIGNALS · ${respondingCount}/${storeCount} STORES RESPONDING · LAST SWEEP ${lastSweepLabel}`}
+        meta={
+          `${loading ? PENDING : (totalCount ?? products.length)} SIGNALS · ` +
+          `${summaryLoading ? PENDING : `${respondingCount}/${storeCount}`} STORES RESPONDING · ` +
+          `LAST SWEEP ${summaryLoading ? PENDING : lastSweepLabel}`
+        }
       />
 
       <div
