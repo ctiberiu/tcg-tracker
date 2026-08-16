@@ -2700,8 +2700,12 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
 
   // Fetch existing URLs + prior stock state to distinguish new/updated and
   // to detect out-of-stock -> in-stock restock transitions.
+  // out_of_stock_since and price are selected for the transition log only.
+  // Both are destroyed by the write that follows: migration 021's trigger clears
+  // out_of_stock_since the instant a product restocks, and price is overwritten
+  // by every upsert. Read here or the values are gone — see migration 037.
   const { data: existing, error: fetchError } = await fetchAllRows(() =>
-    supabase.from('products').select('url, in_stock'),
+    supabase.from('products').select('url, in_stock, out_of_stock_since, price'),
   );
 
   if (fetchError) {
@@ -2710,9 +2714,15 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
 
   const existingUrls = new Set(existing.map((row) => row.url));
   const prevStock = new Map(existing.map((row) => [row.url, row.in_stock]));
+  const prevOutSince = new Map(existing.map((row) => [row.url, row.out_of_stock_since]));
+  const prevPrice = new Map(existing.map((row) => [row.url, row.price]));
   const insertedProducts = [];
   // Products to alert on: newly-listed AND in stock, or restocked (out -> in).
   const alertProducts = [];
+  // Stock transitions observed this run, flushed to product_stock_events at the
+  // end. Collected rather than written inline so one insert failure cannot
+  // interleave with the sync, and so the whole run costs one round trip.
+  const stockEvents = [];
   let updated = 0;
 
   // De-dupe by normalized URL BEFORE batching. Two different store rows can
@@ -2755,15 +2765,44 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
       console.error(`  Upsert batch error: ${upsertError.message}`);
     } else if (data) {
       for (const row of data) {
+        const ev = (event, extra = {}) =>
+          stockEvents.push({
+            url: row.url,
+            store_id: row.store_id ?? null,
+            store_name: row.store_name,
+            title: row.title,
+            game: row.game,
+            event,
+            price_at_event: row.price ?? null,
+            ...extra,
+          });
+
         if (!existingUrls.has(row.url)) {
           insertedProducts.push(row);
+          // First sighting is logged HERE, not read back off products.first_seen,
+          // which resets whenever cleanup deletes a row and a later sweep restores
+          // it (trg_preserve_first_seen is BEFORE UPDATE only). See migration 037.
+          ev('first_seen');
+          // Also open an in-stock interval so duration queries need only pair
+          // 'in' with 'out' and never special-case a product's first appearance.
+          if (row.in_stock) ev('in');
           // New listing: alert only if it's actually in stock
           if (row.in_stock) alertProducts.push(row);
         } else {
           updated++;
+          const was = prevStock.get(row.url);
           // Restock: was out of stock, now back in stock
-          if (row.in_stock && prevStock.get(row.url) === false) {
+          if (row.in_stock && was === false) {
+            // out_of_stock_since as it stood BEFORE this write — the 021 trigger
+            // has already nulled it on the returned row, so the prior value is the
+            // only record of how long the outage ran.
+            ev('in', { out_since_at_event: prevOutSince.get(row.url) ?? null });
             alertProducts.push(row);
+          } else if (!row.in_stock && was === true) {
+            // Sellout observed directly by the scrape (the store listed it as out).
+            // The closing price is the PREVIOUS one — the last seen while it was
+            // still available — not the value just written.
+            ev('out', { price_at_event: prevPrice.get(row.url) ?? null });
           }
         }
       }
@@ -2844,8 +2883,14 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
       const staleCutoff = now - staleGraceMs(intervalByStore.get(storeId));
 
       // Fetch all currently in-stock products for this store
+      // price/title/game are selected so a sellout detected by absence logs the
+      // same transition detail as one the store reported directly.
       const { data: storeProducts, error: fetchErr } = await fetchAllRows(() =>
-        supabase.from('products').select('id, url, last_seen_at').eq('store_id', storeId).eq('in_stock', true),
+        supabase
+          .from('products')
+          .select('id, url, last_seen_at, price, store_name, title, game')
+          .eq('store_id', storeId)
+          .eq('in_stock', true),
       );
 
       if (fetchErr) {
@@ -2855,15 +2900,29 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
 
       // Find products not seen in this scrape AND missing long enough to be
       // a real stock-out rather than a single-run blip.
-      const staleIds = storeProducts
-        .filter((p) => {
-          if (scrapedUrlSet.has(normalizeProductUrl(p.url))) return false;
-          const lastSeen = p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
-          return lastSeen <= staleCutoff;
-        })
-        .map((p) => p.id);
+      const staleRows = storeProducts.filter((p) => {
+        if (scrapedUrlSet.has(normalizeProductUrl(p.url))) return false;
+        const lastSeen = p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0;
+        return lastSeen <= staleCutoff;
+      });
+      const staleIds = staleRows.map((p) => p.id);
 
       if (staleIds.length === 0) continue;
+
+      // A sustained absence IS a sellout — the same in->out transition as one the
+      // store reported, just detected by the product vanishing from the listing.
+      // Logged before the update, while price still holds the last available value.
+      for (const p of staleRows) {
+        stockEvents.push({
+          url: p.url,
+          store_id: storeId,
+          store_name: p.store_name,
+          title: p.title,
+          game: p.game,
+          event: 'out',
+          price_at_event: p.price ?? null,
+        });
+      }
 
       // Batch update stale products
       for (let j = 0; j < staleIds.length; j += BATCH_SIZE) {
@@ -2885,6 +2944,32 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
     if (totalStale > 0) {
       console.log(`  Total stale: ${totalStale} products marked out-of-stock`);
     }
+  }
+
+  // Flush the transition log. Deliberately LAST and deliberately swallowed: this
+  // table is an observability record, and a failure to write it must never fail a
+  // sweep, suppress a restock alert, or leave products half-synced. A dropped
+  // batch costs one run's transitions; a thrown error would cost the run.
+  if (stockEvents.length > 0) {
+    let written = 0;
+    for (let i = 0; i < stockEvents.length; i += BATCH_SIZE) {
+      const batch = stockEvents.slice(i, i + BATCH_SIZE);
+      try {
+        const { error: evError } = await supabase.from('product_stock_events').insert(batch);
+        if (evError) {
+          console.error(`  Stock events batch error: ${evError.message}`);
+        } else {
+          written += batch.length;
+        }
+      } catch (err) {
+        console.error(`  Stock events batch threw: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+    const counts = stockEvents.reduce((acc, e) => ({ ...acc, [e.event]: (acc[e.event] ?? 0) + 1 }), {});
+    console.log(
+      `  Stock events: ${written}/${stockEvents.length} written ` +
+        `(first_seen ${counts.first_seen ?? 0}, in ${counts.in ?? 0}, out ${counts.out ?? 0})`,
+    );
   }
 
   return { inserted: insertedProducts.length, updated, insertedProducts, alertProducts };
