@@ -2954,27 +2954,30 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
   // table is an observability record, and a failure to write it must never fail a
   // sweep, suppress a restock alert, or leave products half-synced. A dropped
   // batch costs one run's transitions; a thrown error would cost the run.
-  if (stockEvents.length > 0) {
-    let written = 0;
-    for (let i = 0; i < stockEvents.length; i += BATCH_SIZE) {
-      const batch = stockEvents.slice(i, i + BATCH_SIZE);
-      try {
-        const { error: evError } = await supabase.from('product_stock_events').insert(batch);
-        if (evError) {
-          console.error(`  Stock events batch error: ${evError.message}`);
-        } else {
-          written += batch.length;
-        }
-      } catch (err) {
-        console.error(`  Stock events batch threw: ${err instanceof Error ? err.message : String(err)}`);
+  let written = 0;
+  for (let i = 0; i < stockEvents.length; i += BATCH_SIZE) {
+    const batch = stockEvents.slice(i, i + BATCH_SIZE);
+    try {
+      const { error: evError } = await supabase.from('product_stock_events').insert(batch);
+      if (evError) {
+        console.error(`  Stock events batch error: ${evError.message}`);
+      } else {
+        written += batch.length;
       }
+    } catch (err) {
+      console.error(`  Stock events batch threw: ${err instanceof Error ? err.message : String(err)}`);
     }
-    const counts = stockEvents.reduce((acc, e) => ({ ...acc, [e.event]: (acc[e.event] ?? 0) + 1 }), {});
-    console.log(
-      `  Stock events: ${written}/${stockEvents.length} written ` +
-        `(first_seen ${counts.first_seen ?? 0}, in ${counts.in ?? 0}, out ${counts.out ?? 0})`,
-    );
   }
+  // Logged UNCONDITIONALLY, including the all-zero case. A quiet sweep genuinely
+  // writes nothing — most do — so gating this line on stockEvents.length would
+  // make "no transitions happened" and "this code never ran" produce identical
+  // output, which is the failure mode that let the commit() ReferenceError sit
+  // in production unnoticed. The zero line IS the evidence the path executed.
+  const counts = stockEvents.reduce((acc, e) => ({ ...acc, [e.event]: (acc[e.event] ?? 0) + 1 }), {});
+  console.log(
+    `  Stock events: ${written}/${stockEvents.length} written ` +
+      `(first_seen ${counts.first_seen ?? 0}, in ${counts.in ?? 0}, out ${counts.out ?? 0})`,
+  );
 
   return { inserted: insertedProducts.length, updated, insertedProducts, alertProducts };
 }
