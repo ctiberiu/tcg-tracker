@@ -67,11 +67,74 @@
 --
 -- ── Replayability ────────────────────────────────────────────────────────────
 -- Idempotent by construction. The UPDATE is predicated on IS NULL, so a second run
--- matches 0 rows; CREATE OR REPLACE FUNCTION and DISABLE/ENABLE TRIGGER are both
--- repeat-safe. Running twice leaves the same state — the second run is a no-op.
+-- matches 0 rows; CREATE TABLE IF NOT EXISTS, INSERT ... ON CONFLICT DO NOTHING,
+-- DROP POLICY IF EXISTS, CREATE OR REPLACE FUNCTION and DISABLE/ENABLE TRIGGER are
+-- all repeat-safe. Running twice leaves the same state — the second run is a no-op.
+--
+-- ── Verify by SELECT, never by a row-count tag ───────────────────────────────
+--   SELECT count(*) FROM products_first_seen_snapshot;                    -- 724
+--   SELECT count(*) FROM products p JOIN stores s ON p.store_id = s.id
+--    WHERE s.is_enabled AND NOT p.in_stock AND p.out_of_stock_since IS NULL; -- 0
+--   SELECT count(*) FROM products p JOIN stores s ON p.store_id = s.id
+--    WHERE NOT s.is_enabled AND NOT p.in_stock AND p.out_of_stock_since IS NULL; -- 47
+-- The 47 on disabled stores are deliberately untouched by both steps.
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 1. One-off backfill, enabled stores only.
+-- 1. Preserve first_seen for these rows BEFORE the backfill makes them
+--    deletable. This must live in THIS migration, not a later one.
+--
+--    products.first_seen does not survive the cleanup cycle:
+--    trg_preserve_first_seen (004) is BEFORE UPDATE only, so when
+--    cleanupStaleProducts DELETEs a stale row and the next sweep re-INSERTs it,
+--    first_seen takes DEFAULT now(). Measured 2026-08-16: 2165 of 3909 products
+--    (55%) carry a first_seen under 7 days, and 2129 of those have
+--    first_seen = out_of_stock_since within the hour — rows inserted while
+--    already sold out. The 7-day cleanup window and the 7-day first_seen
+--    population are the same window.
+--
+--    These 724 rows are the ONLY ones left with a truthful first_seen (spanning
+--    2026-04-02 to 2026-07-05). They survived precisely because the NULL clock
+--    exempted them from cleanup. The backfill below removes that exemption, and
+--    184 of them have last_seen_at older than 7 days, so they become deletable
+--    on the FIRST scraper run afterwards — not after a week's grace.
+--
+--    A separate later migration cannot do this: once the UPDATE below runs, the
+--    `out_of_stock_since IS NULL` predicate that identifies these rows matches
+--    nothing. Capture and backfill have to be one transaction.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS products_first_seen_snapshot (
+  url          text PRIMARY KEY,
+  first_seen   timestamptz NOT NULL,
+  last_seen_at timestamptz NOT NULL,
+  store_name   text,
+  title        text,
+  game         text,
+  captured_at  timestamptz NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE products_first_seen_snapshot IS
+  'Point-in-time rescue of products.first_seen for rows that still held a truthful '
+  'value before migration 036 handed them to the 7-day cleanup. Keyed by url because '
+  'products.id is regenerated on re-insert. Not maintained — a historical record.';
+
+INSERT INTO products_first_seen_snapshot (url, first_seen, last_seen_at, store_name, title, game)
+SELECT p.url, p.first_seen, p.last_seen_at, p.store_name, p.title, p.game
+  FROM products p
+  JOIN stores s ON p.store_id = s.id
+ WHERE s.is_enabled = true
+   AND p.in_stock = false
+   AND p.out_of_stock_since IS NULL
+ON CONFLICT (url) DO NOTHING;
+
+ALTER TABLE products_first_seen_snapshot ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Operator can read first_seen snapshot" ON products_first_seen_snapshot;
+CREATE POLICY "Operator can read first_seen snapshot"
+  ON products_first_seen_snapshot FOR SELECT TO authenticated
+  USING (is_admin());
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 2. One-off backfill, enabled stores only.
 --    The trigger must be off or the ELSE branch above reverts every write.
 -- ─────────────────────────────────────────────────────────────────────────────
 ALTER TABLE products DISABLE TRIGGER trg_set_out_of_stock_since;
@@ -87,7 +150,7 @@ UPDATE products p
 ALTER TABLE products ENABLE TRIGGER trg_set_out_of_stock_since;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 2. Make the trigger self-healing so this class of gap cannot reopen.
+-- 3. Make the trigger self-healing so this class of gap cannot reopen.
 --
 --    Only the ELSE branch changes: instead of blindly copying OLD (which
 --    propagates a NULL forever), it fills a missing clock from the row's own
