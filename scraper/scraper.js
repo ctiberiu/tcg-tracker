@@ -2585,7 +2585,11 @@ async function scrapeAll() {
   // page that returned nothing has not earned that inference.
   const sweepableStoreIds = [];
 
-  const commit = (store, raw, status, challenged, confirmedEmpty = false) => {
+  // `complete` MUST be a parameter. It was previously read from this arrow's
+  // closure, but the only binding of that name is destructured inside the store
+  // loop BELOW — a narrower, later block — so the closure never captured it and
+  // every reference threw ReferenceError under module strict mode.
+  const commit = (store, raw, status, challenged, confirmedEmpty = false, complete = undefined) => {
     // categoryConfirmed (opt-in, like confirmedEmpty): the scraper matched an
     // exact category id, not a loose text search — e.g. Flamey's "Premium
     // Collection"/"Coin Set"/"V-Union Collection Box" all say "Pokemon" but
@@ -2636,7 +2640,7 @@ async function scrapeAll() {
     try {
       console.log(`Scraping ${store.name}...`);
       const { raw, status, challenged, confirmedEmpty, complete } = await fetchStoreData(store, browser);
-      outcome = commit(store, raw, status, challenged, confirmedEmpty);
+      outcome = commit(store, raw, status, challenged, confirmedEmpty, complete);
     } catch (err) {
       outcome = 'transient'; // one-off nav/network error — does NOT count toward auto-disable
       console.error(`  ${store.name}: ERROR — ${err.message}`);
