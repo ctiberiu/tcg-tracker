@@ -101,7 +101,7 @@ describe('scrapeShopify pagination', () => {
   // strictly worse than returning what we have.
   it('keeps the pages it already has when a later page errors', async () => {
     let call = 0
-    vi.stubGlobal('fetch', async (url) => {
+    vi.stubGlobal('fetch', async () => {
       call++
       if (call === 1) return { ok: true, status: 200, text: async () => JSON.stringify(page(250, 0)) }
       throw new Error('socket hang up')

@@ -3414,7 +3414,9 @@ async function main() {
     const { products, scrapedStoreIds, sweepableStoreIds } = await scrapeAll();
 
     console.log('\nSyncing to Supabase...');
-    const { inserted, updated, insertedProducts, alertProducts } = await syncToSupabase(products, scrapedStoreIds, sweepableStoreIds);
+    // insertedProducts is deliberately not destructured: alerts are driven by
+    // alertProducts (new-and-in-stock OR restocked), not by every new row.
+    const { inserted, updated, alertProducts } = await syncToSupabase(products, scrapedStoreIds, sweepableStoreIds);
     console.log(`  Inserted: ${inserted} new products`);
     console.log(`  Updated: ${updated} existing products`);
     console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
