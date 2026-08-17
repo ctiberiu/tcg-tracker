@@ -55,17 +55,38 @@ jobs:
         run: npm ci --include=dev --ignore-scripts
 
       # NON-BLOCKING, deliberately, and this should be tightened rather than kept.
-      # `npm run lint` currently exits 1 on 16 pre-existing problems (8 errors,
-      # 8 warnings) in src/hooks/* and SignalLogPage.tsx — none introduced here.
+      # `npm run lint` currently exits 1 on 17 pre-existing problems (9 errors,
+      # 8 warnings), all in src/hooks/* and SignalLogPage.tsx — none introduced here.
+      # (Was 16 when this comment was written; one more src/ error has appeared
+      # since. Re-measure before trusting the number, don't trust this line.)
       # Making it blocking today would mean CI is red on its very first run, which
       # trains people to ignore the badge, and a gate everyone ignores is worse
       # than no gate. Reporting it without failing keeps the debt visible.
-      # Flip continue-on-error off once those 16 are fixed.
-      - name: Lint (non-blocking — 16 known pre-existing problems)
+      # Flip continue-on-error off once those 17 are fixed.
+      - name: Lint (non-blocking — 17 known pre-existing problems in src/)
         continue-on-error: true
         env:
           NODE_ENV: development
         run: npm run lint
+
+      # BLOCKING, and scoped to the scraper on purpose.
+      #
+      # The scraper had NO lint coverage at all until eslint.config.js gained a
+      # scraper/**/*.js block: every rule was scoped to **/*.{ts,tsx}, so
+      # `eslint scraper/scraper.js` reported zero problems because zero rules
+      # applied. That false all-clear let commit() read `complete` from a scope it
+      # never had — a ReferenceError that threw on every SUCCESSFUL scrape, left the
+      # staleness sweep dead for every store, and recorded successes as failures.
+      # `node --check` passes on it; only no-undef catches it.
+      #
+      # Scoped rather than repo-wide so this can be BLOCKING today: scraper/ is
+      # clean right now, so the gate stays green and actually means something, while
+      # the src/ debt above stays visible without holding this hostage. Widen to the
+      # whole repo once those 17 are cleared and the step above goes blocking.
+      - name: Lint scraper (blocking — no known problems, keep it that way)
+        env:
+          NODE_ENV: development
+        run: npx eslint 'scraper/**/*.js'
 
       # NODE_ENV is deliberately NOT set here, unlike the install steps above.
       # It is needed for `npm ci` (production makes npm omit devDependencies),
