@@ -10,6 +10,7 @@ import { NotFoundPage } from './pages/NotFoundPage'
 import { GameLandingPage } from './pages/GameLandingPage'
 import { GAME_PAGES } from './lib/gamePages'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { PushPrompt } from './components/packradar'
 
 function App() {
   return (
@@ -47,6 +48,10 @@ function App() {
             non-existent URL — unlimited distinct URLs, one duplicate body. */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      {/* Rendered once, outside <Routes>, so it survives navigation. Inside the
+          router because the sheet links back into the app. A per-page instance
+          would race two service worker registrations against each other. */}
+      <PushPrompt />
     </BrowserRouter>
   )
 }
