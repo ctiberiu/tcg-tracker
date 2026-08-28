@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { GamePageLinks } from './GamePageLinks'
+import { openPushSettings } from './pushSettings'
 
 /**
  * Shared footer. Carries the game-page links on every page that renders it, so
@@ -9,6 +10,11 @@ import { GamePageLinks } from './GamePageLinks'
  * /privacy is linked here too. It was declared as a route with its own meta and
  * linked from nowhere at all: an orphan the sitemap would have declared without
  * a single path to it.
+ *
+ * NOTIFICATIONS is the permanent way back into the push settings. It has to live
+ * somewhere: the floating prompt hides itself once a device is subscribed (and
+ * after a dismissal), so without a fixed entry point a visitor who has turned
+ * alerts on has no route to changing their games or turning them off again.
  */
 export function PackRadarFooter() {
   return (
@@ -36,6 +42,22 @@ export function PackRadarFooter() {
           NO NEW SIGNALS. RADAR IS LIVE.
         </span>
         <span style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={openPushSettings}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              fontSize: 11,
+              color: 'var(--pr-text-dim)',
+              letterSpacing: 1,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            NOTIFICATIONS
+          </button>
           <Link to="/privacy" style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 1 }}>
             PRIVACY
           </Link>

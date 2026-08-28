@@ -101,6 +101,28 @@ jobs:
           # misfiled value doesn't silently blank out and stop `live` sending.
           ALERT_FROM: ${{ vars.ALERT_FROM || secrets.ALERT_FROM }}
           ALERT_UNSUBSCRIBE_TO: ${{ vars.ALERT_UNSUBSCRIBE_TO || secrets.ALERT_UNSUBSCRIBE_TO }}
+          # --- Web Push (anonymous, per-device, free) --------------------------
+          # A SEPARATE switch from ALERT_MODE on purpose. Email costs ZeptoMail
+          # credits and push costs nothing, so the intended steady state is push
+          # live while email stays dry or redirect. One shared variable would make
+          # that combination unreachable.
+          #
+          # Defaults to 'dry' — the opposite of ALERT_MODE above — because there
+          # is no safe partial send for push. Email can narrow to the operator's
+          # own address; a push audience is a table of anonymous devices with no
+          # operator-owned subset to fall back to, so an accidental send goes
+          # straight to strangers' lock screens. Flip to 'live' from the Actions
+          # UI once a real device has been verified end to end.
+          PUSH_MODE: ${{ vars.PUSH_MODE || 'dry' }}
+          # The public half is also inlined into the client bundle as
+          # VITE_VAPID_PUBLIC_KEY. It is public by design — it is what the browser
+          # subscribes against — but it is kept as a secret here so the pair is
+          # rotated together rather than one half being edited in isolation.
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          # mailto: the push services use to reach the operator about abuse.
+          # web-push refuses to sign a request without one.
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT || 'mailto:alerts@packradar.info' }}
           SCRAPE_STORE_ID: ${{ github.event.inputs.store_id }}
           SCRAPE_RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scraper.js

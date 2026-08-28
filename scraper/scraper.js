@@ -12,6 +12,7 @@ import {
 import { isStoreDue, capOnePerDomain, storeHost } from './schedule.js';
 import { shouldAllowRequest } from './request-filter.js';
 import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
+import { sendPushAlerts } from './push.js';
 
 chromium.use(StealthPlugin());
 
@@ -3432,6 +3433,18 @@ async function main() {
     if (alertProducts.length > 0) {
       console.log('\nSending email alerts...');
       await sendAlerts(alertProducts);
+
+      // Second channel, same trigger. Deliberately AFTER the email send and in
+      // its own try/catch: push is the newer, free path and must never be able
+      // to take down the one that has been delivering for months. sendPushAlerts
+      // already swallows its own errors — this is the belt to that braces, so an
+      // unexpected throw cannot skip cleanupStaleProducts below or fail the run.
+      console.log('\nSending push notifications...');
+      try {
+        await sendPushAlerts(supabase, alertProducts);
+      } catch (pushError) {
+        console.error(`  Push notifications failed: ${pushError.message}`);
+      }
     }
 
     console.log('\nCleaning up long-term out-of-stock products...');
