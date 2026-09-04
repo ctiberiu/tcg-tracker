@@ -35,6 +35,45 @@ import { useEffect, useRef } from 'react'
 const VERSION_URL = '/version.json'
 
 /**
+ * Which server version this tab has already reloaded for.
+ *
+ * ── The loop this prevents, observed for real ────────────────────────────────
+ * During a deploy the CDN can serve a freshly-updated /version.json alongside a
+ * still-cached index.html that references the PREVIOUS bundle. Measured on
+ * packradar.info: for about a minute after a deploy the page loaded
+ * index-B6orGb-2.js while version.json already reported index-CwhDJ0qb.js.
+ *
+ * A naive "reload on mismatch" spins forever in that window — boot old, see
+ * mismatch, reload, receive the same cached HTML, see the same mismatch — with
+ * no exit, because reloading cannot fix a stale edge cache. On a phone that is a
+ * hot battery and an unusable app.
+ *
+ * So a reload is attempted at most ONCE per server version per tab. If the
+ * mismatch survives it, the reload is not the cure and the app simply carries on
+ * running the older bundle until the edge catches up and it loads normally.
+ * sessionStorage rather than a ref: the value has to outlive the reload.
+ */
+const RELOADED_FOR_KEY = 'packradar:reloaded-for'
+
+function alreadyReloadedFor(version: string): boolean {
+  try {
+    return sessionStorage.getItem(RELOADED_FOR_KEY) === version
+  } catch {
+    // Private browsing. Refusing to reload is the safe failure: a missed update
+    // costs one stale session, a reload loop costs the device.
+    return true
+  }
+}
+
+function markReloadedFor(version: string) {
+  try {
+    sessionStorage.setItem(RELOADED_FOR_KEY, version)
+  } catch {
+    /* see above */
+  }
+}
+
+/**
  * Ignore checks closer together than this. visibilitychange can fire repeatedly
  * while iOS settles an app back into the foreground, and each one would
  * otherwise be a network request.
@@ -85,6 +124,10 @@ export function useAppVersion() {
         return
       }
       if (version !== booted.current) {
+        // One attempt per server version. See RELOADED_FOR_KEY: a stale edge
+        // cache cannot be fixed by reloading, and retrying it is an infinite loop.
+        if (alreadyReloadedFor(version)) return
+        markReloadedFor(version)
         // Nothing to clean up: the page is about to be replaced wholesale, and
         // the service worker's own skipWaiting/clients.claim handles its side.
         window.location.reload()
