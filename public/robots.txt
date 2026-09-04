@@ -15,6 +15,10 @@ Disallow: /login
 # Storybook is basic-auth'd in middleware.ts; keep crawlers off it regardless.
 Disallow: /storybook
 
+# On-device diagnostics for push notifications. Unlinked from the UI and of no
+# use to a crawler.
+Disallow: /push-debug
+
 # Generated at build time from the route registry by the `packradar-sitemap`
 # plugin in vite.config.ts, and emitted into the build output for the same
 # reason this file lives in public/: a real file escapes the catch-all rewrite.

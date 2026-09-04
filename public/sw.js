@@ -32,7 +32,9 @@
  * updated worker can sit in `waiting` for days. Push then keeps being handled by
  * the old worker, and a payload-shape change silently stops rendering. */
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+self.addEventListener('activate', (event) =>
+  event.waitUntil(Promise.all([self.clients.claim(), recordInfo()])),
+);
 
 /* The number the payload carries so the worker does not have to trust its own
  * arithmetic on a malformed message. Kept in one place because the fallback path
@@ -95,6 +97,37 @@ self.addEventListener('push', (event) => {
 const NAV_CACHE = 'packradar-pending-nav';
 const NAV_KEY = '/__packradar_pending_nav';
 
+/* Bumped by hand whenever this file changes in a way worth telling apart on a
+ * device. Two failed fixes for the notification-tap filter were both diagnosed
+ * blind, and neither could answer the first question that matters: is the phone
+ * even running this version of the worker? An installed iOS app can keep an old
+ * worker alive across launches, so "I deployed it" and "the device has it" are
+ * different claims and only one of them was ever checked. */
+const SW_VERSION = '2026-09-04-nav-cache';
+const INFO_KEY = '/__packradar_sw_info';
+const TRACE_KEY = '/__packradar_sw_trace';
+
+/** Record which worker is live, readable from the page at /push-debug. */
+async function recordInfo() {
+  try {
+    const cache = await caches.open(NAV_CACHE);
+    await cache.put(INFO_KEY, new Response(JSON.stringify({ version: SW_VERSION, activatedAt: Date.now() }),
+      { headers: { 'content-type': 'application/json' } }));
+  } catch { /* storage unavailable; the trace is a diagnostic, never load-bearing */ }
+}
+
+/** Append a breadcrumb so a tap can be reconstructed after the fact. */
+async function trace(step, detail) {
+  try {
+    const cache = await caches.open(NAV_CACHE);
+    const prev = await cache.match(TRACE_KEY);
+    const list = prev ? await prev.json() : [];
+    list.push({ at: Date.now(), step, detail: detail ?? null, version: SW_VERSION });
+    await cache.put(TRACE_KEY, new Response(JSON.stringify(list.slice(-25)),
+      { headers: { 'content-type': 'application/json' } }));
+  } catch { /* as above */ }
+}
+
 async function stashPendingNav(url) {
   try {
     const cache = await caches.open(NAV_CACHE);
@@ -128,8 +161,10 @@ self.addEventListener('notificationclick', (event) => {
        * ready, and the two mechanisms below become optimisations rather than
        * requirements. */
       await stashPendingNav(target);
+      await trace('click', target);
 
       const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      await trace('clients', clients.length);
       for (const client of clients) {
         if ('focus' in client) {
           await client.focus();
@@ -138,12 +173,14 @@ self.addEventListener('notificationclick', (event) => {
            * page has already consumed the parked value — the destination is the
            * same, and navigating twice to one URL is a no-op. */
           client.postMessage({ type: 'packradar:navigate', url: target });
+          await trace('focus+postMessage', target);
           return;
         }
       }
 
       /* Nothing open: cold start. The URL is passed anyway for the platforms
        * that honour it, and the parked copy covers the ones that do not. */
+      await trace('openWindow', target);
       if (self.clients.openWindow) await self.clients.openWindow(target);
     })(),
   );
