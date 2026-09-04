@@ -1,0 +1,63 @@
+name: Send test push notification
+
+# Manual only. There is deliberately no schedule and no push trigger: this sends
+# an unsolicited notification to a real person's lock screen, so it happens when
+# someone asks for it and at no other time.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Who to notify'
+        required: true
+        default: 'newest'
+        type: choice
+        options:
+          - newest
+          - all
+      confirm:
+        description: 'Only for target=all — type: yes send to everyone'
+        required: false
+        type: string
+
+# Never run alongside a scrape. Both write push_subscriptions (pruning dead
+# endpoints), and a test run must not race the real send path.
+concurrency:
+  group: scraper
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scraper
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node 22 to match scraper.yml, digest.yml and test.yml. @supabase/supabase-js
+      # >= 2.111 throws on startup under Node 20, and a split between workflows is
+      # how that reached main unnoticed once already.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      # No Playwright here, unlike scraper.yml: this job runs a handful of
+      # queries and one HTTPS request, and has no reason to install a browser.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT || 'mailto:alerts@packradar.info' }}
+          TARGET: ${{ inputs.target }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: node send-test-push.js
