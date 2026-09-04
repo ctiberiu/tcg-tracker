@@ -12,8 +12,14 @@ import { GAME_PAGES } from './lib/gamePages'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PushPrompt } from './components/packradar'
 import { PushDebugPage } from './pages/PushDebugPage'
+import { useAppVersion } from './hooks/useAppVersion'
 
 function App() {
+  // Reloads on resume when a newer build is live. Required because an installed
+  // iOS app is restored from memory rather than reloaded, so it can otherwise
+  // keep running the bundle it was installed with indefinitely.
+  useAppVersion()
+
   return (
     <BrowserRouter>
       <Routes>

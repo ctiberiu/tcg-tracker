@@ -40,6 +40,10 @@ interface Snapshot {
   capability: string
   endpointTail: string | null
   href: string
+  /** Bundle this page is EXECUTING, read from the document's own script tag. */
+  runningBundle: string | null
+  /** Bundle the server is serving right now, from /version.json. */
+  serverBundle: string | null
 }
 
 async function readCache<T>(key: string): Promise<T | null> {
@@ -77,7 +81,25 @@ export function PushDebugPage() {
       }
     }
 
+    // The staleness check that matters most. An installed iOS app is restored
+    // from memory rather than reloaded, so these two can disagree for days —
+    // which makes a deployed fix invisible on the device.
+    const runningBundle =
+      [...document.querySelectorAll('script[src]')]
+        .map((el) => (el as HTMLScriptElement).src)
+        .find((src) => src.includes('/assets/index-'))
+        ?.split('/')
+        .slice(-1)[0] ?? null
+    let serverBundle: string | null = null
+    try {
+      const res = await fetch('/version.json', { cache: 'no-store' })
+      const v = (await res.json()) as { version?: string }
+      serverBundle = v.version?.split('/').slice(-1)[0] ?? null
+    } catch { /* offline */ }
+
     setSnap({
+      runningBundle,
+      serverBundle,
       swVersion: info?.version ?? null,
       swActivatedAt: info?.activatedAt ?? null,
       scriptUrl,
@@ -157,6 +179,18 @@ export function PushDebugPage() {
         <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Reading…</p>
       ) : (
         <>
+          {row(
+            'app bundle',
+            snap.runningBundle === null || snap.serverBundle === null ? (
+              `${snap.runningBundle ?? '?'} / server ${snap.serverBundle ?? '?'}`
+            ) : snap.runningBundle === snap.serverBundle ? (
+              <span style={{ color: 'var(--pr-signal)' }}>up to date ({snap.runningBundle})</span>
+            ) : (
+              <span style={{ color: 'var(--pr-status-gone)' }}>
+                STALE — running {snap.runningBundle}, server has {snap.serverBundle}
+              </span>
+            ),
+          )}
           {row('SW version', snap.swVersion ?? 'NOT RECORDED — old worker still active')}
           {row('SW state', snap.registrationState)}
           {row('SW script', snap.scriptUrl)}

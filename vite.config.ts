@@ -38,9 +38,53 @@ function sitemapPlugin() {
   };
 }
 
+/**
+ * Emits dist/version.json naming the hashed entry bundle, so a running app can
+ * tell whether it is out of date.
+ *
+ * ── Why this is needed at all ────────────────────────────────────────────────
+ * An installed iOS web app is not a browser tab. iOS suspends and RESTORES it
+ * rather than reloading, so a phone can keep executing the bundle it was
+ * installed with across days of use — through as many deploys as happen in that
+ * time. Nothing in the normal web update model applies: there is no navigation
+ * to trigger a fetch, and the user has no reload button.
+ *
+ * This was not theoretical. Two fixes to the notification-tap path were shipped,
+ * verified live on the server, and still failed on the device — the most likely
+ * reason being that the phone was never running either of them.
+ *
+ * The version is the ENTRY CHUNK'S CONTENT HASH, not a build timestamp. A
+ * timestamp changes on every build, so a rebuild with identical output would
+ * reload every installed app for nothing. The hash changes only when the code
+ * does, which is exactly when a reload is warranted.
+ *
+ * Emitted as a real file for the same reason sitemap.xml and robots.txt are:
+ * Vercel serves static files from the output directory BEFORE applying the
+ * vercel.json catch-all rewrite, so this escapes `/(.*) -> /index.html`. Fetched
+ * as JSON, it would otherwise return the SPA shell and never parse.
+ */
+function versionPlugin() {
+  return {
+    name: 'packradar-version',
+    apply: 'build' as const,
+    generateBundle(
+      this: { emitFile: (file: { type: 'asset'; fileName: string; source: string }) => void },
+      _options: unknown,
+      bundle: Record<string, { type: string; isEntry?: boolean; fileName: string }>,
+    ) {
+      const entry = Object.values(bundle).find((c) => c.type === 'chunk' && c.isEntry)
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({ version: entry?.fileName ?? 'unknown' }),
+      })
+    },
+  }
+}
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [react(), tailwindcss(), sitemapPlugin()],
+  plugins: [react(), tailwindcss(), sitemapPlugin(), versionPlugin()],
   test: {
     projects: [
       // Node-environment project. Added ALONGSIDE the browser/Storybook project
