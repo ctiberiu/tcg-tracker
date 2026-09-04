@@ -19,10 +19,20 @@ on:
         required: false
         type: string
 
-# Never run alongside a scrape. Both write push_subscriptions (pruning dead
-# endpoints), and a test run must not race the real send path.
+# Its OWN group, NOT the `scraper` one.
+#
+# Sharing the scraper's group was the first attempt and made this workflow
+# unusable: the scrape cron fires every 2 minutes, so a manually dispatched run
+# sat pending and was evicted by the next queued scrape before it ever started.
+# Verified — run 33862153210 was cancelled without executing.
+#
+# The race that grouping was meant to prevent turns out to be benign. Both this
+# and the scrape can prune a dead endpoint or stamp last_success_at, but every
+# such write is keyed by row id and is idempotent: a second DELETE of an
+# already-deleted row affects nothing, and a repeated UPDATE writes the same
+# values. There is no read-modify-write anywhere in either path.
 concurrency:
-  group: scraper
+  group: push-test
   cancel-in-progress: false
 
 jobs:
