@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
+import { usePushNavigation } from '../../hooks/usePushNavigation'
 import type { GameKey } from './tokens'
 import { PushSheet, type PushSheetMode } from './PushSheet'
 import { OPEN_PUSH_SETTINGS_EVENT } from './pushSettings'
@@ -59,6 +60,12 @@ function writeDismissedAt(now: number) {
 export function PushPrompt() {
   const { capability, subscribed, games, busy, error, enable, disable, updateGames } =
     usePushSubscription()
+
+  // Notification taps that land on an ALREADY-OPEN app arrive as a service
+  // worker message rather than a URL, and this is what turns them into a route
+  // change. Lives here because PushPrompt is the one push component mounted for
+  // the app's whole lifetime, inside the router.
+  usePushNavigation()
 
   const [engaged, setEngaged] = useState(false)
   /* Read during initialisation rather than in an effect. An effect would render

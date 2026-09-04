@@ -93,14 +93,29 @@ self.addEventListener('notificationclick', (event) => {
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
         if ('focus' in client) {
-          /* navigate() is unsupported in standalone mode on some iOS versions
-           * and rejects rather than throwing synchronously; focusing regardless
-           * is better than an unhandled rejection that shows nothing. */
           client.focus();
-          if ('navigate' in client) client.navigate(target).catch(() => {});
+          /* Hand the destination to the app and let React Router do the
+           * navigating, rather than calling client.navigate() here.
+           *
+           * Two reasons, and the first is the blocking one:
+           *   - client.navigate() is unsupported in standalone mode on several
+           *     iOS versions, where it rejects instead of navigating. That is
+           *     precisely the configuration this feature targets, so relying on
+           *     it means the filter silently fails to apply on exactly the
+           *     devices it was built for.
+           *   - it performs a full document load. The app is already open and
+           *     scrolled; a reload throws away that state to reach a URL the
+           *     router could have handled in place.
+           *
+           * The listener is usePushNavigation, mounted for the app's lifetime.
+           * If the message is somehow not handled the tap still focuses the app,
+           * which is a worse outcome than navigating but not a broken one. */
+          client.postMessage({ type: 'packradar:navigate', url: target });
           return;
         }
       }
+      /* No window open: the app is closed, so this is a cold start and the URL
+       * carries the filter. Nothing to post to. */
       if (self.clients.openWindow) return self.clients.openWindow(target);
     }),
   );
