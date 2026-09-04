@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { usePushSubscription } from '../../hooks/usePushSubscription'
 import { usePushNavigation } from '../../hooks/usePushNavigation'
 import type { GameKey } from './tokens'
+import { SUBSCRIBABLE_GAMES } from '../../lib/push'
 import { PushSheet, type PushSheetMode } from './PushSheet'
 import { OPEN_PUSH_SETTINGS_EVENT } from './pushSettings'
+import { GAME_PAGES } from '../../lib/gamePages'
 
 /**
  * The floating "turn on notifications" prompt, and the sheet behind it.
@@ -57,9 +60,41 @@ function writeDismissedAt(now: number) {
   }
 }
 
+/**
+ * What the CURRENT PAGE says the visitor cares about, if anything.
+ *
+ * Someone reading the Digimon page and tapping "turn on notifications" wants
+ * Digimon. Pre-ticking it makes the common case one tap and, unlike a fixed
+ * default, it can only ever reflect something the visitor actually did.
+ *
+ * Returns [] when the page implies nothing — the homepage, /stores, an
+ * unfiltered log. That is deliberate and is the DEFAULT for this sheet: see the
+ * note on `initialGames` below for why an empty selection beats both a
+ * pre-ticked favourite and pre-ticking everything.
+ */
+function useGamesFromPageContext(): GameKey[] {
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const gameParam = searchParams.get('game')
+
+  return useMemo(() => {
+    // /view?game=x — they are already looking at one game's restocks.
+    if (gameParam && SUBSCRIBABLE_GAMES.includes(gameParam as GameKey)) {
+      return [gameParam as GameKey]
+    }
+    // One of the Romanian landing pages. GAME_PAGES is the single source of
+    // truth for which those are (see gamePages.ts), so this cannot fall out of
+    // step with the routes.
+    const page = GAME_PAGES.find((p) => p.path === location.pathname)
+    return page ? [page.game] : []
+  }, [gameParam, location.pathname])
+}
+
 export function PushPrompt() {
   const { capability, subscribed, games, busy, error, enable, disable, updateGames } =
     usePushSubscription()
+
+  const contextGames = useGamesFromPageContext()
 
   // Notification taps that land on an ALREADY-OPEN app arrive as a service
   // worker message rather than a URL, and this is what turns them into a route
@@ -216,7 +251,9 @@ export function PushPrompt() {
       <PushSheet
         open={sheetOpen}
         mode={sheetMode}
-        initialGames={games}
+        /* Already subscribed -> their stored selection. Otherwise the page
+         * context, which is usually empty and deliberately so. */
+        initialGames={subscribed ? games : contextGames}
         busy={busy}
         error={error}
         subscribed={subscribed}

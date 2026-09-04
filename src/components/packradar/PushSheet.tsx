@@ -18,6 +18,25 @@ interface PushSheetProps {
    * 'games'   — the device can subscribe. Pick games, THEN request permission.
    */
   mode: PushSheetMode
+  /**
+   * Pre-ticked games. Usually EMPTY, and that is the considered default.
+   *
+   * Pre-ticking all ten means a visitor who taps straight through gets every
+   * restock — measured at a median of 15/day and a peak of 44 — and the usual
+   * response to a phone buzzing 15 times a day is to switch notifications off,
+   * which cannot be undone from the page.
+   *
+   * Pre-ticking one favourite (Pokemon, the largest game) is worse in a
+   * different way: a Digimon or One Piece follower who taps through without
+   * reading gets alerts they did not want AND silently misses the ones they did.
+   * A wrong specific default is less recoverable than a noisy broad one, because
+   * nothing about it looks wrong.
+   *
+   * So: no assumption. The confirm button stays disabled until they choose,
+   * which costs one tap and makes the selection theirs. The exception is page
+   * context — on the Digimon landing page Digimon arrives ticked, because that
+   * is inferred from what they are actually reading rather than assumed.
+   */
   initialGames: GameKey[]
   busy: boolean
   error: string | null
@@ -256,7 +275,9 @@ export function PushSheet({
             <p style={{ color: 'var(--pr-text-mid)', fontSize: 13.5, lineHeight: 1.6, margin: '0 0 6px' }}>
               {subscribed
                 ? 'You are getting alerts for these games on this device.'
-                : 'Pick the games you care about. You can change this later.'}
+                : initialGames.length > 0
+                  ? 'Confirm the games you want alerts for. You can change this later.'
+                  : 'Choose which games you want alerts for. You can change this later.'}
             </p>
             <p style={{ color: 'var(--pr-text-dim)', fontSize: 12, lineHeight: 1.6, margin: '0 0 18px' }}>
               Alerts are tied to this device only. No account and no email address.
