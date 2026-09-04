@@ -333,7 +333,93 @@
     background: var(--pr-bg-panel);
     border-top: 1px solid var(--pr-border);
     z-index: 40;
+    /* Defensive only — this currently resolves to 0px everywhere, INCLUDING an
+     * installed iPhone app.
+     *
+     * index.html ships the default `viewport-fit=auto`, under which iOS insets
+     * the viewport itself to the display's safe area, so the page never extends
+     * under the home indicator and env(safe-area-inset-bottom) is 0. Nothing is
+     * clipped today and this line changes no pixels.
+     *
+     * It is here because the Add-to-Home-Screen flow makes standalone a layout
+     * people will actually use, and the one change that would break this bar is
+     * adding `viewport-fit=cover` to the viewport meta for an edge-to-edge look.
+     * That flips every inset non-zero at once. Handling it now costs nothing;
+     * discovering it later means finding it on a device.
+     *
+     * Do NOT read this as evidence that cover mode has been tested. It has not. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+}
+
+/* Floating stock-notification prompt.
+ *
+ * Sits ABOVE the mobile tab bar rather than overlapping it: the tab bar is the
+ * primary navigation and a prompt covering it would trade a notification opt-in
+ * for the ability to move around the site. --pr-tabbar-h is the measured height
+ * of that bar (10px padding, a 5px dot, a 10px label, 10px padding, 2px border);
+ * keep the two in step if the bar's padding changes.
+ *
+ * z-index 90 puts it under the filter sheet (100) and the push sheet (120) so it
+ * cannot float over its own dialog, but over page content. */
+.pr-push-banner {
+  --pr-tabbar-h: 52px;
+  position: fixed;
+  z-index: 90;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  background: var(--pr-popover-bg);
+  border: 1px solid var(--pr-active-border);
+  box-shadow: 0 8px 28px #000000a8;
+  animation: pr-push-banner-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (max-width: 768px) {
+  .pr-push-banner {
+    bottom: calc(var(--pr-tabbar-h) + 12px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* On a wide screen a full-width bar reads as a cookie banner. Anchor it to the
+ * corner instead, where a dismissible prompt is the expected shape. */
+@media (min-width: 769px) {
+  .pr-push-banner {
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    max-width: 400px;
+  }
+}
+
+@keyframes pr-push-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-push-banner {
+    animation: none;
+  }
+}
+
+/* The push sheet reuses .pr-filter-sheet's slide animation. Inset carried for
+ * the same reason as the tab bar above: a no-op under viewport-fit=auto, and
+ * the thing that stops the confirm button landing under the home indicator if
+ * cover mode is ever switched on. That button spends the one-shot permission
+ * prompt, so it is the worst control on the site to leave partly obscured. */
+.pr-push-sheet {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @media (max-width: 768px) {

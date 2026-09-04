@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "PackRadar",
   "short_name": "PackRadar",
   "description": "Every Romanian TCG store, swept on a constant cycle. Pinged the second inventory changes.",
-  "start_url": "/",
+  "start_url": "/view",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#060B08",
   "theme_color": "#060B08",

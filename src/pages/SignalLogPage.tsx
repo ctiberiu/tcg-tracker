@@ -53,6 +53,28 @@ export function SignalLogPage() {
     const raw = searchParams.get('game') as GameKey | null
     return raw ? [raw] : []
   })
+
+  /**
+   * Re-apply the ?game= filter when it CHANGES after mount.
+   *
+   * The initialiser above runs once. That was sufficient while the only way to
+   * arrive with a filter was a fresh page load, but a notification tap on an
+   * already-open app is a client-side route change to /view?game=x — same route,
+   * so no remount, so the initialiser never re-runs and the filter silently does
+   * not apply. That is the whole point of tapping a Pokémon alert.
+   *
+   * Keyed on the raw param and NOT on gameFilters, so it fires only when the URL
+   * changes. Clearing the filter by hand leaves the param untouched, and this
+   * must not fight the user by putting it back — hence no dependency on the
+   * state it sets. Manual filter changes do not write to the URL (there is no
+   * state -> URL sync in this page), so a param change means an external
+   * navigation: a notification tap, or a link.
+   */
+  const gameParam = searchParams.get('game')
+  useEffect(() => {
+    if (!gameParam) return
+    setGameFilters([gameParam as GameKey])
+  }, [gameParam])
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   // No standalone control — the log only ever shows in-stock signals.

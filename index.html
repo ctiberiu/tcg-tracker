@@ -33,7 +33,30 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
     <link rel="icon" type="image/png" sizes="64x64" href="/icon-64.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- crossorigin="use-credentials" is REQUIRED, and only visibly matters on dev.
+
+         A rel="manifest" link is fetched with credentials OMITTED by default,
+         even same-origin. dev.packradar.info sits behind the basic auth in
+         middleware.ts, so that credential-less fetch answers 401 and the browser
+         silently discards the manifest — no error, no console warning, just no
+         manifest. Production is unauthenticated and never showed the problem.
+
+         On iOS that is the difference between the feature working and not.
+         Without a manifest there is no display:standalone, so Add to Home Screen
+         produces a bookmark that opens in Safari rather than a standalone web
+         app — and iOS grants Web Push ONLY to the standalone app. The whole
+         install walkthrough would complete and still leave notifications
+         impossible, which is the worst kind of failure: every step appears to
+         succeed. Harmless in production, where it just sends credentials that
+         are not required. -->
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+    <!-- Belt and braces for the same failure. iOS honours EITHER this meta or the
+         manifest's display member to decide standalone mode, so if the manifest
+         is ever unreachable again (another auth gate, a bad deploy, a CDN rule)
+         the Home Screen app still launches standalone and push still works.
+         Redundant with the manifest on a healthy deploy, which is the point. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="PackRadar" />
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PackRadar" />
