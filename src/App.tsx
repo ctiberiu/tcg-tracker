@@ -11,6 +11,7 @@ import { GameLandingPage } from './pages/GameLandingPage'
 import { GAME_PAGES } from './lib/gamePages'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PushPrompt } from './components/packradar'
+import { PushDebugPage } from './pages/PushDebugPage'
 
 function App() {
   return (
@@ -22,6 +23,10 @@ function App() {
         <Route path="/view" element={<SignalLogPage />} />
         <Route path="/stores" element={<StoresPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        {/* Unlinked workshop tool for the notification-tap path — an installed
+            iOS web app has no console, so this is the only way to see what the
+            service worker actually did. Disallowed in robots.txt. */}
+        <Route path="/push-debug" element={<PushDebugPage />} />
         {/* Romanian game landing pages. Generated from the registry rather than
             listed here, so adding a game is one entry in gamePages.ts and a route
             list can never fall out of step with it. */}

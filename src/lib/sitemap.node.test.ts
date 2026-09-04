@@ -67,7 +67,12 @@ describe('sitemap against the router', () => {
     // Everything the router serves that is neither in the sitemap nor
     // deliberately excluded. Game routes are generated from the registry rather
     // than written as literals, so they never appear in this list.
-    const excluded = new Set(['/login', '/admin', '/snipe', '*'])
+    //
+    // /push-debug is an unlinked on-device diagnostic for the notification-tap
+    // path, disallowed in robots.txt. It renders no product data and exists to
+    // be opened by hand on a phone, so indexing it would waste crawl budget on
+    // a page with nothing to rank.
+    const excluded = new Set(['/login', '/admin', '/snipe', '/push-debug', '*'])
     const missing = declaredPaths.filter(
       (path) => !excluded.has(path) && !sitemapPaths().includes(path),
     )

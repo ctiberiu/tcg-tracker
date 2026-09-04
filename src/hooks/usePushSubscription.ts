@@ -68,6 +68,18 @@ export function usePushSubscription() {
 
     try {
       const registration = await navigator.serviceWorker.register(SERVICE_WORKER_URL)
+
+      // Force an update check on every launch.
+      //
+      // register() with an unchanged script URL does not reliably re-fetch on
+      // iOS, and an installed standalone app can keep an old worker alive across
+      // launches — so a deployed sw.js fix can sit unused on the device
+      // indefinitely while everything looks correctly shipped from the server
+      // side. That is exactly how two notification-tap fixes appeared to fail.
+      // skipWaiting()/clients.claim() in sw.js then hand over immediately once a
+      // new version is actually fetched.
+      void registration.update().catch(() => {})
+
       const existing = await registration.pushManager.getSubscription()
       if (!existing) {
         setState((s) => ({ ...s, capability, subscribed: false }))
