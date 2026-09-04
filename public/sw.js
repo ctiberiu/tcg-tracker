@@ -82,41 +82,69 @@ self.addEventListener('push', (event) => {
   );
 });
 
+/* Where a tapped notification's destination is parked so the app can pick it up
+ * even when the tap itself fails to carry it.
+ *
+ * Both halves of this contract are duplicated in usePushNavigation.ts — a
+ * service worker in public/ cannot import from src/. Keep the two in step; the
+ * failure mode if they drift is silent (the filter simply never applies).
+ *
+ * The Cache API rather than a module-level variable because iOS is free to kill
+ * and restart the worker between the tap and the app finishing its boot, which
+ * would take any in-memory value with it. */
+const NAV_CACHE = 'packradar-pending-nav';
+const NAV_KEY = '/__packradar_pending_nav';
+
+async function stashPendingNav(url) {
+  try {
+    const cache = await caches.open(NAV_CACHE);
+    await cache.put(
+      NAV_KEY,
+      new Response(JSON.stringify({ url, at: Date.now() }), {
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+  } catch {
+    /* Storage unavailable. The postMessage and openWindow paths below still
+     * run; this is the belt, not the only strap. */
+  }
+}
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const target = event.notification.data?.url ?? '/view';
 
-  /* Focus an already-open window rather than spawning another. On an iOS home
-   * screen app there is exactly one client and opening a second is not possible,
-   * so the focus path is the normal one, not the edge case. */
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+    (async () => {
+      /* Park the destination FIRST, before anything that might not deliver it.
+       *
+       * Neither of the two ways to hand a URL to an installed iOS app is
+       * reliable. openWindow() commonly launches the app at its start_url and
+       * silently discards the deep link, and postMessage needs the page's
+       * listener to already be mounted — which it is not during a cold boot.
+       * Observed directly: a tapped Pokemon alert opened /view unfiltered.
+       *
+       * So the URL is written somewhere the app can come and fetch it once it is
+       * ready, and the two mechanisms below become optimisations rather than
+       * requirements. */
+      await stashPendingNav(target);
+
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of clients) {
         if ('focus' in client) {
-          client.focus();
-          /* Hand the destination to the app and let React Router do the
-           * navigating, rather than calling client.navigate() here.
-           *
-           * Two reasons, and the first is the blocking one:
-           *   - client.navigate() is unsupported in standalone mode on several
-           *     iOS versions, where it rejects instead of navigating. That is
-           *     precisely the configuration this feature targets, so relying on
-           *     it means the filter silently fails to apply on exactly the
-           *     devices it was built for.
-           *   - it performs a full document load. The app is already open and
-           *     scrolled; a reload throws away that state to reach a URL the
-           *     router could have handled in place.
-           *
-           * The listener is usePushNavigation, mounted for the app's lifetime.
-           * If the message is somehow not handled the tap still focuses the app,
-           * which is a worse outcome than navigating but not a broken one. */
+          await client.focus();
+          /* Fast path for an app that is already running: it navigates without
+           * waiting for a visibilitychange. Harmless if it arrives after the
+           * page has already consumed the parked value — the destination is the
+           * same, and navigating twice to one URL is a no-op. */
           client.postMessage({ type: 'packradar:navigate', url: target });
           return;
         }
       }
-      /* No window open: the app is closed, so this is a cold start and the URL
-       * carries the filter. Nothing to post to. */
-      if (self.clients.openWindow) return self.clients.openWindow(target);
-    }),
+
+      /* Nothing open: cold start. The URL is passed anyway for the platforms
+       * that honour it, and the parked copy covers the ones that do not. */
+      if (self.clients.openWindow) await self.clients.openWindow(target);
+    })(),
   );
 });
