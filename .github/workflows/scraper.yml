@@ -94,7 +94,21 @@ jobs:
           # stopping them (the scraper's own default is the safer 'dry').
           # Set to 'live' to switch subscriber alerts onto ZeptoMail.
           ALERT_MODE: ${{ vars.ALERT_MODE || 'gmail' }}
-          ZEPTOMAIL_TOKEN: ${{ secrets.ZEPTOMAIL_TOKEN }}
+          # Gated on a repo variable so the token can be withheld WITHOUT deleting
+          # the secret.
+          #
+          # ZeptoMail's tokens expired on 2026-09-09 and the account cannot be
+          # topped up until it clears validation, so every subscriber alert failed
+          # with "535 Authentication Failed". ALERT_MODE=redirect is the mode that
+          # sends real alerts to the operator only — but resolveAlertChannel
+          # PREFERS ZeptoMail whenever a token is present, and would have kept
+          # authenticating against dead credentials.
+          #
+          # Setting ZEPTOMAIL_ENABLED=0 makes redirect fall through to its
+          # documented Gmail path. The secret itself is untouched, so restoring
+          # service is flipping this variable back to 1 — no re-entering a token,
+          # and no code change on either side.
+          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
           # Accepted as either a variable or a secret. It is only a From address,
           # so a variable is the natural home (readable, editable without
           # rotating) — but it is harmless as a secret and reading both means a
