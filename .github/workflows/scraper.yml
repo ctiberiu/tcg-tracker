@@ -76,9 +76,36 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
+      # continue-on-error, and the repo file is removed first. Both are about the
+      # same failure, seen continuously from 17:32 on 2026-09-09:
+      #
+      #   E: Failed to fetch https://dl.google.com/linux/chrome-stable/... Hash Sum mismatch
+      #   Failed to install browser dependencies
+      #   Error: Installation process exited with code: 100
+      #
+      # `playwright install-deps` runs `apt-get update`, which refreshes EVERY
+      # configured repository — including Google's Chrome repo, which is present
+      # on the GitHub runner image and had nothing to do with this project. When
+      # Google served a corrupt index, apt exited non-zero and took the whole
+      # scrape down with it. Eight consecutive runs failed and no alert of any
+      # kind could fire, on a third party's packaging problem.
+      #
+      # Removing google-chrome.list means apt stops consulting the repo that
+      # broke. Playwright needs Ubuntu's own packages, never Google's.
+      #
+      # continue-on-error is the second layer, because the next broken mirror
+      # will not be Google's. ubuntu-latest already ships the libraries chromium
+      # needs, and this step is a top-up for the cache-hit path — so failing it
+      # is usually survivable, and a genuinely missing library still surfaces
+      # immediately as a browser launch error with a clear message. Losing every
+      # restock alert because apt could not refresh an unrelated index is not a
+      # trade worth making.
       - name: Install Playwright OS deps (browser restored from cache)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        continue-on-error: true
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          npx playwright install-deps chromium
 
       - name: Run scraper
         env:
