@@ -135,7 +135,24 @@ jobs:
           # documented Gmail path. The secret itself is untouched, so restoring
           # service is flipping this variable back to 1 — no re-entering a token,
           # and no code change on either side.
-          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
+          #
+          # ── Why the condition is INVERTED, and must stay that way ────────────
+          # The obvious spelling of this is a silent no-op:
+          #
+          #   ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
+          #
+          # GitHub's && and || are not a ternary. They return one of their
+          # OPERANDS, exactly like JavaScript's, and '' is falsy — so when the
+          # variable really is '0' the expression evaluates `true && ''` to '',
+          # which the || then discards in favour of the secret. The gate hands
+          # back the very token it was written to withhold, and does it silently:
+          # the log line still says ZeptoMail, so the failure is indistinguishable
+          # from the variable not being set. That shipped, and every "disabled"
+          # run kept authenticating against the dead credentials.
+          #
+          # Written this way round, the withheld branch is the one that yields the
+          # falsy value, so there is nothing left for || to override.
+          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED != '0' && secrets.ZEPTOMAIL_TOKEN || '' }}
           # Accepted as either a variable or a secret. It is only a From address,
           # so a variable is the natural home (readable, editable without
           # rotating) — but it is harmless as a secret and reading both means a
