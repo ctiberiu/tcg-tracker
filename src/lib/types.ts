@@ -27,6 +27,17 @@ export interface StoreSignalCounts {
   in_stock_count: number
 }
 
+/**
+ * A row of `store_product_counts()` (migration 041): how many products matching
+ * the /view filters one store row holds. Like `StoreSignalCounts` it is one row
+ * per store rather than per product, so the 1000-row cap does not reach it, and
+ * `sumCountsByBaseName` passes the bigint count through `Number()`.
+ */
+export interface StoreProductCount {
+  store_id: string
+  product_count: number
+}
+
 export interface Subscriber {
   id: string
   email: string
