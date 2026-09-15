@@ -187,3 +187,27 @@ describe('a partial walk reports itself as partial', () => {
     expect(w.gotos).toHaveLength(PAGINATION_MAX_PAGES - 1)
   })
 })
+
+describe('fast lane: page 1 only', () => {
+  it('never navigates past page 1 and reports the walk as partial', async () => {
+    withoutPacing()
+    const w = walker([null, fullPage(10), fullPage(20)])
+
+    const { products, complete } = await paginateUntilExhausted(w.page, { ...store, firstPageOnly: true }, w.scrapeFn, fullPage(0))
+
+    expect(w.gotos).toHaveLength(0)
+    expect(products).toHaveLength(PAGINATION_MIN_PAGE_1)
+    // Partial even though page 1 was all it fetched: the pages it skipped were
+    // never looked at, so nothing may read their absence as a stock-out.
+    expect(complete).toBe(false)
+  })
+
+  it('still walks for the main scraper', async () => {
+    withoutPacing()
+    const w = walker([null, fullPage(10), []])
+
+    await paginateUntilExhausted(w.page, store, w.scrapeFn, fullPage(0))
+
+    expect(w.gotos.length).toBeGreaterThan(0)
+  })
+})

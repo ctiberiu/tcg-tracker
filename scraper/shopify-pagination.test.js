@@ -142,3 +142,23 @@ describe('scrapeShopify pagination', () => {
     expect(calls).toHaveLength(1)
   })
 })
+
+describe('scrapeShopify on the fast lane', () => {
+  it('fetches only page 1 even when it is full, and reports it partial', async () => {
+    const calls = stubFetch([page(250, 0), page(250, 250), page(10, 500)])
+
+    const { products, complete } = await scrapeShopify(null, { ...store, firstPageOnly: true })
+
+    expect(calls).toHaveLength(1)
+    expect(products).toHaveLength(250)
+    expect(complete).toBe(false)
+  })
+
+  it('is complete when page 1 is short, because that is the whole collection', async () => {
+    stubFetch([page(15, 0)])
+
+    const { complete } = await scrapeShopify(null, { ...store, firstPageOnly: true })
+
+    expect(complete).toBe(true)
+  })
+})
