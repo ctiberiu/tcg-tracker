@@ -1,0 +1,171 @@
+name: Run Fast Pokemon Lane
+
+# Page 1 of a few selected Pokémon stores, every ~2 minutes, alongside the
+# main scraper (scraper.yml), which keeps the full catalogue scrapes, the
+# staleness sweep and failure tracking. What this lane may and may not do is
+# in scraper/fast-lane.js. Steps below mirror scraper.yml: keep them in step.
+#
+# Triggered by an external cron-job.org job POSTing to this workflow's
+# dispatches endpoint. No `schedule:` on purpose: GitHub's cron has a 5-minute
+# floor and started 1 of the last 150 scraper runs, so it cannot hold 2 minutes.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: scraper-fast
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    # A lane run is measured in seconds. A job still going after 6 minutes is
+    # stuck, and would hold up every queued 2-minute run behind it.
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: scraper
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node 22, not 20. Two reasons, one of which already bit us:
+      #
+      # 1. @supabase/supabase-js >= 2.111 throws on startup under Node 20 —
+      #    "Node.js detected but native WebSocket not found" from realtime-js —
+      #    so createClient() fails before any scraping happens. A Dependabot bump
+      #    to 2.111 took the scraper down for four consecutive runs on 2026-08-03
+      #    and had to be reverted. Node 20 is what made that a breaking change.
+      # 2. Node 20 went end-of-life in April 2026. This repo is developed against
+      #    v22 locally, so pinning CI to 20 meant local and CI ran different
+      #    runtimes — which is precisely how the incompatibility reached main
+      #    without anyone seeing it.
+      #
+      # Keep this in step with digest.yml and test.yml; a split would recreate
+      # the same class of divergence one level down.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Cache the Playwright browser binaries between runs so the ~2-min cadence
+      # doesn't re-download chromium (~30-60s) on every run — most runs find 0
+      # stores due and should finish fast. Keyed on the resolved deps so a
+      # Playwright version bump busts the cache. Browsers install to
+      # ~/.cache/ms-playwright on the Linux runner.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('scraper/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # Cache MISS → full download + OS deps. Cache HIT → only the (fast, per-run)
+      # OS deps; the browser binary is restored from cache.
+      - name: Install Playwright browser + OS deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      # continue-on-error, and the repo file is removed first. Both are about the
+      # same failure, seen continuously from 17:32 on 2026-09-09:
+      #
+      #   E: Failed to fetch https://dl.google.com/linux/chrome-stable/... Hash Sum mismatch
+      #   Failed to install browser dependencies
+      #   Error: Installation process exited with code: 100
+      #
+      # `playwright install-deps` runs `apt-get update`, which refreshes EVERY
+      # configured repository — including Google's Chrome repo, which is present
+      # on the GitHub runner image and had nothing to do with this project. When
+      # Google served a corrupt index, apt exited non-zero and took the whole
+      # scrape down with it. Eight consecutive runs failed and no alert of any
+      # kind could fire, on a third party's packaging problem.
+      #
+      # Removing google-chrome.list means apt stops consulting the repo that
+      # broke. Playwright needs Ubuntu's own packages, never Google's.
+      #
+      # continue-on-error is the second layer, because the next broken mirror
+      # will not be Google's. ubuntu-latest already ships the libraries chromium
+      # needs, and this step is a top-up for the cache-hit path — so failing it
+      # is usually survivable, and a genuinely missing library still surfaces
+      # immediately as a browser launch error with a clear message. Losing every
+      # restock alert because apt could not refresh an unrelated index is not a
+      # trade worth making.
+      - name: Install Playwright OS deps (browser restored from cache)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        continue-on-error: true
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          npx playwright install-deps chromium
+
+      - name: Run fast lane
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          # Which transport subscriber restock alerts use. A repo VARIABLE (not a
+          # secret) so it can be read and flipped from the Actions UI without
+          # rotating anything. Defaults to 'gmail' — the pre-ZeptoMail behaviour —
+          # so that forgetting to set it keeps alerts working rather than silently
+          # stopping them (the scraper's own default is the safer 'dry').
+          # Set to 'live' to switch subscriber alerts onto ZeptoMail.
+          ALERT_MODE: ${{ vars.ALERT_MODE || 'gmail' }}
+          # Gated on a repo variable so the token can be withheld WITHOUT deleting
+          # the secret.
+          #
+          # ZeptoMail's tokens expired on 2026-09-09 and the account cannot be
+          # topped up until it clears validation, so every subscriber alert failed
+          # with "535 Authentication Failed". ALERT_MODE=redirect is the mode that
+          # sends real alerts to the operator only — but resolveAlertChannel
+          # PREFERS ZeptoMail whenever a token is present, and would have kept
+          # authenticating against dead credentials.
+          #
+          # Setting ZEPTOMAIL_ENABLED=0 makes redirect fall through to its
+          # documented Gmail path. The secret itself is untouched, so restoring
+          # service is flipping this variable back to 1 — no re-entering a token,
+          # and no code change on either side.
+          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
+          # Accepted as either a variable or a secret. It is only a From address,
+          # so a variable is the natural home (readable, editable without
+          # rotating) — but it is harmless as a secret and reading both means a
+          # misfiled value doesn't silently blank out and stop `live` sending.
+          ALERT_FROM: ${{ vars.ALERT_FROM || secrets.ALERT_FROM }}
+          ALERT_UNSUBSCRIBE_TO: ${{ vars.ALERT_UNSUBSCRIBE_TO || secrets.ALERT_UNSUBSCRIBE_TO }}
+          # --- Web Push (anonymous, per-device, free) --------------------------
+          # A SEPARATE switch from ALERT_MODE on purpose. Email costs ZeptoMail
+          # credits and push costs nothing, so the intended steady state is push
+          # live while email stays dry or redirect. One shared variable would make
+          # that combination unreachable.
+          #
+          # Defaults to 'dry' — the opposite of ALERT_MODE above — because there
+          # is no safe partial send for push. Email can narrow to the operator's
+          # own address; a push audience is a table of anonymous devices with no
+          # operator-owned subset to fall back to, so an accidental send goes
+          # straight to strangers' lock screens. Flip to 'live' from the Actions
+          # UI once a real device has been verified end to end.
+          PUSH_MODE: ${{ vars.PUSH_MODE || 'dry' }}
+          # The public half is also inlined into the client bundle as
+          # VITE_VAPID_PUBLIC_KEY. It is public by design — it is what the browser
+          # subscribes against — but it is kept as a secret here so the pair is
+          # rotated together rather than one half being edited in isolation.
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          # mailto: the push services use to reach the operator about abuse.
+          # web-push refuses to sign a request without one.
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT || 'mailto:alerts@packradar.info' }}
+          # Selects the fast lane in scraper.js. Any other value makes the scraper
+          # exit instead of running a full scrape in this concurrency group.
+          SCRAPE_LANE: fast
+          # Dry unless exactly '0': scrape page 1 and log timings and would-be
+          # alerts, but write nothing and send nothing. Set the repo variable
+          # FAST_LANE_DRY=0 to go live once the dry-run numbers are reviewed.
+          FAST_LANE_DRY: ${{ vars.FAST_LANE_DRY || '1' }}
+        run: node scraper.js

@@ -13,6 +13,7 @@ import { isStoreDue, capOnePerDomain, storeHost } from './schedule.js';
 import { shouldAllowRequest } from './request-filter.js';
 import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
 import { sendPushAlerts } from './push.js';
+import { FAST_LANE_STORES, prepareFastLaneStores, runFastLane, isFastLaneDry, noSweepSync, resolveLane } from './fast-lane.js';
 
 chromium.use(StealthPlugin());
 
@@ -310,7 +311,7 @@ async function scrapePokemania(page, store) {
 
   let nextHref = await readNextHref();
   let pagesVisited = 1;
-  while (nextHref && pagesVisited < POKEMANIA_MAX_PAGES) {
+  while (nextHref && !store.firstPageOnly && pagesVisited < POKEMANIA_MAX_PAGES) {
     await new Promise((r) => setTimeout(r, POKEMANIA_PAGE_DELAY_MS));
     await page.goto(nextHref, { waitUntil: 'load', timeout: 30000 });
     let pageProducts = await extractCurrentPage();
@@ -413,7 +414,11 @@ async function scrapeShopify(_page, store) {
   // Walk further pages only when page 1 came back FULL. A short page is the
   // whole collection, and asking for page 2 of a 15-product collection is a
   // request that can only return nothing.
-  if (seenHandles.size >= SHOPIFY_PAGE_SIZE) {
+  if (store.firstPageOnly && seenHandles.size >= SHOPIFY_PAGE_SIZE) {
+    // Fast lane: page 1 (the newest 250) only. A full page means more exist
+    // that were not fetched, so this is partial.
+    complete = false;
+  } else if (seenHandles.size >= SHOPIFY_PAGE_SIZE) {
     for (let pageNum = 2; pageNum <= PAGINATION_MAX_PAGES; pageNum++) {
       let pageProducts;
       try {
@@ -1390,7 +1395,7 @@ async function scrapeFlameyApi(_page, store) {
       totalPages = Number(data.totalPages ?? 1);
     }
     pageNum++;
-  } while (pageNum <= totalPages);
+  } while (pageNum <= totalPages && !store.firstPageOnly);
 
   return { products, status, challenged };
 }
@@ -1725,6 +1730,27 @@ async function scrapeTulli(page, store) {
 }
 
 /**
+ * A BebeTei product card's URL. Around 2026-08-04 15:00Z the shop turned the
+ * card's `.product-image-listing` from `<a href>` into `<div data-href>`.
+ * scrapeBebetei read `.href`, got nothing on every card, returned 0 products
+ * from a page showing 16, and classifyOutcome read the empty result as a block:
+ * 5 strikes, flagged, auto-disabled. Trying every source means the next markup
+ * change loses one source instead of the whole store.
+ */
+function resolveBebeteiUrl(candidates, origin) {
+  for (const raw of [candidates?.href, candidates?.dataHref, candidates?.anchorHref]) {
+    const value = raw?.trim();
+    if (!value || value.startsWith('#') || /^javascript:/i.test(value)) continue;
+    try {
+      return new URL(value, origin).toString();
+    } catch {
+      // not a URL; try the next source
+    }
+  }
+  return null;
+}
+
+/**
  * BebeTei.ro — custom e-commerce platform
  * Products use .product-item.product-details containers.
  */
@@ -1736,7 +1762,7 @@ async function scrapeBebetei(page, store) {
     return [];
   }
 
-  return page.evaluate(({ storeName, storeId }) => {
+  const items = await page.evaluate(({ storeName, storeId }) => {
     function normalizeImageUrl(src, base) {
       if (!src) return null;
       src = src.trim();
@@ -1749,15 +1775,17 @@ async function scrapeBebetei(page, store) {
     const baseUrl = window.location.origin;
     const cards = document.querySelectorAll('.product-item.product-details');
     const results = [];
-    const seen = new Set();
 
     for (const card of cards) {
       const imgLink = card.querySelector('.product-image-listing');
       if (!imgLink) continue;
 
-      const url = imgLink.href;
-      if (!url || seen.has(url)) continue;
-      seen.add(url);
+      // Every place a card carries its link; resolveBebeteiUrl picks one in Node.
+      const urlCandidates = {
+        href: imgLink.getAttribute('href'),
+        dataHref: imgLink.getAttribute('data-href'),
+        anchorHref: (imgLink.closest('a[href]') ?? card.querySelector('a[href]'))?.getAttribute('href') ?? null,
+      };
 
       // Use image alt for full title — .item-title text is CSS-truncated with ellipsis
       const imgEl = card.querySelector('.product-image-listing img, picture img');
@@ -1790,7 +1818,7 @@ async function scrapeBebetei(page, store) {
       results.push({
         title,
         price,
-        url,
+        urlCandidates,
         image_url: normalizeImageUrl(imgSrc, baseUrl),
         store_name: storeName,
         store_id: storeId,
@@ -1800,6 +1828,17 @@ async function scrapeBebetei(page, store) {
 
     return results;
   }, { storeName: store.name, storeId: store.id });
+
+  const origin = new URL(page.url()).origin;
+  const seen = new Set();
+  const products = [];
+  for (const { urlCandidates, ...item } of items) {
+    const url = resolveBebeteiUrl(urlCandidates, origin);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    products.push({ ...item, url });
+  }
+  return products;
 }
 
 /**
@@ -2271,6 +2310,9 @@ function buildPageUrl(store, pageNum) {
  */
 async function paginateUntilExhausted(page, store, scrapeFn, firstPageProducts) {
   const all = [...firstPageProducts];
+  // Fast lane: page 1 only, on purpose. Pages beyond it were never looked at,
+  // so the result is PARTIAL whatever page 1 held.
+  if (store.firstPageOnly) return { products: all, complete: false };
   // These walk their own pagination, so one call is the whole catalogue.
   if (SELF_PAGINATING_TYPES.has(store.scraper_type)) return { products: all, complete: true };
   // Short page 1 is the whole catalogue — a size signal, not a stock one.
@@ -2537,6 +2579,21 @@ async function fetchStorePage(store, browser, scrapeFn, mode) {
   }
 }
 
+/** Scraper types that fetch JSON and never load a page, so need no browser. */
+const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api', 'secretcards_api']);
+
+/**
+ * The products a store row keeps from a raw scrape: its own game's titles, or
+ * anything the scraper matched by an exact category id. Shared by the main
+ * scraper and the fast lane so the two cannot disagree about what a store sells.
+ */
+function keepGameProducts(store, raw) {
+  const game = store.game ?? 'pokemon';
+  return raw
+    .filter((p) => p.categoryConfirmed === true || isGameProduct(game, p.title))
+    .map((p) => ({ ...p, game }));
+}
+
 /**
  * Main scraper — fetches stores from DB, iterates, collects products.
  */
@@ -2561,7 +2618,6 @@ async function scrapeAll() {
   // Only spin up Playwright if a store that actually needs a browser is due.
   // shopify + ozone are JSON-API scrapers (no page load), so a due-set of only
   // those skips launching Chromium entirely.
-  const BROWSERLESS_TYPES = new Set(['shopify', 'ozone', 'woocommerce_api', 'flamey_api', 'secretcards_api']);
   const needsBrowser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type));
   // ⚠️ DO NOT ADD `--no-sandbox`, and read this before changing launch options.
   //
@@ -2598,10 +2654,7 @@ async function scrapeAll() {
     // wrongly drop them despite Flamey's own taxonomy confirming they're
     // Pokémon TCG products (their unrelated merch lives in separate
     // categories like Funko POP). Trust the source over the heuristic.
-    const game = store.game ?? 'pokemon';
-    const products = raw
-      .filter((p) => p.categoryConfirmed === true || isGameProduct(game, p.title))
-      .map((p) => ({ ...p, game }));
+    const products = keepGameProducts(store, raw);
     const outcome = classifyOutcome({ status, challenged, rawCount: raw.length, confirmedEmpty });
     if (outcome === 'success') {
       allProducts.push(...products);
@@ -3403,6 +3456,76 @@ async function sendAlerts(insertedProducts) {
 
 }
 
+/**
+ * in_stock for existing products, by exact url (the upsert key). Read-only, for
+ * the fast lane's dry run. Chunked because every url goes in the query string.
+ */
+async function readExistingStock(supabase, urls) {
+  const stock = new Map();
+  const unique = [...new Set(urls)];
+  for (let i = 0; i < unique.length; i += 40) {
+    const { data, error } = await supabase.from('products').select('url, in_stock').in('url', unique.slice(i, i + 40));
+    if (error) throw new Error(`Failed to read existing products: ${error.message}`);
+    for (const row of data ?? []) stock.set(row.url, row.in_stock);
+  }
+  return stock;
+}
+
+/**
+ * Fast Pokémon lane entry point (SCRAPE_LANE=fast). See fast-lane.js. Deliberately
+ * absent compared with main(): no startup jitter, no updateStoreFailureState, no
+ * staleness sweep, no cleanupStaleProducts, no scrape_runs row. The main scraper
+ * keeps all of those, on full catalogue scrapes.
+ */
+async function mainFastLane() {
+  const runStartedAt = Date.now();
+  const dry = isFastLaneDry(process.env.FAST_LANE_DRY);
+  console.log(`Fast Pokémon lane — ${dry ? 'DRY RUN (FAST_LANE_DRY is not "0"): scrape and report only' : 'LIVE'}`);
+  const supabase = initSupabase();
+  let browser = null;
+  try {
+    const { data: rows, error } = await supabase
+      .from('stores')
+      .select('*')
+      .in('id', FAST_LANE_STORES.map((s) => s.id));
+    if (error) throw new Error(`Failed to fetch fast-lane stores: ${error.message}`);
+    const stores = prepareFastLaneStores(rows);
+    if (stores.length === 0) {
+      console.log('Fast lane: no stores to scrape this run');
+      return;
+    }
+    // Same launch as scrapeAll — read its note before changing launch options.
+    browser = stores.some((s) => !BROWSERLESS_TYPES.has(s.scraper_type)) ? await chromium.launch({ headless: true }) : null;
+    await runFastLane({
+      stores,
+      dry,
+      fetchData: (store) => fetchStoreData(store, browser),
+      keep: keepGameProducts,
+      // Stored urls are normalizeProductUrl's form (see the upsert in syncToSupabase),
+      // so the dry run must compare in that form too.
+      normalizeUrl: normalizeProductUrl,
+      readExisting: (urls) => readExistingStock(supabase, urls),
+      sync: noSweepSync(syncToSupabase),
+      notify: async (alertProducts) => {
+        console.log('\nSending email alerts...');
+        await sendAlerts(alertProducts);
+        console.log('\nSending push notifications...');
+        try {
+          await sendPushAlerts(supabase, alertProducts);
+        } catch (pushError) {
+          console.error(`  Push notifications failed: ${pushError.message}`);
+        }
+      },
+    });
+  } catch (err) {
+    console.error(`  Fast lane failed: ${err.message}`);
+    process.exitCode = 1;
+  } finally {
+    await browser?.close();
+    console.log(`Fast lane run: ${((Date.now() - runStartedAt) / 1000).toFixed(1)}s`);
+  }
+}
+
 // Main entry point (only when run directly, not when imported for tests).
 async function main() {
   const supabase = initSupabase();
@@ -3461,7 +3584,10 @@ async function main() {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await main();
+  // Throws on an unrecognised SCRAPE_LANE rather than running a full scrape in
+  // the fast workflow's concurrency group — see resolveLane.
+  if (resolveLane(process.env.SCRAPE_LANE) === 'fast') await mainFastLane();
+  else await main();
 }
 
-export { scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateUntilExhausted, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
+export { resolveBebeteiUrl, scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateUntilExhausted, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
