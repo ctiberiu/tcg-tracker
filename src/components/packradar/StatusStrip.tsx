@@ -12,19 +12,22 @@ interface StatusStripProps {
   healthy: boolean
   healthLabel?: string
   /**
-   * While true, the count and the health word are withheld.
+   * While true, the count and the health word are withheld. Pass it for BOTH
+   * states in which the page does not have them: the fetch has not finished,
+   * and the fetch failed.
    *
-   * Both are derived from an empty array during load and both lie, in opposite
-   * directions: `storeCount` is 0, so the strip read "0 STORES" — a claim of no
-   * coverage on the page whose pitch is breadth — while `healthy` on /stores is
-   * `[].every(...)`, i.e. true, so that page claimed "SIGNAL OK" before it had
-   * heard from a single store. Neither is a styling problem; a zero rendered in
-   * the same type as a real figure is indistinguishable from data.
+   * Both are derived from an empty array in either state, and both lie, in
+   * opposite directions: `storeCount` is 0, so the strip read "0 STORES" — a
+   * claim of no coverage on the page whose pitch is breadth — while `healthy`
+   * on /stores is `[].every(...)`, i.e. true, so that page claimed "SIGNAL OK"
+   * before it had heard from a single store. Neither is a styling problem; a
+   * zero rendered in the same type as a real figure is indistinguishable from
+   * data, and an error is not evidence about any store's health.
    */
-  loading?: boolean
+  pending?: boolean
 }
 
-export function StatusStrip({ lastSweepTime, storeCount, healthy, healthLabel, loading = false }: StatusStripProps) {
+export function StatusStrip({ lastSweepTime, storeCount, healthy, healthLabel, pending = false }: StatusStripProps) {
   return (
     <div
       style={{
@@ -40,9 +43,9 @@ export function StatusStrip({ lastSweepTime, storeCount, healthy, healthLabel, l
     >
       <span>LAST SWEEP {lastSweepTime}</span>
       <span className="pr-status-strip-meta" style={{ display: 'flex', gap: 24 }}>
-        <span>{loading ? PENDING : storeCount} STORES</span>
-        <span style={{ color: loading ? 'var(--pr-text-dim)' : healthy ? 'var(--pr-signal)' : '#FFB020' }}>
-          {loading ? PENDING : (healthLabel ?? (healthy ? 'SIGNAL OK' : 'DEGRADED'))}
+        <span>{pending ? PENDING : storeCount} STORES</span>
+        <span style={{ color: pending ? 'var(--pr-text-dim)' : healthy ? 'var(--pr-signal)' : '#FFB020' }}>
+          {pending ? PENDING : (healthLabel ?? (healthy ? 'SIGNAL OK' : 'DEGRADED'))}
         </span>
         <span>RO · EET</span>
       </span>

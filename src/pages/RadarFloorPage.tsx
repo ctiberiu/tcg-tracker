@@ -58,10 +58,19 @@ export function RadarFloorPage() {
     overallLastSweepAt,
     healthy,
     loading: summaryLoading,
+    error: summaryError,
   } = useSweepSummary()
   // Six cards are rendered, so six rows are fetched. This used to take 100 and
   // discard 94 of them.
-  const { products, totalCount, loading } = useProducts({ inStockOnly: true, sort: 'newest', pageSize: 6 })
+  const { products, totalCount, loading, error: productsError } = useProducts({ inStockOnly: true, sort: 'newest', pageSize: 6 })
+
+  // A failed fetch leaves an empty array behind, and every figure derived from
+  // one is then a confident zero: "0 STORES", "0 OF 0", and a health verdict
+  // about stores this page never heard from. Not having asked yet and having
+  // asked and failed are different to the visitor but identical to the
+  // arithmetic, so both withhold the figure instead of publishing the zero.
+  const summaryUnknown = summaryLoading || summaryError !== null
+  const signalsUnknown = loading || productsError !== null
 
   const latestSix = products.slice(0, 6)
   const signalCount = totalCount ?? products.length
@@ -88,7 +97,7 @@ export function RadarFloorPage() {
         }
         storeCount={storeCount}
         healthy={healthy}
-        loading={summaryLoading}
+        pending={summaryUnknown}
       />
       <NavBar active="landing" />
 
@@ -138,6 +147,7 @@ export function RadarFloorPage() {
 
         <SweepPanel
           loading={summaryLoading}
+          unavailable={summaryError !== null}
           stores={sweepStores.map((s) => ({ name: s.name, signals: s.signals7d, last: `${s.lastSweep} ago` }))}
           footerLine={healthy ? 'ALL STORES RESPONDING · LAST SWEEP ' + (overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : '—') : 'SOME STORES DEGRADED'}
         />
@@ -170,7 +180,16 @@ export function RadarFloorPage() {
                 {'\u00A0'}
               </span>
             ))}
-          {!loading && channels.map(({ game, count }) => (
+          {/* One chip per distinct game among the newest in-stock rows. With the
+              fetch failed there is no such set, and a silently empty row reads
+              as "no channel has anything in stock" — a claim about the radar,
+              made from a response that never arrived. */}
+          {!loading && productsError && (
+            <span style={{ fontSize: 11.5, color: 'var(--pr-text-dim)', letterSpacing: 1, padding: '10px 0' }}>
+              {PENDING}
+            </span>
+          )}
+          {!loading && !productsError && channels.map(({ game, count }) => (
             <ChannelChip
               key={game.key}
               game={game}
@@ -205,12 +224,30 @@ export function RadarFloorPage() {
           }}
         >
           <span style={{ fontSize: 11, color: 'var(--pr-text-dim)', letterSpacing: 2 }}>
-            {/* "0 OF 0" during load, in the same type as the real figure. */}
-            LATEST SIGNALS · {loading ? PENDING : `${latestSix.length} OF ${signalCount}`}
+            {/* "0 OF 0" otherwise, in the same type as the real figure — both
+                halves are the length of an empty list until the rows land, and
+                stay that way if they never do. */}
+            LATEST SIGNALS · {signalsUnknown ? PENDING : `${latestSix.length} OF ${signalCount}`}
           </span>
           <CtaButton variant="ghost" size="sm" to="/view">FULL LOG →</CtaButton>
         </div>
         <div style={{ display: 'grid' }}>
+          {/* Said plainly, rather than left as an empty grid under a heading:
+              the rows are missing because the read failed, not because the
+              radar has seen nothing. Same line /view shows. */}
+          {!loading && productsError && (
+            <div
+              style={{
+                padding: 12,
+                marginTop: 12,
+                border: '1px solid var(--pr-status-gone)',
+                color: 'var(--pr-status-gone)',
+                fontSize: 13,
+              }}
+            >
+              Failed to load signals: {productsError}
+            </div>
+          )}
           {loading
             ? Array.from({ length: SKELETON_ROWS }, (_, i) => <SignalRowSkeleton key={i} />)
             : latestSix.map((product) => (
@@ -234,7 +271,7 @@ export function RadarFloorPage() {
           The full log is live.
         </div>
         <div style={{ fontSize: 12, color: 'var(--pr-text-dim)', letterSpacing: 0.5, marginBottom: 24 }}>
-          {loading ? PENDING : signalCount} SIGNALS · FILTER BY CHANNEL, STORE, PRICE, STOCK
+          {signalsUnknown ? PENDING : signalCount} SIGNALS · FILTER BY CHANNEL, STORE, PRICE, STOCK
         </div>
         <CtaButton variant="solid" to="/view">OPEN SIGNAL LOG →</CtaButton>
 

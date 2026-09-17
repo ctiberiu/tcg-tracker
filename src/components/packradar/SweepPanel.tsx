@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { StatusDot } from './StatusDot'
+import { PENDING } from './StatusStrip'
 
 interface SweepPanelStore {
   name: string
@@ -19,6 +20,18 @@ interface SweepPanelProps {
    * not yet heard from — a claim, not a placeholder.
    */
   loading?: boolean
+  /**
+   * The fetch failed, so the rows and the footer line are not coming at all.
+   * Same placeholder geometry as `loading`, minus the shimmer — an animation
+   * that never resolves is itself a claim, that the data is on its way — and
+   * with the pending marker where each figure would be.
+   *
+   * The footer is the reason this is a separate state rather than more
+   * `loading`: `footerLine` is computed from a `healthy` flag derived from the
+   * empty list a failure leaves behind, so a failed sweep announced "SOME
+   * STORES DEGRADED" about stores it never heard from.
+   */
+  unavailable?: boolean
 }
 
 /** RadarFloorPage renders `.slice(0, 6)`, so six rows is what the panel settles on. */
@@ -38,7 +51,38 @@ function SweepRow({ children }: { children: ReactNode }) {
   return <div style={ROW_STYLE}>{children}</div>
 }
 
-export function SweepPanel({ stores, footerLine, loading = false }: SweepPanelProps) {
+/**
+ * One cell of a placeholder row, in whichever of the two forms applies.
+ *
+ * Either way it carries a real line box at the cell's own font size — an NBSP,
+ * or the marker itself — rather than a hardcoded pixel height, so a placeholder
+ * row and a real row are the same height by construction. The store name at
+ * 12.5px is the tallest cell and sets the row: 18.75 + 24px padding = 42.75px.
+ * Pixel heights here were 13px and cost 5.75px per row, 39px across the panel.
+ */
+function PlaceholderCell({
+  shimmer,
+  fontSize,
+  fontWeight,
+  width,
+}: {
+  shimmer: boolean
+  fontSize: number
+  fontWeight?: number
+  width?: number | string
+}) {
+  if (shimmer) {
+    return (
+      <span className="pr-shimmer" style={{ display: 'block', fontSize, fontWeight, width }}>
+        {'\u00A0'}
+      </span>
+    )
+  }
+  return <span style={{ display: 'block', fontSize, fontWeight, color: 'var(--pr-text-dim)' }}>{PENDING}</span>
+}
+
+export function SweepPanel({ stores, footerLine, loading = false, unavailable = false }: SweepPanelProps) {
+  const placeholder = loading || unavailable
   return (
     <div style={{ border: '1px solid var(--pr-border)', background: 'var(--pr-bg-panel)', padding: 22 }}>
       <div
@@ -58,28 +102,21 @@ export function SweepPanel({ stores, footerLine, loading = false }: SweepPanelPr
         <span style={{ color: 'var(--pr-signal)' }}>● LIVE</span>
       </div>
       <div style={{ display: 'grid', gap: 1, background: 'var(--pr-border)', border: '1px solid var(--pr-border)' }}>
-        {loading
+        {placeholder
           ? Array.from({ length: SKELETON_ROWS }, (_, i) => (
-              <SweepRow key={`skeleton-${i}`}>
+              <SweepRow key={`placeholder-${i}`}>
                 {/* The dot is drawn unfilled rather than pulsing: a pulsing green
                     dot per row reads as "this store is responding", which is the
-                    one thing not yet known. StatusDot's own 8px box, so the
-                    column is the same width. */}
-                <span className="pr-shimmer" style={{ height: 8, width: 8, borderRadius: '50%' }} />
-                {/* NBSP at each real cell's font size, so the line boxes — and
-                    therefore the row height — are identical by construction. The
-                    store name at 12.5px is the tallest cell and sets the row:
-                    18.75 + 24px padding = 42.75px. Pixel heights here were 13px
-                    and cost 5.75px per row, 39px across the panel. */}
-                <span className="pr-shimmer" style={{ display: 'block', fontSize: 12.5, fontWeight: 600, width: `${52 + ((i * 13) % 26)}%` }}>
-                  {'\u00A0'}
-                </span>
-                <span className="pr-shimmer" style={{ display: 'block', fontSize: 11, width: 58 }}>
-                  {'\u00A0'}
-                </span>
-                <span className="pr-shimmer" style={{ display: 'block', fontSize: 11, width: 44 }}>
-                  {'\u00A0'}
-                </span>
+                    one thing not known in either state. StatusDot's own 8px box,
+                    so the column is the same width. */}
+                {loading ? (
+                  <span className="pr-shimmer" style={{ height: 8, width: 8, borderRadius: '50%' }} />
+                ) : (
+                  <StatusDot color="var(--pr-border)" />
+                )}
+                <PlaceholderCell shimmer={loading} fontSize={12.5} fontWeight={600} width={`${52 + ((i * 13) % 26)}%`} />
+                <PlaceholderCell shimmer={loading} fontSize={11} width={58} />
+                <PlaceholderCell shimmer={loading} fontSize={11} width={44} />
               </SweepRow>
             ))
           : stores.map((st) => (
@@ -120,6 +157,8 @@ export function SweepPanel({ stores, footerLine, loading = false }: SweepPanelPr
           <span className="pr-shimmer" style={{ display: 'block', width: '68%' }}>
             {'\u00A0'}
           </span>
+        ) : unavailable ? (
+          PENDING
         ) : (
           footerLine
         )}

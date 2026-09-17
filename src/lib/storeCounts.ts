@@ -65,3 +65,35 @@ export function sumCountsByBaseName(
   }
   return result
 }
+
+/** One row of the Store dropdown on /view. */
+export interface StoreCountOption {
+  name: string
+  /**
+   * null when the page does not have this count: the query is still out, or it
+   * failed. Deliberately not 0 — a shop missing from `counts` matched no
+   * products, which is a measurement, and rendering both as "0" hands the
+   * visitor a failed request dressed as one.
+   */
+  count: number | null
+}
+
+/**
+ * The dropdown's rows, most matches first.
+ *
+ * `unknown` is the two states with nothing to sort by, so the rows keep the
+ * order the base names arrive in — the page sorts those alphabetically, which
+ * is also what the list falls back to. The name tie-break is written out rather
+ * than left to sort stability: shops tie on count constantly, most of them on
+ * zero.
+ */
+export function storeCountOptions(
+  baseNames: string[],
+  counts: Record<string, number>,
+  unknown = false,
+): StoreCountOption[] {
+  if (unknown) return baseNames.map((name) => ({ name, count: null }))
+  return baseNames
+    .map((name) => ({ name, count: counts[name] ?? 0 }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+}

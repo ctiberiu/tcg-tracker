@@ -58,7 +58,16 @@ export function GameLandingPage({ page }: GameLandingPageProps) {
   // store), not of `stores` rows, so it reads lower than the row count — but it
   // matches "/" and "/stores", and disagreeing with them would be worse than
   // disagreeing with the mockup's snapshot.
-  const { storeCount, healthy, overallLastSweepAt } = useSweepSummary()
+  // Both flags are read, not just the values: without them this strip rendered
+  // "0 STORES · DEGRADED" — an empty list's count and an empty list's verdict —
+  // for the whole of a cold load, and for good on a failed one.
+  const {
+    storeCount,
+    healthy,
+    overallLastSweepAt,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useSweepSummary()
 
   const cards = selectGameCards(recent)
   const upperName = name.toUpperCase()
@@ -77,6 +86,7 @@ export function GameLandingPage({ page }: GameLandingPageProps) {
         }
         storeCount={storeCount}
         healthy={healthy}
+        pending={summaryLoading || summaryError !== null}
       />
       <NavBar active="none" />
 

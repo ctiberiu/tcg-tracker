@@ -5,9 +5,13 @@ import { FilterDropdownButton } from './FilterDropdownButton'
 import { FilterDropdownPanel } from './FilterDropdownPanel'
 import { dropdownRowStyle, dropdownTypeaheadStyle, visuallyHiddenStyle } from './filterStyles'
 import { useFilterDropdown } from './useFilterDropdown'
+import { PENDING } from './StatusStrip'
 
 interface StoreFilterDropdownProps {
-  stores: { name: string; count: number }[]
+  /** A `count` of null is a count the page does not have — still loading, or the
+   *  query failed. It renders as the pending marker, never as 0: a shop with no
+   *  matching products and a shop whose count never arrived are different facts. */
+  stores: { name: string; count: number | null }[]
   selected: string[]
   onToggle: (name: string) => void
   open: boolean
@@ -155,7 +159,9 @@ export function StoreFilterDropdown({ stores, selected, onToggle, open, onOpenCh
                       >
                         {name.toUpperCase()}
                       </span>
-                      <span style={{ color: 'var(--pr-text-dim)', fontSize: 11, flex: 'none' }}>{count}</span>
+                      <span style={{ color: 'var(--pr-text-dim)', fontSize: 11, flex: 'none' }}>
+                        {count == null ? PENDING : count}
+                      </span>
                     </div>
                   )
                 })}

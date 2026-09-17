@@ -18,22 +18,28 @@ export function StoresPage() {
     path: '/stores',
   })
 
-  const { storeHealths, healthy, loading, overallLastSweepAt } = useStoreHealth()
+  const { storeHealths, healthy, loading, error, overallLastSweepAt } = useStoreHealth()
 
   const respondingCount = storeHealths.filter((s) => s.status === 'OK').length
+  // Every figure here is computed over `storeHealths`, which is empty both
+  // before the read lands and after it fails. The two are different to the
+  // visitor and identical to the arithmetic, so both withhold rather than
+  // publish the zero — and the verdict the zero would carry with it.
+  const figuresUnknown = loading || error !== null
 
   return (
     <div className="packradar pr-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Was the time the page was opened, labelled LAST SWEEP. Note this page's
-          `healthy` is `[].every(...)` while loading, i.e. true — so it claimed
-          SIGNAL OK before hearing from a single store. `loading` withholds it. */}
+          `healthy` is `[].every(...)` over an empty list, i.e. true — so it
+          claimed SIGNAL OK before hearing from a single store, and would claim
+          it just as confidently about a read that failed. */}
       <StatusStrip
         lastSweepTime={
           overallLastSweepAt ? new Date(overallLastSweepAt).toLocaleTimeString('ro-RO') : PENDING
         }
         storeCount={storeHealths.length}
         healthy={healthy}
-        loading={loading}
+        pending={figuresUnknown}
       />
       <NavBar active="stores" />
 
@@ -44,7 +50,7 @@ export function StoresPage() {
         // it published the sweep cadence, which tells a shop what to rate-limit,
         // and 15 minutes was not the cadence anyway (scraper.yml runs `*/2 * * * *`).
         meta={
-          loading
+          figuresUnknown
             ? `${PENDING} STORES MONITORED · CONTINUOUS SWEEP · ${PENDING} RESPONDING`
             : `${storeHealths.length} STORES MONITORED · CONTINUOUS SWEEP · ${respondingCount}/${storeHealths.length} RESPONDING`
         }
@@ -55,7 +61,16 @@ export function StoresPage() {
           <p style={{ color: 'var(--pr-text-dim)', fontSize: 13 }}>Loading stores…</p>
         )}
 
-        {!loading && (
+        {/* Without this the grid is simply empty on a failed read, which on a
+            page titled "Stores on watch" reads as "no stores are being
+            watched". Same line /view shows for its own failure. */}
+        {!loading && error && (
+          <div style={{ padding: 12, border: '1px solid var(--pr-status-gone)', color: 'var(--pr-status-gone)', fontSize: 13 }}>
+            Failed to load stores: {error}
+          </div>
+        )}
+
+        {!loading && !error && (
           <div className="pr-store-grid">
             {storeHealths.map((store) => (
               <StoreCard

@@ -7,9 +7,12 @@ import { FilterDropdownPanel } from './FilterDropdownPanel'
 import { StatusDot } from './StatusDot'
 import { dropdownRowStyle, dropdownTypeaheadStyle, visuallyHiddenStyle } from './filterStyles'
 import { useFilterDropdown } from './useFilterDropdown'
+import { PENDING } from './StatusStrip'
 
 interface ChannelFilterDropdownProps {
-  channels: { game: GameInfo; count: number }[]
+  /** A `count` of null is a count the page does not have — still loading, or the
+   *  query failed. It renders as the pending marker, never as 0. */
+  channels: { game: GameInfo; count: number | null }[]
   selected: GameKey[]
   onToggle: (key: GameKey) => void
   open: boolean
@@ -159,7 +162,7 @@ export function ChannelFilterDropdown({ channels, selected, onToggle, open, onOp
                       >
                         {game.label}
                       </span>
-                      <span style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>{count}</span>
+                      <span style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>{count == null ? PENDING : count}</span>
                     </div>
                   )
                 })}

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
-import { storeProductCountsArgs, sumCountsByBaseName } from './storeCounts'
+import { storeCountOptions, storeProductCountsArgs, sumCountsByBaseName } from './storeCounts'
 import type { StoreProductCount } from './types'
 
 describe('storeProductCountsArgs', () => {
@@ -83,5 +83,39 @@ describe('sumCountsByBaseName', () => {
       { store_id: 'rg-one-piece', product_count: '3' },
     ] as unknown as StoreProductCount[]
     expect(sumCountsByBaseName(rows, stores)).toEqual({ RedGoblin: 15 })
+  })
+})
+
+describe('storeCountOptions', () => {
+  const baseNames = ['Bebetei', 'Krit', 'RedGoblin']
+
+  it('orders shops by count, most matches first', () => {
+    expect(storeCountOptions(baseNames, { Krit: 7, RedGoblin: 15, Bebetei: 2 })).toEqual([
+      { name: 'RedGoblin', count: 15 },
+      { name: 'Krit', count: 7 },
+      { name: 'Bebetei', count: 2 },
+    ])
+  })
+
+  it('counts a shop the function returned no row for as 0', () => {
+    expect(storeCountOptions(['Krit'], {})).toEqual([{ name: 'Krit', count: 0 }])
+  })
+
+  it('breaks a tie by name rather than by input order', () => {
+    expect(storeCountOptions(['Krit', 'Bebetei'], { Krit: 4, Bebetei: 4 }).map((o) => o.name)).toEqual([
+      'Bebetei',
+      'Krit',
+    ])
+  })
+
+  // The case this argument exists for: while the call is out, and after it
+  // fails, every shop's count is absent — and an absent count rendered as 0 is
+  // indistinguishable from a shop that genuinely matched nothing.
+  it('withholds every count when the counts are unknown, keeping the base-name order', () => {
+    expect(storeCountOptions(baseNames, { Krit: 7 }, true)).toEqual([
+      { name: 'Bebetei', count: null },
+      { name: 'Krit', count: null },
+      { name: 'RedGoblin', count: null },
+    ])
   })
 })
