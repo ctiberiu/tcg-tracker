@@ -14,6 +14,7 @@ import { shouldAllowRequest } from './request-filter.js';
 import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from './fastsimon.js';
 import { sendPushAlerts } from './push.js';
 import { FAST_LANE_STORES, prepareFastLaneStores, runFastLane, isFastLaneDry, noSweepSync, resolveLane } from './fast-lane.js';
+import { isDatabaseUnavailable, dbError, databaseOutageLines } from './db-availability.js';
 
 chromium.use(StealthPlugin());
 
@@ -73,12 +74,12 @@ async function fetchStores(supabase) {
   // A single-store manual trigger always runs regardless of timing.
   if (storeId) {
     const { data, error } = await supabase.from('stores').select('*').eq('id', storeId);
-    if (error) throw new Error(`Failed to fetch stores: ${error.message}`);
+    if (error) throw dbError('Failed to fetch stores', error);
     return data ?? [];
   }
 
   const { data, error } = await supabase.from('stores').select('*').eq('is_enabled', true);
-  if (error) throw new Error(`Failed to fetch stores: ${error.message}`);
+  if (error) throw dbError('Failed to fetch stores', error);
 
   // Due-based scheduling: only scrape stores that are actually due (never scraped,
   // or past their own check_interval_minutes). Filtered client-side — the store
@@ -2767,7 +2768,7 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
   );
 
   if (fetchError) {
-    throw new Error(`Failed to fetch existing products: ${fetchError.message}`);
+    throw dbError('Failed to fetch existing products', fetchError);
   }
 
   const existingUrls = new Set(existing.map((row) => row.url));
@@ -3465,7 +3466,7 @@ async function readExistingStock(supabase, urls) {
   const unique = [...new Set(urls)];
   for (let i = 0; i < unique.length; i += 40) {
     const { data, error } = await supabase.from('products').select('url, in_stock').in('url', unique.slice(i, i + 40));
-    if (error) throw new Error(`Failed to read existing products: ${error.message}`);
+    if (error) throw dbError('Failed to read existing products', error);
     for (const row of data ?? []) stock.set(row.url, row.in_stock);
   }
   return stock;
@@ -3488,7 +3489,7 @@ async function mainFastLane() {
       .from('stores')
       .select('*')
       .in('id', FAST_LANE_STORES.map((s) => s.id));
-    if (error) throw new Error(`Failed to fetch fast-lane stores: ${error.message}`);
+    if (error) throw dbError('Failed to fetch fast-lane stores', error);
     const stores = prepareFastLaneStores(rows);
     if (stores.length === 0) {
       console.log('Fast lane: no stores to scrape this run');
@@ -3518,8 +3519,15 @@ async function mainFastLane() {
       },
     });
   } catch (err) {
-    console.error(`  Fast lane failed: ${err.message}`);
-    process.exitCode = 1;
+    // Supabase being unreachable is not a failure of this repo — see
+    // db-availability.js. Exiting 0 keeps it out of the failure-email stream;
+    // anything else still exits 1 and still reaches the operator.
+    if (isDatabaseUnavailable(err)) {
+      for (const line of databaseOutageLines('Fast lane', err)) console.log(line);
+    } else {
+      console.error(`  Fast lane failed: ${err.message}`);
+      process.exitCode = 1;
+    }
   } finally {
     await browser?.close();
     console.log(`Fast lane run: ${((Date.now() - runStartedAt) / 1000).toFixed(1)}s`);
@@ -3573,6 +3581,13 @@ async function main() {
     console.log('\nCleaning up long-term out-of-stock products...');
     await cleanupStaleProducts(supabase);
   } catch (err) {
+    // Same rule as the fast lane. updateScrapeRun is deliberately SKIPPED on an
+    // outage: that write targets the database that just timed out, so it cannot
+    // record anything and can only add minutes to a run with nothing to report.
+    if (isDatabaseUnavailable(err)) {
+      for (const line of databaseOutageLines('Scraper', err)) console.log(line);
+      return;
+    }
     console.error(`  Scraper failed: ${err.message}`);
     await updateScrapeRun(supabase, runId, {
       status: 'failed',

@@ -24,6 +24,13 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    # A full pass is 1-6 minutes; scraper-fast.yml has capped itself at 6 since
+    # it was written. This job had NO cap, so it inherited GitHub's 360-minute
+    # default: during the 2026-09-22 Supabase outage one run sat at 19m47s
+    # waiting on a database that was never going to answer, while the every-2-min
+    # dispatch kept queueing more behind it. 15 leaves headroom over the slowest
+    # healthy run observed (5m51s) and still kills a hung one quickly.
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: scraper
@@ -135,7 +142,24 @@ jobs:
           # documented Gmail path. The secret itself is untouched, so restoring
           # service is flipping this variable back to 1 — no re-entering a token,
           # and no code change on either side.
-          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
+          #
+          # ── Why the condition is INVERTED, and must stay that way ────────────
+          # The obvious spelling of this is a silent no-op:
+          #
+          #   ${{ vars.ZEPTOMAIL_ENABLED == '0' && '' || secrets.ZEPTOMAIL_TOKEN }}
+          #
+          # GitHub's && and || are not a ternary. They return one of their
+          # OPERANDS, exactly like JavaScript's, and '' is falsy — so when the
+          # variable really is '0' the expression evaluates `true && ''` to '',
+          # which the || then discards in favour of the secret. The gate hands
+          # back the very token it was written to withhold, and does it silently:
+          # the log line still says ZeptoMail, so the failure is indistinguishable
+          # from the variable not being set. That shipped, and every "disabled"
+          # run kept authenticating against the dead credentials.
+          #
+          # Written this way round, the withheld branch is the one that yields the
+          # falsy value, so there is nothing left for || to override.
+          ZEPTOMAIL_TOKEN: ${{ vars.ZEPTOMAIL_ENABLED != '0' && secrets.ZEPTOMAIL_TOKEN || '' }}
           # Accepted as either a variable or a secret. It is only a From address,
           # so a variable is the natural home (readable, editable without
           # rotating) — but it is harmless as a secret and reading both means a
