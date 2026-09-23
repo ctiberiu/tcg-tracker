@@ -24,6 +24,13 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    # A full pass is 1-6 minutes; scraper-fast.yml has capped itself at 6 since
+    # it was written. This job had NO cap, so it inherited GitHub's 360-minute
+    # default: during the 2026-09-22 Supabase outage one run sat at 19m47s
+    # waiting on a database that was never going to answer, while the every-2-min
+    # dispatch kept queueing more behind it. 15 leaves headroom over the slowest
+    # healthy run observed (5m51s) and still kills a hung one quickly.
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: scraper
