@@ -45,7 +45,8 @@
 -- api/send-test-email.ts (`.eq('in_stock', true).order('store_name').order('title')`).
 -- That sort is two columns, so this single-column index could at best feed a
 -- partial incremental sort; without it Postgres sorts the ~1,000 in-stock rows
--- in memory, which costs well under a millisecond and runs only when the
+-- in memory. Measured locally on 3,905 rows (976 in stock) with the index gone:
+-- quicksort in 139 kB, 1.6 ms for the whole query. It runs only when the
 -- operator sends a test email. store_name isn't the reason updates miss HOT
 -- (it doesn't change), but it is a 9th index paid for on every non-HOT write
 -- (new products, price and stock changes) and it does nothing in return.
