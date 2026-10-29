@@ -6,6 +6,7 @@ import { useStores } from '../hooks/useStores'
 import { useSweepSummary } from '../hooks/useSweepSummary'
 import { useGameCounts } from '../hooks/useGameCounts'
 import { useStoreCounts } from '../hooks/useStoreCounts'
+import { storeCountOptions } from '../lib/storeCounts'
 import { getStoreBaseName } from '../lib/storeName'
 import {
   StatusStrip,
@@ -43,7 +44,14 @@ export function SignalLogPage() {
     overallLastSweepAt,
     healthy,
     loading: summaryLoading,
+    error: summaryError,
   } = useSweepSummary()
+  // Not having asked yet and having asked and failed both leave an empty store
+  // list behind, and every store figure on this page is derived from it. Both
+  // withhold: a zero here is rendered in the same type as a measured one, and
+  // the health verdict beside it would be a claim about stores this page never
+  // heard from.
+  const summaryUnknown = summaryLoading || summaryError !== null
 
   const [storeFilters, setStoreFilters] = useState<string[]>(() => {
     const raw = searchParams.get('store')
@@ -116,6 +124,9 @@ export function SignalLogPage() {
   }), [storeIds, gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch, sort])
 
   const { products, loading, loadingMore, hasMore, totalCount, error, loadMore } = useProducts(filters)
+  // Same rule for the signal total: `totalCount` is null and `products` empty
+  // until the first page lands, and stay that way if it never does.
+  const signalsUnknown = loading || error !== null
 
   const countFilters = useMemo(() => ({
     storeIds,
@@ -125,13 +136,19 @@ export function SignalLogPage() {
     search: debouncedSearch.trim() || undefined,
   }), [storeIds, minPrice, maxPrice, inStockOnly, debouncedSearch])
 
-  const { counts } = useGameCounts(countFilters)
+  const { counts, loading: gameCountsLoading, error: gameCountsError } = useGameCounts(countFilters)
 
+  // A game earns its place in the list by having matching products, so an
+  // unknown count cannot be filtered on: `counts` is empty before the queries
+  // land and after they fail, and filtering on it empties the channel list —
+  // leaving the dropdown to say "No channels match", a statement about the data
+  // rather than about the request. Every game is listed with its count withheld.
   const channels = useMemo(() => {
+    const countsUnknown = gameCountsLoading || gameCountsError !== null
     return (Object.keys(GAMES) as GameKey[])
-      .filter((key) => (counts[key] ?? 0) > 0)
-      .map((key) => ({ game: GAMES[key], count: counts[key] ?? 0 }))
-  }, [counts])
+      .filter((key) => countsUnknown || (counts[key] ?? 0) > 0)
+      .map((key) => ({ game: GAMES[key], count: countsUnknown ? null : (counts[key] ?? 0) }))
+  }, [counts, gameCountsLoading, gameCountsError])
 
   const storeCountFilters = useMemo(() => ({
     games: gameFilters.length > 0 ? gameFilters : undefined,
@@ -141,14 +158,15 @@ export function SignalLogPage() {
     search: debouncedSearch.trim() || undefined,
   }), [gameFilters, minPrice, maxPrice, inStockOnly, debouncedSearch])
 
-  const { counts: storeCounts } = useStoreCounts(stores, storeCountFilters)
+  const {
+    counts: storeCounts,
+    loading: storeCountsLoading,
+    error: storeCountsError,
+  } = useStoreCounts(stores, storeCountFilters)
 
   const storeOptions = useMemo(
-    () =>
-      storeBaseNames
-        .map((name) => ({ name, count: storeCounts[name] ?? 0 }))
-        .sort((a, b) => b.count - a.count),
-    [storeBaseNames, storeCounts],
+    () => storeCountOptions(storeBaseNames, storeCounts, storeCountsLoading || storeCountsError !== null),
+    [storeBaseNames, storeCounts, storeCountsLoading, storeCountsError],
   )
 
   const hasActiveFilters = Boolean(search || gameFilters.length || storeFilters.length || minPrice || maxPrice)
@@ -175,7 +193,7 @@ export function SignalLogPage() {
         }
         storeCount={storeCount}
         healthy={healthy}
-        loading={summaryLoading}
+        pending={summaryUnknown}
       />
       <NavBar active="log" />
 
@@ -186,9 +204,9 @@ export function SignalLogPage() {
         title="Signal log"
         crumbCurrent="SIGNAL LOG"
         meta={
-          `${loading ? PENDING : (totalCount ?? products.length)} SIGNALS · ` +
-          `${summaryLoading ? PENDING : `${respondingCount}/${storeCount}`} STORES RESPONDING · ` +
-          `LAST SWEEP ${summaryLoading ? PENDING : lastSweepLabel}`
+          `${signalsUnknown ? PENDING : (totalCount ?? products.length)} SIGNALS · ` +
+          `${summaryUnknown ? PENDING : `${respondingCount}/${storeCount}`} STORES RESPONDING · ` +
+          `LAST SWEEP ${summaryUnknown ? PENDING : lastSweepLabel}`
         }
       />
 
@@ -217,12 +235,19 @@ export function SignalLogPage() {
             setMinPrice(min)
             setMaxPrice(max)
           }}
-          resultCount={totalCount ?? products.length}
+          resultCount={signalsUnknown ? null : (totalCount ?? products.length)}
         />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
           <span style={{ fontSize: 10, color: loading ? 'var(--pr-signal)' : 'var(--pr-text-dim)', letterSpacing: 2 }}>
-            {loading ? '● SWEEPING RADAR…' : `SHOWING ${products.length} OF ${totalCount ?? products.length} SIGNALS`}
+            {/* Not "SHOWING 0 OF 0 SIGNALS" on a failed read: both halves are the
+                length of a list that was never filled. The failure itself is
+                reported below, where the rows would have been. */}
+            {loading
+              ? '● SWEEPING RADAR…'
+              : error
+                ? `SHOWING ${PENDING} SIGNALS`
+                : `SHOWING ${products.length} OF ${totalCount ?? products.length} SIGNALS`}
           </span>
           <span style={{ fontSize: 10, color: 'var(--pr-text-dim)', letterSpacing: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
             SORT:

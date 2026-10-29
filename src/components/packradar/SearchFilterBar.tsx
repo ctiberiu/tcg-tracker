@@ -12,16 +12,18 @@ type OpenMenu = 'channel' | 'store' | 'price' | null
 interface SearchFilterBarProps {
   search: string
   onSearchChange: (value: string) => void
-  channels: { game: GameInfo; count: number }[]
+  /** Counts of null are counts the page does not have (loading, or the query
+   *  failed) and render as the pending marker — see StoreFilterDropdown. */
+  channels: { game: GameInfo; count: number | null }[]
   selectedChannels: GameKey[]
   onChannelsChange: (keys: GameKey[]) => void
-  stores: { name: string; count: number }[]
+  stores: { name: string; count: number | null }[]
   selectedStores: string[]
   onStoresChange: (names: string[]) => void
   minPrice: string
   maxPrice: string
   onPriceChange: (min: string, max: string) => void
-  resultCount: number
+  resultCount: number | null
 }
 
 const searchInputStyle: CSSProperties = {

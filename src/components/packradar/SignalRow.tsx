@@ -33,9 +33,22 @@ export function SignalRow({ game, date, store, title, price, status, href }: Sig
     >
       <span style={{ fontSize: 11, color: 'var(--pr-text-dim)' }}>{date}</span>
       <span style={{ fontSize: 11, color: 'var(--pr-text-mid)', letterSpacing: 0.5 }}>{store}</span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, color: game.color, fontWeight: 600 }}>
+      {/* One line, for the same reason as the title below and SweepPanel's store
+          name: the label is data. In the 110px channel column "DRAGON BALL
+          SUPER" — the longest label in the registry — wraps to two lines and
+          takes the row from 53px to 62px, which no fixed-height skeleton can
+          match. `minWidth: 0` is the load-bearing part: a grid item's default
+          `min-width: auto` refuses to shrink below its content, so the ellipsis
+          never engages. The dot keeps the colour, and /view shows the full
+          label. */}
+      <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, color: game.color, fontWeight: 600, minWidth: 0 }}>
         <StatusDot color={game.color} size={7} />
-        {game.label}
+        <span
+          title={game.label}
+          style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {game.label}
+        </span>
       </span>
       {/* One line, always. Product titles vary wildly in length — "Pokemon TCG -
           PITCH BLACK - 3-pack Blister" against "Magic: The Gathering Marvel Super

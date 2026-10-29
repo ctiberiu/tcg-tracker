@@ -3,23 +3,27 @@ import type { GameInfo, GameKey } from './tokens'
 import { FilterCheckbox } from './FilterCheckbox'
 import { StatusDot } from './StatusDot'
 import { PRICE_PRESETS, dropdownRowStyle, formatPriceRange, priceInputStyle, sectionLabelStyle } from './filterStyles'
+import { PENDING } from './StatusStrip'
 
 // Keep in sync with the transition duration on .pr-filter-sheet in packradar.css.
 const TRANSITION_MS = 260
 
 interface MobileFilterSheetProps {
   open: boolean
-  channels: { game: GameInfo; count: number }[]
+  /** null counts are counts the page does not have — see StoreFilterDropdown. */
+  channels: { game: GameInfo; count: number | null }[]
   selectedChannels: GameKey[]
   onToggleChannel: (key: GameKey) => void
-  stores: { name: string; count: number }[]
+  stores: { name: string; count: number | null }[]
   selectedStores: string[]
   onToggleStore: (name: string) => void
   minPrice: string
   maxPrice: string
   onPriceChange: (min: string, max: string) => void
   onClear: () => void
-  resultCount: number
+  /** null while the matching total is unknown, so the apply button cannot offer
+   *  to show "0 Signals" on the strength of a failed query. */
+  resultCount: number | null
   onClose: () => void
 }
 
@@ -152,7 +156,7 @@ export function MobileFilterSheet({
                   >
                     {game.label}
                   </span>
-                  <span style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>{count}</span>
+                  <span style={{ color: 'var(--pr-text-dim)', fontSize: 11 }}>{count == null ? PENDING : count}</span>
                 </button>
               )
             })}
@@ -193,7 +197,9 @@ export function MobileFilterSheet({
                   >
                     {name.toUpperCase()}
                   </span>
-                  <span style={{ color: 'var(--pr-text-dim)', fontSize: 11, flex: 'none' }}>{count}</span>
+                  <span style={{ color: 'var(--pr-text-dim)', fontSize: 11, flex: 'none' }}>
+                    {count == null ? PENDING : count}
+                  </span>
                 </button>
               )
             })}
@@ -288,7 +294,7 @@ export function MobileFilterSheet({
             cursor: 'pointer',
           }}
         >
-          Show {resultCount} Signals
+          Show {resultCount == null ? PENDING : resultCount} Signals
         </button>
       </div>
     </div>
