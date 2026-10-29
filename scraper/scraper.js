@@ -2200,6 +2200,13 @@ const PAGINATION_MIN_PAGE_1 = 10;
  * misses is N x interval, so the grace has to sit strictly between one cycle
  * and two.
  *
+ * Since 2026-10 the sweep itself waits longer than this grace: sweepCutoffMs
+ * adds LAST_SEEN_REFRESH_MS, because last_seen_at is no longer rewritten on
+ * every sighting. "Survives one miss" therefore holds with more margin, and
+ * "swept on the second miss" becomes "swept within grace + up to an hour". The
+ * property above is still what staleGraceMs must satisfy; the extra hour is the
+ * sweep's, not the grace's.
+ *
  * `grace > interval` alone is necessary and not sufficient. `x 2` satisfies it
  * and is still wrong: it puts the threshold exactly on the two-miss boundary,
  * so a run landing thirty seconds early defers detection to the third miss.
