@@ -1,0 +1,98 @@
+-- Make the scraper's per-sighting update of `products` a HOT update, so it stops
+-- rewriting every index on the table for every product on every scrape.
+--
+-- ── The measurement ─────────────────────────────────────────────────────────
+-- Supabase warned on 2026-10-19 that the project is running out of Disk IO.
+-- Read-only from pg_stat_* over 2026-09-04 → 2026-10-19 (~45 days):
+--
+--   products            3,920 rows, 15,290,829 updates, of which 26 were HOT
+--   products upsert     25.9 GB of the 26 GB of WAL written by all statements
+--                       (~700 MB/day); reads were ~100% cache hits
+--
+-- The upsert is scraper.js syncToSupabase: `.upsert(batch, { onConflict: 'url' })`,
+-- i.e. INSERT ... ON CONFLICT (url) DO UPDATE, for every product seen in a run.
+--
+-- ── Why almost none of those updates were HOT ───────────────────────────────
+-- A HOT (heap-only tuple) update writes the new row version into the same heap
+-- page and touches no index. Postgres can only do that when no indexed column
+-- changed AND the page has room for the new version. Each sighting stamps
+-- `last_seen_at = now()` (migration 022), and `idx_products_last_seen_at` indexes
+-- that column, so every update changed an indexed column: a new heap tuple plus
+-- an entry in all 9 indexes, every row, every run.
+--
+-- The other indexed columns are stable on an ordinary sighting: url (the conflict
+-- key), id, store_name and game don't change; price and in_stock change only
+-- when the store changes them; first_seen is pinned to OLD by
+-- trg_preserve_first_seen (004); out_of_stock_since is pinned to OLD by
+-- trg_set_out_of_stock_since (021/036) unless in_stock flips. Postgres compares
+-- the stored values, not the SET list, so writing an unchanged value back is
+-- still HOT-eligible.
+--
+-- ── 1. Drop idx_products_last_seen_at ───────────────────────────────────────
+-- 23 scans in 45 days. Nothing filters or sorts on last_seen_at in the
+-- database. Every reader, by grep over src/, api/, scraper/, extension/,
+-- scripts/ and the migrations' functions (2026-10-19):
+--   scraper.js  staleness sweep  selects it, filters by store_id + in_stock,
+--                                and compares last_seen_at in JS
+--   digest.js   selects store_id, in_stock, last_seen_at for every product, no
+--                                filter on it, compares in JS
+--   036         set_out_of_stock_since() reads NEW.last_seen_at; trigger, no scan
+-- src/ and api/ do not reference the column at all.
+--
+-- ── 2. Drop idx_products_store_name ─────────────────────────────────────────
+-- 4 scans in 45 days. No .eq / .in / .order on store_name in src/, scraper/ or
+-- extension/, and no function or view uses it. The one reader that sorts by it is
+-- api/send-test-email.ts (`.eq('in_stock', true).order('store_name').order('title')`).
+-- That sort is two columns, so this single-column index could at best feed a
+-- partial incremental sort; without it Postgres sorts the ~1,000 in-stock rows
+-- in memory. Measured locally on 3,905 rows (976 in stock) with the index gone:
+-- quicksort in 139 kB, 1.6 ms for the whole query. It runs only when the
+-- operator sends a test email. store_name isn't the reason updates miss HOT
+-- (it doesn't change), but it is a 9th index paid for on every non-HOT write
+-- (new products, price and stock changes) and it does nothing in return.
+--
+-- idx_products_price stays: the frontend filters and sorts by price.
+--
+-- ── 3. fillfactor = 80 ──────────────────────────────────────────────────────
+-- A HOT update also needs free space on the row's own page. At the default 100,
+-- inserts pack pages full, so a page's first update after a fill has nowhere to
+-- go but another page, which is not HOT. 80 leaves 20% of each page for new row
+-- versions.
+--
+-- fillfactor only governs pages written from now on: existing pages are not
+-- repacked, and they gain room as old versions are pruned and new products land
+-- on new pages. To repack the table at once, the operator can run
+--   VACUUM FULL products;
+-- by hand. It takes an ACCESS EXCLUSIVE lock for the rewrite (the heap is
+-- ~1.8 MB, so about a second) and is optional. It is not in this file because
+-- VACUUM cannot run inside a transaction block.
+--
+-- Measured locally on Postgres 17.6.1.084: 1,000 rows from 001-041, re-upserted
+-- with only last_seen_at changing. HOT was 0% per run before this file. After
+-- it, with no VACUUM FULL, HOT went 37% → 58% → 75% → 90% → 98% → 99.7% over six
+-- runs. VACUUM FULL did not speed that up: the first run after it was 78% HOT,
+-- because a freshly packed page is full again after a fifth of its rows update.
+-- Prod sees each product ~87 times a day, so it should reach the steady state
+-- within hours without it.
+--
+-- ── Safety and replaying ────────────────────────────────────────────────────
+-- No column, constraint, trigger, policy or grant changes, so no reader sees a
+-- different result. DROP INDEX takes a brief ACCESS EXCLUSIVE lock on a
+-- 4,000-row table. It is not CONCURRENTLY because that cannot run inside a
+-- transaction block either. Replayable: DROP INDEX IF EXISTS, and SET (fillfactor)
+-- is a plain assignment.
+--
+-- Verify after applying (baseline 15,290,829 / 26 at 2026-10-19):
+--   select n_tup_upd, n_tup_hot_upd from pg_stat_user_tables where relname = 'products';
+-- Success is more than 80% of the new updates being HOT over 24h.
+--
+-- Rollback:
+--   CREATE INDEX IF NOT EXISTS idx_products_last_seen_at ON products (last_seen_at);
+--   CREATE INDEX IF NOT EXISTS idx_products_store_name ON products (store_name);
+--   ALTER TABLE products RESET (fillfactor);
+
+DROP INDEX IF EXISTS idx_products_last_seen_at;
+
+DROP INDEX IF EXISTS idx_products_store_name;
+
+ALTER TABLE products SET (fillfactor = 80);
