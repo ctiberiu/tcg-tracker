@@ -36,10 +36,41 @@ export const LAST_SEEN_REFRESH_MS = 60 * 60 * 1000;
 export const EXISTING_COLUMNS =
   'url, in_stock, out_of_stock_since, price, title, image_url, game, store_id, store_name, last_seen_at';
 
-/** URLs per `.in('url', …)` request. readExistingStock has read in chunks of 40
- *  in production since 2026-09-15. The 40 longest product URLs (max 172 chars)
- *  encode to ~6.2 kB of query string. */
+/** At most this many urls per `.in('url', …)` request; readExistingStock has
+ *  used 40 since 2026-09-15. */
 export const URL_CHUNK = 40;
+
+/** …and at most this many characters of them once encoded into the query
+ *  string. The request line has to fit the gateway's buffer (8 kB is the usual
+ *  nginx default). Measured on the 2026-08-16 snapshot (724 urls): one url
+ *  costs 113 characters at the median and 191 at most, because a
+ *  percent-encoded path (`pok%c3%a9mon`) is encoded again. 40 typical urls are
+ *  ~4.5 kB and keep the full 40; 40 of the longest would be ~7.6 kB, so the
+ *  chunk closes early instead. */
+export const URL_CHUNK_CHARS = 6000;
+
+/** What one url adds to `url=in.("a","b")` after URL encoding, quotes and
+ *  comma included. An upper bound: postgrest-js quotes only some values. */
+export const encodedUrlCost = (url) => encodeURIComponent(`"${url}",`).length;
+
+/** Split urls into request-sized chunks by count AND encoded length. */
+export function chunkUrls(urls, maxCount = URL_CHUNK, maxChars = URL_CHUNK_CHARS) {
+  const chunks = [];
+  let current = [];
+  let chars = 0;
+  for (const url of urls) {
+    const cost = encodedUrlCost(url);
+    if (current.length > 0 && (current.length >= maxCount || chars + cost > maxChars)) {
+      chunks.push(current);
+      current = [];
+      chars = 0;
+    }
+    current.push(url);
+    chars += cost;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
 
 /** The row the upsert sends, from a scraped product. `url` must already be
  *  normalizeProductUrl's form, which is how products.url is stored. */
@@ -113,12 +144,11 @@ export function planProductWrites(rows, existing, nowMs, refreshMs = LAST_SEEN_R
  * urls asked for, unlike the full-table read it replaced. Throws dbError so an
  * outage is reported as one (see db-availability.js).
  */
-export async function readExistingProducts(supabase, urls, columns = EXISTING_COLUMNS, chunk = URL_CHUNK) {
+export async function readExistingProducts(supabase, urls, columns = EXISTING_COLUMNS) {
   const rows = new Map();
-  const unique = [...new Set(urls)];
   let requests = 0;
-  for (let i = 0; i < unique.length; i += chunk) {
-    const { data, error } = await supabase.from('products').select(columns).in('url', unique.slice(i, i + chunk));
+  for (const chunk of chunkUrls([...new Set(urls)])) {
+    const { data, error } = await supabase.from('products').select(columns).in('url', chunk);
     requests++;
     if (error) throw dbError('Failed to fetch existing products', error);
     for (const row of data ?? []) rows.set(row.url, row);

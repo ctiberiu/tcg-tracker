@@ -4,6 +4,9 @@ import { noSweepSync } from './fast-lane.js'
 import {
   LAST_SEEN_REFRESH_MS,
   URL_CHUNK,
+  URL_CHUNK_CHARS,
+  chunkUrls,
+  encodedUrlCost,
   planProductWrites,
   changedColumns,
   toProductRow,
@@ -252,6 +255,27 @@ describe('the read before the write', () => {
     expect(logs).toContain(
       '  Products: 0/0 written (new 0, changed 0, refreshed 0), 95 skipped unchanged; read 95 existing row(s) for 95 scraped url(s) in 3 request(s)',
     )
+  })
+
+  it('closes a chunk early when long percent-encoded urls would overflow the request line', () => {
+    // 190-char path, all of it percent-encoded diacritics: encoded again, ~3x.
+    const long = (i) => `https://shop.example/${'pok%c3%a9mon-'.repeat(13)}${i}`
+    const urls = Array.from({ length: 40 }, (_, i) => long(i))
+    const chunks = chunkUrls(urls)
+    expect(chunks.length).toBeGreaterThan(1)
+    expect(chunks.flat()).toEqual(urls) // nothing lost or reordered
+    for (const c of chunks) expect(c.reduce((n, u) => n + encodedUrlCost(u), 0)).toBeLessThanOrEqual(URL_CHUNK_CHARS)
+  })
+
+  it('keeps a full chunk of typical urls, and never drops a single oversized one', () => {
+    const typical = Array.from({ length: 95 }, (_, i) => `https://www.example-shop.ro/produs/pokemon-tcg-booster-box-${i}`)
+    expect(chunkUrls(typical).map((c) => c.length)).toEqual([40, 40, 15])
+    const huge = `https://shop.example/${'x'.repeat(URL_CHUNK_CHARS)}`
+    expect(chunkUrls(['https://a.example/1', huge, 'https://a.example/2'])).toEqual([
+      ['https://a.example/1'],
+      [huge],
+      ['https://a.example/2'],
+    ])
   })
 
   it('throws a dbError when the read fails, so an outage is not taken for "everything is new"', async () => {
