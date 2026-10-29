@@ -15,6 +15,7 @@ import { OZONE_FASTSIMON, buildFastSimonSearchUrl, parseFastSimonResponse } from
 import { sendPushAlerts } from './push.js';
 import { FAST_LANE_STORES, prepareFastLaneStores, runFastLane, isFastLaneDry, noSweepSync, resolveLane } from './fast-lane.js';
 import { isDatabaseUnavailable, dbError, databaseOutageLines } from './db-availability.js';
+import { LAST_SEEN_REFRESH_MS, toProductRow, planProductWrites, readExistingProducts, formatSyncLine } from './product-sync.js';
 
 chromium.use(StealthPlugin());
 
@@ -2199,6 +2200,13 @@ const PAGINATION_MIN_PAGE_1 = 10;
  * misses is N x interval, so the grace has to sit strictly between one cycle
  * and two.
  *
+ * Since 2026-10 the sweep itself waits longer than this grace: sweepCutoffMs
+ * adds LAST_SEEN_REFRESH_MS, because last_seen_at is no longer rewritten on
+ * every sighting. "Survives one miss" therefore holds with more margin, and
+ * "swept on the second miss" becomes "swept within grace + up to an hour". The
+ * property above is still what staleGraceMs must satisfy; the extra hour is the
+ * sweep's, not the grace's.
+ *
  * `grace > interval` alone is necessary and not sufficient. `x 2` satisfies it
  * and is still wrong: it puts the threshold exactly on the two-miss boundary,
  * so a run landing thirty seconds early defers detection to the third miss.
@@ -2238,6 +2246,20 @@ function staleGraceMs(checkIntervalMinutes) {
   const minutes = Number(checkIntervalMinutes);
   if (!Number.isFinite(minutes) || minutes <= 0) return STALE_GRACE_FALLBACK_MS;
   return minutes * STALE_GRACE_CYCLES * 60 * 1000;
+}
+
+/**
+ * The sweep's cutoff: a product missing from this run is stale when its STORED
+ * last_seen_at is at or before this. The grace above is measured from the true
+ * last sighting, but since 2026-10 an unchanged sighting only rewrites
+ * last_seen_at once it is LAST_SEEN_REFRESH_MS old (product-sync.js), so the
+ * stored value can trail the true one by up to that much. Subtracting it keeps
+ * every sweep at or beyond the grace: never earlier than before, up to R later.
+ * The second-miss property the comment above describes therefore holds for
+ * staleGraceMs, and the sweep adds R on top of it.
+ */
+function sweepCutoffMs(nowMs, checkIntervalMinutes) {
+  return nowMs - staleGraceMs(checkIntervalMinutes) - LAST_SEEN_REFRESH_MS;
 }
 
 /** Scrapers that already walk their own pagination. Left alone entirely. The
@@ -2751,30 +2773,18 @@ async function fetchAllRows(queryFactory) {
 
 /**
  * Sync scraped products to Supabase using upsert on URL.
- * Updates price, image_url, in_stock for existing products.
- * Returns { inserted, updated, insertedProducts } for alert use.
+ * Writes only new rows, rows whose content changed, and rows whose last_seen_at
+ * is due a refresh (product-sync.js); the rest are skipped.
+ * Returns { inserted, updated, skipped, insertedProducts, alertProducts }.
+ *
+ * `supabase` and `now` are injectable for tests; production passes neither.
  */
-async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds = scrapedStoreIds) {
-  const supabase = initSupabase();
-
-  // Fetch existing URLs + prior stock state to distinguish new/updated and
-  // to detect out-of-stock -> in-stock restock transitions.
-  // out_of_stock_since and price are selected for the transition log only.
-  // Both are destroyed by the write that follows: migration 021's trigger clears
-  // out_of_stock_since the instant a product restocks, and price is overwritten
-  // by every upsert. Read here or the values are gone — see migration 037.
-  const { data: existing, error: fetchError } = await fetchAllRows(() =>
-    supabase.from('products').select('url, in_stock, out_of_stock_since, price'),
-  );
-
-  if (fetchError) {
-    throw dbError('Failed to fetch existing products', fetchError);
-  }
-
-  const existingUrls = new Set(existing.map((row) => row.url));
-  const prevStock = new Map(existing.map((row) => [row.url, row.in_stock]));
-  const prevOutSince = new Map(existing.map((row) => [row.url, row.out_of_stock_since]));
-  const prevPrice = new Map(existing.map((row) => [row.url, row.price]));
+async function syncToSupabase(
+  products,
+  scrapedStoreIds = [],
+  sweepableStoreIds = scrapedStoreIds,
+  { supabase = initSupabase(), now = Date.now } = {},
+) {
   const insertedProducts = [];
   // Products to alert on: newly-listed AND in stock, or restocked (out -> in).
   const alertProducts = [];
@@ -2797,23 +2807,36 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
     new Map(products.map((p) => [normalizeProductUrl(p.url), p])).values(),
   );
 
+  // The stored rows for this run's urls only, in normalizeProductUrl's form,
+  // which is how products.url is stored. This used to read the WHOLE table
+  // (~3,900 rows, 4 pages) on every run of both lanes, even when the fast lane
+  // had scraped a few hundred products.
+  // out_of_stock_since and price feed the transition log. Both are destroyed by
+  // the write that follows: migration 021's trigger clears out_of_stock_since the
+  // instant a product restocks, and the upsert overwrites price. Read here or the
+  // values are gone — see migration 037.
+  const nowMs = now();
+  const rows = dedupedProducts.map((p) => toProductRow(p, normalizeProductUrl(p.url), new Date(nowMs).toISOString()));
+  const { rows: existing, requests: readRequests } = await readExistingProducts(
+    supabase,
+    rows.map((r) => r.url),
+  );
+  const existingUrls = new Set(existing.keys());
+  const prevStock = new Map([...existing].map(([url, row]) => [url, row.in_stock]));
+  const prevOutSince = new Map([...existing].map(([url, row]) => [url, row.out_of_stock_since]));
+  const prevPrice = new Map([...existing].map(([url, row]) => [url, row.price]));
+
+  // Unchanged rows whose last_seen_at is still fresh are not written at all.
+  // Nothing below can miss them: a skipped row is an existing row whose in_stock
+  // did not change, so it is neither new, nor a restock, nor a sellout.
+  const { write, counts: writePlan } = planProductWrites(rows, existing, nowMs);
+  let writtenRows = 0;
+  let failedRows = 0;
+
   // Process in batches of 50
   const BATCH_SIZE = 50;
-  for (let i = 0; i < dedupedProducts.length; i += BATCH_SIZE) {
-    const batch = dedupedProducts.slice(i, i + BATCH_SIZE).map((p) => ({
-      store_name: p.store_name,
-      store_id: p.store_id ?? null,
-      title: p.title,
-      price: p.price,
-      url: normalizeProductUrl(p.url),
-      image_url: p.image_url,
-      in_stock: p.in_stock ?? true,
-      game: p.game ?? 'pokemon',
-      // Stamped on every sighting regardless of in_stock value — the staleness
-      // sweep uses this (not just "missing from this run") to require a
-      // sustained absence before flipping a product to out-of-stock.
-      last_seen_at: new Date().toISOString(),
-    }));
+  for (let i = 0; i < write.length; i += BATCH_SIZE) {
+    const batch = write.slice(i, i + BATCH_SIZE);
 
     const { error: upsertError, data } = await supabase
       .from('products')
@@ -2821,8 +2844,10 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
       .select();
 
     if (upsertError) {
+      failedRows += batch.length;
       console.error(`  Upsert batch error: ${upsertError.message}`);
     } else if (data) {
+      writtenRows += data.length;
       for (const row of data) {
         const ev = (event, extra = {}) =>
           stockEvents.push({
@@ -2868,6 +2893,15 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
     }
   }
 
+  console.log(
+    formatSyncLine({
+      counts: writePlan,
+      written: writtenRows,
+      failed: failedRows,
+      read: { rows: existing.size, urls: rows.length, requests: readRequests },
+    }),
+  );
+
   // Staleness sweep: mark products out-of-stock only once they've been
   // continuously missing from their store's listing for a grace period, not
   // on the first miss. A single miss is often just a cart-hold blip on a
@@ -2877,7 +2911,10 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
   // "restock" alert every time it comes back (confirmed on Noriel, ~15 min
   // check interval: 20+ repeat alerts/day for one item). Requiring absence to
   // outlast ~2 scrape cycles filters that out while still catching genuine
-  // stock-outs within roughly half an hour.
+  // stock-outs. Since 2026-10 the cutoff also allows for last_seen_at being
+  // refreshed at most every LAST_SEEN_REFRESH_MS (see sweepCutoffMs), so a
+  // genuine stock-out detected by absence lands up to that much later — about
+  // 1.5 cycles plus up to an hour, rather than roughly half an hour.
   //
   // The grace is DERIVED from each store's own interval (staleGraceMs), not a
   // fixed number. It used to be a flat 20 minutes, chosen against the 15-minute
@@ -2933,13 +2970,15 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
     }
 
     let totalStale = 0;
-    const now = Date.now();
+    const sweepNowMs = now();
     for (const storeId of sweepableStoreIds) {
       const scrapedUrlSet = new Set(urlsByStore.get(storeId) ?? []);
       // Per store, not global: raising one store's interval must not weaken
       // every other store's grace, and a single global value would have to
       // satisfy the slowest store on the board.
-      const staleCutoff = now - staleGraceMs(intervalByStore.get(storeId));
+      // sweepCutoffMs, not now - grace: a skipped sighting leaves last_seen_at up
+      // to LAST_SEEN_REFRESH_MS behind the true one, and the cutoff absorbs that.
+      const staleCutoff = sweepCutoffMs(sweepNowMs, intervalByStore.get(storeId));
 
       // Fetch all currently in-stock products for this store
       // price/title/game are selected so a sellout detected by absence logs the
@@ -3034,7 +3073,7 @@ async function syncToSupabase(products, scrapedStoreIds = [], sweepableStoreIds 
       `(first_seen ${counts.first_seen ?? 0}, in ${counts.in ?? 0}, out ${counts.out ?? 0})`,
   );
 
-  return { inserted: insertedProducts.length, updated, insertedProducts, alertProducts };
+  return { inserted: insertedProducts.length, updated, skipped: writePlan.skipped, insertedProducts, alertProducts };
 }
 
 /**
@@ -3548,9 +3587,9 @@ async function main() {
     console.log('\nSyncing to Supabase...');
     // insertedProducts is deliberately not destructured: alerts are driven by
     // alertProducts (new-and-in-stock OR restocked), not by every new row.
-    const { inserted, updated, alertProducts } = await syncToSupabase(products, scrapedStoreIds, sweepableStoreIds);
+    const { inserted, updated, skipped, alertProducts } = await syncToSupabase(products, scrapedStoreIds, sweepableStoreIds);
     console.log(`  Inserted: ${inserted} new products`);
-    console.log(`  Updated: ${updated} existing products`);
+    console.log(`  Updated: ${updated} existing products (${skipped} unchanged, not rewritten)`);
     console.log(`  In stock / restocked (alertable): ${alertProducts.length}`);
 
     // Update scrape run with results
@@ -3605,4 +3644,4 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   else await main();
 }
 
-export { resolveBebeteiUrl, scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateUntilExhausted, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
+export { resolveBebeteiUrl, scrapeAll, fetchWithFilterFallback, filterMode, scrapeShopify, scrapeOzone, scrapeWooCommerce, scrapeDexHitApi, scrapeFlameyApi, scrapePokemania, scrapeAtuToys, scrapeCarturesti, fetchStoreData, fetchStores, syncToSupabase, sendAlerts, resolveAlertChannel, cleanupStaleProducts, paginateUntilExhausted, buildPageUrl, isGameProduct, PAGINATION_MAX_PAGES, PAGINATION_MIN_PAGE_1, staleGraceMs, sweepCutoffMs, STALE_GRACE_FALLBACK_MS, STALE_GRACE_CYCLES };
